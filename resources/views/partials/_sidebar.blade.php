@@ -1,56 +1,54 @@
-<aside class="sidebar">
-    <div class="sidebar-logo">
-        <div class="logo-mark"><i class="ti ti-bolt"></i></div>
-        <span class="logo-text">MeuSaaS</span>
+<aside class="w-64 bg-gray-800 text-white min-h-screen">
+
+    <div class="p-6 border-b border-gray-700">
+
+        <h1 class="text-2xl font-bold">
+            MECDESK
+        </h1>
+
+        <p class="text-sm text-gray-400 mt-1">
+            Gestão de Oficina
+        </p>
+
     </div>
 
-    <nav class="sidebar-nav">
-        <span class="nav-label">Principal</span>
+    <nav class="p-4 space-y-2">
 
-        <a href="{{ route('dashboard') }}"
-           class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-            <i class="ti ti-layout-dashboard"></i> Dashboard
+        <a href="/dashboard"
+           class="block px-4 py-3 rounded-lg hover:bg-gray-700 transition">
+
+            Dashboard
+
         </a>
 
-        {{-- <a href="{{ route('clientes.index') }}"
-           class="nav-item {{ request()->routeIs('clientes.*') ? 'active' : '' }}">
-            <i class="ti ti-users"></i> Clientes
-        </a> --}}
+        <a href="/clientes"
+           class="block px-4 py-3 rounded-lg hover:bg-gray-700 transition">
 
-        {{-- <a href="{{ route('faturas.index') }}"
-           class="nav-item {{ request()->routeIs('faturas.*') ? 'active' : '' }}">
-            <i class="ti ti-file-invoice"></i> Faturas
-        </a> --}}
+            Clientes
 
-        {{-- <a href="{{ route('relatorios.index') }}"
-           class="nav-item {{ request()->routeIs('relatorios.*') ? 'active' : '' }}">
-            <i class="ti ti-chart-bar"></i> Relatórios
-        </a> --}}
+        </a>
 
-        <span class="nav-label">Sistema</span>
+        <a href="#"
+           class="block px-4 py-3 rounded-lg hover:bg-gray-700 transition">
 
-        {{-- <a href="{{ route('equipe.index') }}"
-           class="nav-item {{ request()->routeIs('equipe.*') ? 'active' : '' }}">
-            <i class="ti ti-users-group"></i> Equipe
-        </a> --}}
+            Veículos
 
-        {{-- <a href="{{ route('configuracoes') }}"
-           class="nav-item {{ request()->routeIs('configuracoes') ? 'active' : '' }}">
-            <i class="ti ti-settings"></i> Configurações
-        </a> --}}
+        </a>
+
+        <a href="#"
+           class="block px-4 py-3 rounded-lg hover:bg-gray-700 transition">
+
+            Ordens de Serviço
+
+        </a>
+
+        <a href="#"
+           class="block px-4 py-3 rounded-lg hover:bg-gray-700 transition">
+
+            Orçamentos
+
+        </a>
+
     </nav>
 
-    <div class="sidebar-footer">
-        <div class="user-row">
-            <div class="avatar">
-                {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-            </div>
-            <div class="user-info">
-                <div class="user-name">{{ auth()->user()->name }}</div>
-                <div class="user-plan">{{ auth()->user()->plan ?? 'Plano Grátis' }}</div>
-            </div>
-        </div>
-
-        @include('partials._logout')
-    </div>
 </aside>

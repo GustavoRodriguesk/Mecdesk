@@ -17,7 +17,6 @@
  <body class="font-sans antialiased">
     <div class="min-h-screen flex bg-gray-100 dark:bg-gray-900">
 
-        @include('partials._sidebar')
 
         <div class="flex flex-col flex-1">
 
