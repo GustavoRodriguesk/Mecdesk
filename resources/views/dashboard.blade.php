@@ -1,8 +1,15 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
+<h1>MECDESK</h1>
+
+<p>Sistema de Gestão de Oficina</p>
+
+<ul>
+    <li>Clientes</li>
+    <li>Veículos</li>
+    <li>Ordens de Serviço</li>
+</ul>        </h2>
     </x-slot>
 
     <div class="py-12">

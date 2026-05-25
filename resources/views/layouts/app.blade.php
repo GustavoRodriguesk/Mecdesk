@@ -14,11 +14,15 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            @include('layouts.navigation')
+ <body class="font-sans antialiased">
+    <div class="min-h-screen flex bg-gray-100 dark:bg-gray-900">
 
-            <!-- Page Heading -->
+        @include('partials._sidebar')
+
+        <div class="flex flex-col flex-1">
+
+            @include('layouts.navigation') {{-- navbar original do Breeze --}}
+
             @isset($header)
                 <header class="bg-white dark:bg-gray-800 shadow">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -27,10 +31,11 @@
                 </header>
             @endisset
 
-            <!-- Page Content -->
-            <main>
+            <main class="flex-1 p-6">
                 {{ $slot }}
             </main>
+
         </div>
-    </body>
+    </div>
+</body>
 </html>
