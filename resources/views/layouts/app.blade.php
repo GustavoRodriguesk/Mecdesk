@@ -17,6 +17,7 @@
  <body class="font-sans antialiased">
     <div class="min-h-screen flex bg-gray-100 dark:bg-gray-900">
 
+    @include('partials._sidebar')
 
         <div class="flex flex-col flex-1">
 
@@ -31,6 +32,15 @@
             @endisset
 
             <main class="flex-1 p-6">
+                @if(session('success'))
+
+    <div class="mb-6 bg-green-500 text-white px-6 py-4 rounded-lg shadow">
+
+        {{ session('success') }}
+
+    </div>
+
+@endif
                 {{ $slot }}
             </main>
 

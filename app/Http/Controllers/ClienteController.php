@@ -7,12 +7,15 @@ use Illuminate\Http\Request;
 
 class ClienteController extends Controller
 {
-    public function index()
-    {
-        $clientes = Cliente::all();
+    public function index(Request $request)
+{
+    $search = $request->search;
 
-        return view('clientes.index', compact('clientes'));
-    }
+    $clientes = Cliente::where('nome', 'like', "%{$search}%")
+        ->paginate(10);
+
+    return view('clientes.index', compact('clientes', 'search'));
+}
 
     public function create()
     {
@@ -20,17 +23,18 @@ class ClienteController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'nome' => 'required',
-            'telefone' => 'required',
-        ]);
+{
+    $request->validate([
+        'nome' => 'required',
+        'telefone' => 'required',
+    ]);
 
-        Cliente::create($request->all());
+    Cliente::create($request->all());
 
-        return redirect()->route('clientes.index');
-    }
-
+    return redirect()
+        ->route('clientes.index')
+        ->with('success', 'Cliente cadastrado com sucesso!');
+}
     public function edit(Cliente $cliente)
     {
         return view('clientes.edit', compact('cliente'));
@@ -45,13 +49,17 @@ class ClienteController extends Controller
 
         $cliente->update($request->all());
 
-        return redirect()->route('clientes.index');
+        return redirect()
+    ->route('clientes.index')
+    ->with('success', 'Cliente atualizado com sucesso!');
     }
 
     public function destroy(Cliente $cliente)
     {
         $cliente->delete();
 
-        return redirect()->route('clientes.index');
+        return redirect()
+    ->route('clientes.index')
+    ->with('success', 'Cliente excluído com sucesso!');
     }
 }
