@@ -13,4 +13,8 @@ class Cliente extends Model
     'email',
     'endereco'
 ];
+public function veiculos()
+{
+    return $this->hasMany(Veiculo::class);
+}
 }

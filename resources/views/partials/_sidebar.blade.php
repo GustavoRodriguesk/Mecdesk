@@ -28,12 +28,10 @@
 
         </a>
 
-        <a href="#"
-           class="block px-4 py-3 rounded-lg hover:bg-gray-700 transition">
-
-            Veículos
-
-        </a>
+        <a href="{{ route('veiculos.index') }}"
+   class="block px-4 py-2 hover:bg-gray-700 rounded">
+    Veículos
+</a>
 
         <a href="#"
            class="block px-4 py-3 rounded-lg hover:bg-gray-700 transition">
