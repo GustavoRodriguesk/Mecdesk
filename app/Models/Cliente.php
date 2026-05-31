@@ -19,4 +19,8 @@ public function veiculos()
 {
     return $this->hasMany(Veiculo::class);
 }
+public function ordensServico()
+{
+    return $this->hasMany(OrdemServico::class);
+}
 }

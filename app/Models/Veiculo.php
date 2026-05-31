@@ -22,4 +22,8 @@ class Veiculo extends Model
     {
         return $this->belongsTo(Cliente::class);
     }
+    public function ordensServico()
+{
+    return $this->hasMany(OrdemServico::class);
+}
 }

@@ -33,7 +33,7 @@
     Veículos
 </a>
 
-        <a href="#"
+        <a href="{{ route('ordens.index') }}"
            class="block px-4 py-3 rounded-lg hover:bg-gray-700 transition">
 
             Ordens de Serviço
