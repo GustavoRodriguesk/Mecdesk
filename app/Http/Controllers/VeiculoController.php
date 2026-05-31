@@ -17,13 +17,17 @@ class VeiculoController extends Controller
     return view('veiculos.index', compact('veiculos'));
 }
 
-public function create()
+public function create(Request $request)
 {
     $clientes = Cliente::orderBy('nome')->get();
 
-    return view('veiculos.create', compact('clientes'));
-}
+    $clienteId = $request->cliente;
 
+    return view('veiculos.create', compact(
+        'clientes',
+        'clienteId'
+    ));
+}
 public function store(Request $request)
 {
     $request->validate([

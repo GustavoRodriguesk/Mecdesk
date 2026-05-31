@@ -40,6 +40,12 @@ class ClienteController extends Controller
         return view('clientes.edit', compact('cliente'));
     }
 
+    public function show(Cliente $cliente)
+{
+    $cliente->load('veiculos');
+
+    return view('clientes.show', compact('cliente'));
+}
     public function update(Request $request, Cliente $cliente)
     {
         $request->validate([

@@ -19,17 +19,20 @@
                 <label>Cliente</label>
 
                 <select name="cliente_id"
-                        class="w-full border rounded p-3">
+        class="w-full border rounded p-3">
 
-                    @foreach($clientes as $cliente)
+    @foreach($clientes as $cliente)
 
-                        <option value="{{ $cliente->id }}">
-                            {{ $cliente->nome }}
-                        </option>
+        <option value="{{ $cliente->id }}"
+            {{ ($clienteId ?? null) == $cliente->id ? 'selected' : '' }}>
 
-                    @endforeach
+            {{ $cliente->nome }}
 
-                </select>
+        </option>
+
+    @endforeach
+
+</select>
 
             </div>
 

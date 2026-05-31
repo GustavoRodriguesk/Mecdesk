@@ -4,7 +4,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\VeiculoController;
 use Illuminate\Support\Facades\Route;
-
+use App\Models\Cliente;
+use App\Models\Veiculo;
 Route::get('/', function () {
     return view('welcome');
 });
@@ -12,8 +13,13 @@ Route::get('/', function () {
 Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+
+    return view('dashboard', [
+        'clientes' => Cliente::count(),
+        'veiculos' => Veiculo::count(),
+    ]);
+
+})->name('dashboard');
 
     Route::resource('clientes', ClienteController::class);
     Route::resource('veiculos', VeiculoController::class)

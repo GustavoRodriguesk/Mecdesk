@@ -71,6 +71,11 @@
                         </td>
 
                         <td class="p-2 flex gap-2">
+                            <a href="{{ route('clientes.show', $cliente->id) }}"
+                                    class="bg-blue-600 text-white px-3 py-1 rounded">
+                                    Ver
+                            </a>
+                            
 
                             <a href="{{ route('clientes.edit', $cliente->id) }}"
                                class="bg-yellow-500 text-white px-3 py-1 rounded">
