@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\OrdemServico;
+use App\Models\Peca;
+use App\Models\Servico;
 use App\Models\Cliente;
 use App\Models\Veiculo;
 use Illuminate\Http\Request;
@@ -22,6 +24,7 @@ class OrdemServicoController extends Controller
     {
         $clientes = Cliente::orderBy('nome')->get();
         $veiculos = Veiculo::orderBy('placa')->get();
+
 
         return view('ordens.create', compact(
             'clientes',
@@ -49,11 +52,23 @@ class OrdemServicoController extends Controller
             ->with('success', 'Ordem de serviço criada com sucesso!');
     }
 
-    public function show(OrdemServico $ordem)
-    {
-        return view('ordens.show', compact('ordem'));
-    }
+   public function show(OrdemServico $ordem)
+{
+    $ordem->load([
+        'cliente',
+        'veiculo',
+        'itens'
+    ]);
 
+    $servicos = Servico::orderBy('nome')->get();
+    $pecas = Peca::orderBy('nome')->get();
+
+    return view('ordens.show', compact(
+        'ordem',
+        'servicos',
+        'pecas'
+    ));
+}
     public function edit(OrdemServico $ordem)
     {
         $clientes = Cliente::orderBy('nome')->get();

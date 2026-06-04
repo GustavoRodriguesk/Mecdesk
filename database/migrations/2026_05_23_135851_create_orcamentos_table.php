@@ -15,7 +15,7 @@ return new class extends Migration
     $table->id();
 
     $table->foreignId('ordem_servico_id')
-        ->constrained('ordens_servico')
+        ->constrained('ordem_servicos')
         ->onDelete('cascade');
 
     $table->string('token_aprovacao')->unique();

@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
    Schema::create('ordem_servico_itens', function (Blueprint $table) {
+    
     $table->id();
-
-   $table->foreignId('ordem_servico_id')
-    ->constrained('ordens_servico')
+$table->foreignId('ordem_servico_id')
+    ->constrained('ordem_servicos')
     ->onDelete('cascade');
 
     $table->enum('tipo_item', ['peca', 'servico']);
@@ -45,6 +45,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ordem_servico_items');
+        Schema::dropIfExists('ordem_servico_itens');
     }
 };

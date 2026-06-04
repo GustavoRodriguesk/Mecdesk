@@ -39,6 +39,17 @@
             Ordens de Serviço
 
         </a>
+        <a href="{{ route('servicos.index') }}"
+           class="block px-4 py-3 rounded-lg hover:bg-gray-700 transition">
+
+            Serviços
+        </a>
+            <a href="{{ route('pecas.index') }}"
+            class="block px-4 py-3 rounded-lg hover:bg-gray-700 transition">
+    
+                Peças   
+            </a>
+    
 
         <a href="#"
            class="block px-4 py-3 rounded-lg hover:bg-gray-700 transition">

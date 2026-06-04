@@ -33,6 +33,29 @@
             </p>
 
         </a>
+          <a href="{{ route('ordens.index') }}"
+           class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow hover:shadow-lg transition">
+
+            <h3 class="text-gray-500">
+                Ordens de Serviço
+            </h3>
+
+            <p class="text-4xl font-bold mt-2">
+                {{ $ordens }}
+            </p>
+
+        </a>
+            <a href="{{ route('servicos.index') }}"
+             class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow hover:shadow-lg transition">
+    
+                <h3 class="text-gray-500">
+                    Serviços
+                </h3>
+    
+                <p class="text-4xl font-bold mt-2">
+                    {{ $servicos }}
+                </p>   
+            </a>
 
     </div>
 

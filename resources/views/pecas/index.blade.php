@@ -2,7 +2,7 @@
 
     <x-slot name="header">
         <h2 class="font-semibold text-xl">
-            Ordens de Serviço
+            Peças
         </h2>
     </x-slot>
 
@@ -11,13 +11,13 @@
         <div class="flex justify-between mb-6">
 
             <h1 class="text-2xl font-bold">
-                Lista de Ordens
+                Lista de Peças
             </h1>
 
-            <a href="{{ route('ordens.create') }}"
+            <a href="{{ route('pecas.create') }}"
                class="bg-blue-600 text-white px-4 py-2 rounded">
 
-                Nova Ordem
+                Nova Peça
 
             </a>
 
@@ -29,9 +29,10 @@
 
                 <tr class="border-b">
 
-                    <th class="text-left p-2">Cliente</th>
-                    <th class="text-left p-2">Veículo</th>
-                    <th class="text-left p-2">Status</th>
+                    <th class="text-left p-2">Nome</th>
+                    <th class="text-left p-2">Código</th>
+                    <th class="text-left p-2">Valor</th>
+                    <th class="text-left p-2">Estoque</th>
                     <th class="text-left p-2">Ações</th>
 
                 </tr>
@@ -40,46 +41,37 @@
 
             <tbody>
 
-                @foreach($ordens as $ordem)
+                @foreach($pecas as $peca)
 
                     <tr class="border-b">
 
+                        <td class="p-2">{{ $peca->nome }}</td>
+
                         <td class="p-2">
-                            {{ $ordem->cliente->nome }}
+                            {{ $peca->codigo }}
                         </td>
 
                         <td class="p-2">
-                            {{ $ordem->veiculo->marca }}
-                            {{ $ordem->veiculo->modelo }}
+                            R$ {{ number_format($peca->valor_unitario, 2, ',', '.') }}
                         </td>
 
                         <td class="p-2">
-
-   <td class="p-2">
-
-    <span class="{{ $ordem->status_color }} px-3 py-1 rounded-full text-sm">
-
-        {{ $ordem->status_formatado }}
-
-    </span>
-
-</td>
-
-</td>
+                            {{ $peca->estoque }}
+                        </td>
 
                         <td class="p-2 flex gap-2">
 
-                            <a href="{{ route('ordens.show', $ordem->id) }}"
+                            <a href="{{ route('pecas.show', $peca->id) }}"
                                class="bg-blue-500 text-white px-3 py-1 rounded">
                                 Ver
                             </a>
 
-                            <a href="{{ route('ordens.edit', $ordem->id) }}"
+                            <a href="{{ route('pecas.edit', $peca->id) }}"
                                class="bg-yellow-500 text-white px-3 py-1 rounded">
                                 Editar
                             </a>
 
-                            <form action="{{ route('ordens.destroy', $ordem->id) }}"
+                            <form action="{{ route('pecas.destroy', $peca->id) }}"
                                   method="POST">
 
                                 @csrf
@@ -102,7 +94,7 @@
         </table>
 
         <div class="mt-6">
-            {{ $ordens->links() }}
+            {{ $pecas->links() }}
         </div>
 
     </div>
