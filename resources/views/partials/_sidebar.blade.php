@@ -51,12 +51,7 @@
             </a>
     
 
-        <a href="#"
-           class="block px-4 py-3 rounded-lg hover:bg-gray-700 transition">
-
-            Orçamentos
-
-        </a>
+        
 
     </nav>
 

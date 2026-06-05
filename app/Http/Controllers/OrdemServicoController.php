@@ -105,4 +105,23 @@ class OrdemServicoController extends Controller
             ->route('ordens.index')
             ->with('success', 'Ordem excluída com sucesso!');
     }
+    public function budgetsIndex()
+    {
+        $approved = OrdemServico::where('status', 'concluida')
+            ->with(['cliente', 'veiculo'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $cancelled = OrdemServico::where('status', 'cancelada')
+            ->with(['cliente', 'veiculo'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $pending = OrdemServico::where('status', 'aguardando_aprovacao')
+            ->with(['cliente', 'veiculo'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('budgets.index', compact('approved', 'cancelled', 'pending'));
+    }
 }
