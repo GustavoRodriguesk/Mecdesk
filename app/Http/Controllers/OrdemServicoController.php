@@ -7,6 +7,7 @@ use App\Models\Peca;
 use App\Models\Servico;
 use App\Models\Cliente;
 use App\Models\Veiculo;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class OrdemServicoController extends Controller
@@ -124,4 +125,21 @@ class OrdemServicoController extends Controller
 
         return view('budgets.index', compact('approved', 'cancelled', 'pending'));
     }
+    public function pdf(OrdemServico $ordem)
+{
+    $ordem->load([
+        'cliente',
+        'veiculo',
+        'itens'
+    ]);
+
+    $pdf = Pdf::loadView(
+        'ordens.pdf',
+        compact('ordem')
+    );
+
+    return $pdf->download(
+        'OS-' . $ordem->numero_os . '.pdf'
+    );
+}
 }

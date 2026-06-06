@@ -51,6 +51,14 @@ Route::post(
 )->name('ordens.itens.peca.store');
     Route::resource('servicos', ServicoController::class)
     ->middleware('auth');
+    Route::delete(
+    '/ordens/itens/{item}',
+    [OrdemServicoItemController::class, 'destroy']
+)->name('ordens.itens.destroy');
+Route::get(
+    '/ordens/{ordem}/pdf',
+    [OrdemServicoController::class, 'pdf']
+)->name('ordens.pdf');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::get('/clientes/{cliente}/veiculos', function (\App\Models\Cliente $cliente) {
     return $cliente->veiculos;

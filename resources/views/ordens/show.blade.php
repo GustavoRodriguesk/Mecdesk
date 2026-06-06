@@ -205,30 +205,35 @@
 
                     <tbody>
 
-                        @foreach($ordem->itens as $item)
+                       @foreach($ordem->itens as $item)
 
-                            <tr class="border-b">
+<tr>
 
-                                <td class="p-2">
-                                    {{ $item->descricao }}
-                                </td>
+    <td>{{ $item->descricao }}</td>
 
-                                <td class="p-2">
-                                    {{ $item->quantidade }}
-                                </td>
+    <td>{{ $item->quantidade }}</td>
 
-                                <td class="p-2">
-                                    R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}
-                                </td>
+    <td>R$ {{ number_format($item->valor_total, 2, ',', '.') }}</td>
 
-                                <td class="p-2">
-                                    R$ {{ number_format($item->valor_total, 2, ',', '.') }}
-                                </td>
+    <td>
 
-                            </tr>
+        <form action="{{ route('ordens.itens.destroy', $item->id) }}"
+              method="POST">
 
-                        @endforeach
+            @csrf
+            @method('DELETE')
 
+            <button class="bg-red-600 text-white px-2 py-1 rounded">
+                Remover
+            </button>
+
+        </form>
+
+    </td>
+
+</tr>
+
+@endforeach
                     </tbody>
 
                 </table>
@@ -245,6 +250,13 @@
 
         {{-- Total --}}
         <div>
+            <a
+    href="{{ route('ordens.pdf', $ordem->id) }}"
+    class="bg-red-600 text-white px-4 py-2 rounded">
+
+    Gerar PDF
+
+</a>
 
             <h3 class="text-2xl font-bold">
 
