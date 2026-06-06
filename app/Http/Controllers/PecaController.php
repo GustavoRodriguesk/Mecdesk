@@ -23,7 +23,7 @@ class PecaController extends Controller
     {
         $request->validate([
             'nome' => 'required',
-            'codigo' => 'required|unique:pecas,codigo',
+            'codigo' => 'unique:pecas,codigo',
             'estoque' => 'required|integer|min:0',
             'valor_unitario' => 'required|numeric|min:0',
         ]);
