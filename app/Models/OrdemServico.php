@@ -9,15 +9,19 @@ class OrdemServico extends Model
 {
     use HasFactory;
     protected $table = 'ordem_servicos';
-    protected $fillable = [
-        'cliente_id',
-        'veiculo_id',
-        'descricao_problema',
-        'status',
-        'valor_total',
-        'data_entrada',
-        'data_saida',
-    ];
+   protected $fillable = [
+    'numero_os',
+    'cliente_id',
+    'veiculo_id',
+    'user_id',
+    'status',
+    'descricao_problema',
+    'observacoes',
+    'valor_total',
+    'aprovado_cliente',
+    'data_entrada',
+    'data_saida',
+];
  
 
 public function getStatusFormatadoAttribute()

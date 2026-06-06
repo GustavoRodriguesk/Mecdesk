@@ -9,6 +9,8 @@ use App\Models\Cliente;
 use App\Models\Veiculo;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 
 class OrdemServicoController extends Controller
 {
@@ -33,25 +35,37 @@ class OrdemServicoController extends Controller
         ));
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'cliente_id' => 'required|exists:clientes,id',
-            'veiculo_id' => 'required|exists:veiculos,id',
-            'descricao_problema' => 'required',
-        ]);
+  public function store(Request $request)
+{
+    $request->validate([
+        'cliente_id' => 'required|exists:clientes,id',
+        'veiculo_id' => 'required|exists:veiculos,id',
+        'descricao_problema' => 'required',
+    ]);
 
-        OrdemServico::create([
-            'cliente_id' => $request->cliente_id,
-            'veiculo_id' => $request->veiculo_id,
-            'descricao_problema' => $request->descricao_problema,
-            'status' => 'aberta',
-        ]);
+    OrdemServico::create([
+        'numero_os' => 'OS-' . rand(1000, 9999),
 
-        return redirect()
-            ->route('ordens.index')
-            ->with('success', 'Ordem de serviço criada com sucesso!');
-    }
+        'cliente_id' => $request->cliente_id,
+        'veiculo_id' => $request->veiculo_id,
+
+        'user_id' => Auth::id(),
+
+        'status' => 'aberta',
+
+        'descricao_problema' => $request->descricao_problema,
+
+        'valor_total' => 0,
+
+        'aprovado_cliente' => false,
+
+        'data_entrada' => now(),
+    ]);
+
+    return redirect()
+        ->route('ordens.index')
+        ->with('success', 'Ordem de serviço criada com sucesso!');
+}
 
    public function show(OrdemServico $ordem)
 {
@@ -137,9 +151,11 @@ class OrdemServicoController extends Controller
         'ordens.pdf',
         compact('ordem')
     );
+$nomeArquivo = str($ordem->cliente->nome)
+    ->slug('-');
 
-    return $pdf->download(
-        'OS-' . $ordem->numero_os . '.pdf'
-    );
+return $pdf->download(
+    $nomeArquivo . '-orcamento.pdf'
+);
 }
 }

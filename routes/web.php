@@ -19,17 +19,36 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-
-    Route::get('/dashboard', function () {
+Route::get('/dashboard', function () {
 
     return view('dashboard', [
         'clientes' => Cliente::count(),
         'veiculos' => Veiculo::count(),
         'ordens' => OrdemServico::count(),
         'servicos' => Servico::count(),
+
+        'osAbertas' => OrdemServico::where('status', 'aberta')->count(),
+
+        'osAndamento' => OrdemServico::where('status', 'em_andamento')->count(),
+
+        'osConcluidas' => OrdemServico::where('status', 'concluida')->count(),
+        'osCanceladas' => OrdemServico::where('status', 'cancelada')->count(),
+        'faturamentoTotal' => OrdemServico::where(
+            'status',
+            'concluida'
+        )->sum('valor_total'),
+
+        'faturamentoMes' => OrdemServico::where(
+            'status',
+            'concluida'
+        )
+        ->whereMonth('created_at', now()->month)
+        ->whereYear('created_at', now()->year)
+        ->sum('valor_total'),
     ]);
 
 })->name('dashboard');
+
 
     Route::resource('clientes', ClienteController::class);
     Route::resource('pecas', PecaController::class)
