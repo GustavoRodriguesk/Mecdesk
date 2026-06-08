@@ -23,7 +23,7 @@ return new class extends Migration
     $table->integer('ano');
     $table->string('placa')->unique();
     $table->string('cor')->nullable();
-    $table->integer('quilometragem')->default(0);
+    $table->integer('quilometragem')->nullable();
 
     $table->timestamps();
 });

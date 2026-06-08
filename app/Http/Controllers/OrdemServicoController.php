@@ -14,15 +14,33 @@ use Illuminate\Support\Facades\Auth;
 
 class OrdemServicoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $ordens = OrdemServico::with(['cliente', 'veiculo'])
+        $query = OrdemServico::with(['cliente', 'veiculo']);
+        
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        if ($search = $request->search) {
+            $query->where('numero_os', 'like', "%{$search}%");
+        }
+
+        $ordens = $query
             ->latest()
             ->paginate(10);
 
         return view('ordens.index', compact('ordens'));
-    }
+        {
+            $search = $request->search;
 
+            $clientes = Cliente::where('nome', 'like', "%{$search}%")
+                ->paginate(10);
+
+            return view('clientes.index', compact('clientes', 'search'));
+        }
+    }
+    
     public function create()
     {
         $clientes = Cliente::orderBy('nome')->get();

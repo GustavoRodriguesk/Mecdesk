@@ -24,6 +24,7 @@
             </a>
 
         </div>
+        
 <form method="GET"
       action="{{ route('clientes.index') }}"
       class="mb-6 flex gap-2">

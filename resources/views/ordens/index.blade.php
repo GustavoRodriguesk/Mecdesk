@@ -23,6 +23,55 @@
 
         </div>
 
+        <div class="mb-4 flex gap-4">
+
+            <form method="GET"
+                action="{{ route('ordens.index') }}"
+                class="flex-1">
+
+                <input type="text"
+                    name="search"
+                    value="{{ request('search') }}"
+                    placeholder="Buscar OS..."
+                    class="border rounded-lg px-4 py-2 w-full">
+
+            </form>
+
+            <form method="GET"
+                action="{{ route('ordens.index') }}">
+
+                <select
+                    name="status"
+                    onchange="this.form.submit()"
+                    class="border rounded-lg px-3 py-2 w-64">
+
+                    <option value="">Todas as OS</option>
+
+                    <option value="aberta"
+                        {{ request('status') == 'aberta' ? 'selected' : '' }}>
+                        Abertas
+                    </option>
+
+                    <option value="concluida"
+                        {{ request('status') == 'concluida' ? 'selected' : '' }}>
+                        Concluídas
+                    </option>
+
+                    <option value="cancelada"
+                        {{ request('status') == 'cancelada' ? 'selected' : '' }}>
+                        Canceladas
+                    </option>
+
+                    <option value="aguardando_aprovacao"
+                        {{ request('status') == 'aguardando_aprovacao' ? 'selected' : '' }}>
+                        Aguardando Aprovação
+                    </option>
+
+                </select>
+
+            </form>
+
+        </div>
         <table class="w-full">
 
             <thead>

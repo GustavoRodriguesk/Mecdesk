@@ -6,6 +6,8 @@
         </h2>
     </x-slot>
 
+    
+
     <div class="bg-white p-6 rounded-lg shadow">
 
         <form action="{{ route('ordens.store') }}" method="POST">

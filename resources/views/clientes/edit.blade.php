@@ -1,32 +1,141 @@
-<h1>Editar Cliente</h1>
+<x-app-layout>
 
-<form action="{{ route('clientes.update', $cliente->id) }}" method="POST">
+    <x-slot name="header">
 
-    @csrf
-    @method('PUT')
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            Editar Cliente
+        </h2>
 
-    <input type="text" name="nome" value="{{ $cliente->nome }}">
+    </x-slot>
 
-    <br><br>
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
 
-    <input type="text" name="cpf_cnpj" value="{{ $cliente->cpf_cnpj }}">
+        <form action="{{ route('clientes.update', $cliente->id) }}" method="POST">
 
-    <br><br>
+            @csrf
+            @method('PUT')
 
-    <input type="text" name="telefone" value="{{ $cliente->telefone }}">
+            <div>
 
-    <br><br>
+                <label class="block mb-1 font-medium">
+                    Nome
+                </label>
 
-    <input type="email" name="email" value="{{ $cliente->email }}">
+                <input type="text"
+                       name="nome"
+                       value="{{$cliente->nome}}"
+                       placeholder="Nome"
+                       class="w-full border rounded-lg p-3">
 
-    <br><br>
+            </div>
 
-    <textarea name="endereco">{{ $cliente->endereco }}</textarea>
+            <div>
 
-    <br><br>
+                <label class="block mb-1 font-medium">
+                    CPF/CNPJ
+                </label>
 
-    <button type="submit">
-        Atualizar
-    </button>
+                <input type="text"
+                       value="{{$cliente->cpf_cnpj}}"
+                       id="cpf_cnpj"
+                       name="cpf_cnpj"
+                       placeholder="CPF ou CNPJ"
+                       class="w-full border rounded-lg p-3">
 
-</form>
+            </div>
+
+            <div>
+
+                <label class="block mb-1 font-medium">
+                    Telefone
+                </label>
+
+                <input type="text"
+                       id="telefone"
+                       value="{{$cliente->telefone}}"
+                       name="telefone"
+                       placeholder="(00) 00000-0000"
+                       class="w-full border rounded-lg p-3">
+
+            </div>
+
+            <div>
+
+                <label class="block mb-1 font-medium">
+                    E-mail
+                </label>
+
+                <input type="email"
+                       name="email"
+                       value="{{$cliente->email}}"
+                       placeholder="E-mail"
+                       class="w-full border rounded-lg p-3">
+
+            </div>
+
+            <div>
+
+                <label class="block mb-1 font-medium">
+                    Endereço
+                </label>
+
+                <textarea
+                    name="endereco"
+                    placeholder="Endereço"
+                    class="w-full border rounded-lg p-3">{{ $cliente->endereco }}</textarea>
+
+            </div>
+
+            <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+
+                Atualizar Cliente
+
+            </button>
+
+        </form>
+
+    </div>
+
+    <script>
+
+    // MÁSCARA TELEFONE
+    document.getElementById('telefone').addEventListener('input', function (e) {
+
+        let value = e.target.value.replace(/\D/g, '');
+
+        value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+
+        value = value.replace(/(\d{5})(\d)/, '$1-$2');
+
+        e.target.value = value;
+
+    });
+
+    // MÁSCARA CPF/CNPJ
+    document.getElementById('cpf_cnpj').addEventListener('input', function (e) {
+
+        let value = e.target.value.replace(/\D/g, '');
+
+        if (value.length <= 11) {
+
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+
+        } else {
+
+            value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+            value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+            value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+            value = value.replace(/(\d{4})(\d)/, '$1-$2');
+
+        }
+
+        e.target.value = value;
+
+    });
+
+    </script>
+
+</x-app-layout>

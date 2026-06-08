@@ -2,7 +2,7 @@
 
     <x-slot name="header">
         <h2 class="font-semibold text-xl">
-            Ordem de Serviço #{{ $ordem->id }}
+            Ordem de Serviço #{{ $ordem->numero_os }}
         </h2>
     </x-slot>
 
@@ -199,6 +199,10 @@
                                 Total
                             </th>
 
+                            <th class="text-left p-2">
+                                
+                            </th>
+
                         </tr>
 
                     </thead>
@@ -213,7 +217,9 @@
 
     <td>{{ $item->quantidade }}</td>
 
-    <td>R$ {{ number_format($item->valor_total, 2, ',', '.') }}</td>
+    <td>R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}</td>
+
+    <td>R$ {{ number_format($item->valor_unitario * $item->quantidade, 2, ',', '.') }} </td>
 
     <td>
 
@@ -252,13 +258,13 @@
         <div>
             <a
     href="{{ route('ordens.pdf', $ordem->id) }}"
-    class="bg-red-600 text-white px-4 py-2 rounded">
+    class="bg-red-600 text-white px-4 py-2 rounded mt-4">
 
     Gerar PDF
 
 </a>
 
-            <h3 class="text-2xl font-bold">
+            <h3 class="text-2xl font-bold mt-5">
 
                 Total da Ordem:
                 R$ {{ number_format($ordem->itens->sum('valor_total'), 2, ',', '.') }}
