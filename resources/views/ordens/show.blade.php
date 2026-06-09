@@ -9,7 +9,7 @@
     <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
 
         {{-- Dados da Ordem --}}
-        <div class="mb-6">
+        <div class="mb-6 border-b pb-4">
 
             <p>
                 <strong>Cliente:</strong>
@@ -25,7 +25,10 @@
 
             <p>
                 <strong>Status:</strong>
-                {{ $ordem->status_formatado ?? $ordem->status }}
+
+                <span class="px-2 py-1 rounded text-sm {{ $ordem->status_color }}">
+                    {{ $ordem->status_formatado }}
+                </span>
             </p>
 
         </div>
@@ -44,7 +47,7 @@
         </div>
 
         {{-- Adicionar Serviço --}}
-        <div class="mb-6">
+        <div class="mb-8">
 
             <h3 class="font-bold text-lg mb-4">
                 Adicionar Serviço
@@ -58,9 +61,7 @@
 
                 <div class="mb-4">
 
-                    <label class="block mb-2">
-                        Serviço
-                    </label>
+                    <label>Serviço</label>
 
                     <select
                         name="servico_id"
@@ -69,11 +70,9 @@
                         @foreach($servicos as $servico)
 
                             <option value="{{ $servico->id }}">
-
                                 {{ $servico->nome }}
                                 -
                                 R$ {{ number_format($servico->valor_base, 2, ',', '.') }}
-
                             </option>
 
                         @endforeach
@@ -84,15 +83,13 @@
 
                 <div class="mb-4">
 
-                    <label class="block mb-2">
-                        Quantidade
-                    </label>
+                    <label>Quantidade</label>
 
                     <input
                         type="number"
                         name="quantidade"
-                        value="1"
                         min="1"
+                        value="1"
                         class="w-full border rounded p-3">
 
                 </div>
@@ -106,73 +103,76 @@
                 </button>
 
             </form>
-            <h3 class="font-bold mt-6">
-    Adicionar Peça
-</h3>
-
-<form
-    action="{{ route('ordens.itens.peca.store', $ordem->id) }}"
-    method="POST"
-    class="mt-4">
-
-    @csrf
-
-    <div class="mb-4">
-
-        <label>Peça</label>
-
-        <select
-            name="peca_id"
-            class="w-full border rounded p-3">
-
-            @foreach($pecas as $peca)
-
-                <option value="{{ $peca->id }}">
-
-                    {{ $peca->nome }}
-                    -
-                    Estoque: {{ $peca->estoque }}
-                    -
-                    R$ {{ number_format($peca->valor_unitario, 2, ',', '.') }}
-
-                </option>
-
-            @endforeach
-
-        </select>
-
-    </div>
-
-    <div class="mb-4">
-
-        <label>Quantidade</label>
-
-        <input
-            type="number"
-            name="quantidade"
-            min="1"
-            value="1"
-            class="w-full border rounded p-3">
-
-    </div>
-
-    <button
-        type="submit"
-        class="bg-blue-600 text-white px-4 py-2 rounded">
-
-        Adicionar Peça
-
-    </button>
-
-</form>
 
         </div>
 
-        {{-- Itens da Ordem --}}
-        <div class="mb-6">
+        {{-- Adicionar Peça --}}
+        <div class="mb-8">
 
             <h3 class="font-bold text-lg mb-4">
-                Serviços da Ordem
+                Adicionar Peça
+            </h3>
+
+            <form
+                action="{{ route('ordens.itens.peca.store', $ordem->id) }}"
+                method="POST">
+
+                @csrf
+
+                <div class="mb-4">
+
+                    <label>Peça</label>
+
+                    <select
+                        name="peca_id"
+                        class="w-full border rounded p-3">
+
+                        @foreach($pecas as $peca)
+
+                            <option value="{{ $peca->id }}">
+                                {{ $peca->nome }}
+                                -
+                                Estoque: {{ $peca->estoque }}
+                                -
+                                R$ {{ number_format($peca->valor_unitario, 2, ',', '.') }}
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+                <div class="mb-4">
+
+                    <label>Quantidade</label>
+
+                    <input
+                        type="number"
+                        name="quantidade"
+                        min="1"
+                        value="1"
+                        class="w-full border rounded p-3">
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="bg-blue-600 text-white px-4 py-2 rounded">
+
+                    Adicionar Peça
+
+                </button>
+
+            </form>
+
+        </div>
+
+        {{-- Itens --}}
+        <div class="mb-8">
+
+            <h3 class="font-bold text-lg mb-4">
+                Itens da Ordem
             </h3>
 
             @if($ordem->itens->count())
@@ -181,27 +181,13 @@
 
                     <thead>
 
-                        <tr class="border-b bg-gray-100">
+                        <tr class="bg-gray-100 border-b">
 
-                            <th class="text-left p-2">
-                                Serviço
-                            </th>
-
-                            <th class="text-left p-2">
-                                Qtd
-                            </th>
-
-                            <th class="text-left p-2">
-                                Valor Unitário
-                            </th>
-
-                            <th class="text-left p-2">
-                                Total
-                            </th>
-
-                            <th class="text-left p-2">
-                                
-                            </th>
+                            <th class="p-2 text-left">Descrição</th>
+                            <th class="p-2 text-left">Qtd</th>
+                            <th class="p-2 text-left">Valor Unitário</th>
+                            <th class="p-2 text-left">Total</th>
+                            <th class="p-2 text-left">Ações</th>
 
                         </tr>
 
@@ -209,65 +195,130 @@
 
                     <tbody>
 
-                       @foreach($ordem->itens as $item)
+                        @foreach($ordem->itens as $item)
 
-<tr>
+                            <tr class="border-b">
 
-    <td>{{ $item->descricao }}</td>
+                                <td class="p-2">
+                                    {{ $item->descricao }}
+                                </td>
 
-    <td>{{ $item->quantidade }}</td>
+                                <td class="p-2">
+                                    {{ $item->quantidade }}
+                                </td>
 
-    <td>R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}</td>
+                                <td class="p-2">
+                                    R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}
+                                </td>
 
-    <td>R$ {{ number_format($item->valor_unitario * $item->quantidade, 2, ',', '.') }} </td>
+                                <td class="p-2">
+                                    R$ {{ number_format($item->valor_total, 2, ',', '.') }}
+                                </td>
 
-    <td>
+                                <td class="p-2">
 
-        <form action="{{ route('ordens.itens.destroy', $item->id) }}"
-              method="POST">
+                                    <form
+                                        action="{{ route('ordens.itens.destroy', $item->id) }}"
+                                        method="POST">
 
-            @csrf
-            @method('DELETE')
+                                        @csrf
+                                        @method('DELETE')
 
-            <button class="bg-red-600 text-white px-2 py-1 rounded">
-                Remover
-            </button>
+                                        <button
+                                            class="bg-red-600 text-white px-3 py-1 rounded">
 
-        </form>
+                                            Remover
 
-    </td>
+                                        </button>
 
-</tr>
+                                    </form>
 
-@endforeach
+                                </td>
+
+                            </tr>
+
+                        @endforeach
+
                     </tbody>
 
                 </table>
 
             @else
 
-                <p>
-                    Nenhum serviço adicionado.
-                </p>
+                <p>Nenhum item adicionado.</p>
 
             @endif
 
         </div>
 
+        {{-- Timeline --}}
+        <div class="mb-8">
+
+            <h3 class="font-bold text-lg mb-4">
+                Histórico da Ordem
+            </h3>
+
+            @forelse($ordem->historicos as $historico)
+
+                <div class="border-l-4 pl-4 mb-4
+
+                    @if($historico->status == 'aberta')
+                        border-blue-500
+                    @elseif($historico->status == 'em_andamento')
+                        border-yellow-500
+                    @elseif($historico->status == 'concluida')
+                        border-green-500
+                    @elseif($historico->status == 'cancelada')
+                        border-red-500
+                    @else
+                        border-gray-500
+                    @endif
+                ">
+
+                    <div class="font-semibold">
+
+                        {{ match($historico->status) {
+                            'aberta' => 'Aberta',
+                            'em_andamento' => 'Em andamento',
+                            'aguardando_aprovacao' => 'Aguardando aprovação',
+                            'concluida' => 'Concluída',
+                            'cancelada' => 'Cancelada',
+                            default => $historico->status
+                        } }}
+
+                    </div>
+
+                    <small class="text-gray-500">
+                        {{ $historico->created_at->format('d/m/Y H:i') }}
+                    </small>
+
+                </div>
+
+            @empty
+
+                <p class="text-gray-500">
+                    Nenhuma movimentação registrada.
+                </p>
+
+            @endforelse
+
+        </div>
+
         {{-- Total --}}
-        <div>
+        <div class="border-t pt-6">
+
             <a
-    href="{{ route('ordens.pdf', $ordem->id) }}"
-    class="bg-red-600 text-white px-4 py-2 rounded mt-4">
+                href="{{ route('ordens.pdf', $ordem->id) }}"
+                class="bg-red-600 text-white px-4 py-2 rounded">
 
-    Gerar PDF
+                Gerar PDF
 
-</a>
+            </a>
 
-            <h3 class="text-2xl font-bold mt-5">
+            <h3 class="text-2xl font-bold mt-4">
 
                 Total da Ordem:
-                R$ {{ number_format($ordem->itens->sum('valor_total'), 2, ',', '.') }}
+                R$ {{ number_format($ordem->valor_total, 2, ',', '.') }}
 
             </h3>
 

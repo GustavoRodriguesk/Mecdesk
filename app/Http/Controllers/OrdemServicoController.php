@@ -60,25 +60,25 @@ class OrdemServicoController extends Controller
         'veiculo_id' => 'required|exists:veiculos,id',
         'descricao_problema' => 'required',
     ]);
+$ordem = OrdemServico::create([
+    'numero_os' => 'OS-' . rand(1000, 9999),
 
-    OrdemServico::create([
-        'numero_os' => 'OS-' . rand(1000, 9999),
+    'cliente_id' => $request->cliente_id,
+    'veiculo_id' => $request->veiculo_id,
 
-        'cliente_id' => $request->cliente_id,
-        'veiculo_id' => $request->veiculo_id,
+    'user_id' => Auth::id(),
 
-        'user_id' => Auth::id(),
+    'status' => 'aberta',
 
-        'status' => 'aberta',
+    'descricao_problema' => $request->descricao_problema,
 
-        'descricao_problema' => $request->descricao_problema,
+    'valor_total' => 0,
 
-        'valor_total' => 0,
+    'aprovado_cliente' => false,
 
-        'aprovado_cliente' => false,
-
-        'data_entrada' => now(),
-    ]);
+    'data_entrada' => now(),
+]);
+    
 
     return redirect()
         ->route('ordens.index')
@@ -90,7 +90,10 @@ class OrdemServicoController extends Controller
     $ordem->load([
         'cliente',
         'veiculo',
-        'itens'
+        'itens',
+        'historicos' => function ($query) {
+        $query->latest();
+    }
     ]);
 
     $servicos = Servico::orderBy('nome')->get();
@@ -121,9 +124,19 @@ class OrdemServicoController extends Controller
     'veiculo_id' => 'required|exists:veiculos,id',
     'descricao_problema' => 'required',
     'status' => 'required',
+    
 ]);
+$statusAnterior = $ordem->status;
 
-        $ordem->update($request->all());
+$ordem->update($request->all());
+
+if ($statusAnterior != $request->status) {
+
+    $ordem->historicos()->create([
+        'status' => $request->status
+    ]);
+}
+
 
         return redirect()
             ->route('ordens.index')

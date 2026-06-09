@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\OrdemServicoHistorico;
 
 class OrdemServico extends Model
 {
@@ -60,5 +61,10 @@ public function getStatusColorAttribute()
     {
         return $this->hasMany(OrdemServicoItem::class);
     }
-    
+  public function historicos()
+{
+    return $this->hasMany(
+        OrdemServicoHistorico::class
+    )->latest();
+}
 }
