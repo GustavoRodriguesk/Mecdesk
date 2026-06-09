@@ -27,6 +27,8 @@ class DatabaseSeeder extends Seeder
       Veiculo::factory(120)->create();
         Servico::factory(20)->create();
         OrdemServico::factory(30)->create();
+        Peca::factory(50)->create();
+        Peca::factory(10)->estoqueBaixo()->create();
 
        
     }

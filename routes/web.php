@@ -12,6 +12,7 @@ use App\Models\Cliente;
 use App\Models\Veiculo;
 use App\Models\OrdemServico;
 use App\Models\Servico;
+use App\Models\Peca;
 
 
 Route::get('/', function () {
@@ -26,6 +27,10 @@ Route::get('/dashboard', function () {
         'veiculos' => Veiculo::count(),
         'ordens' => OrdemServico::count(),
         'servicos' => Servico::count(),
+        'pecasBaixas' => Peca::where('estoque', '<=', 5)
+    ->orderBy('estoque')
+    ->take(5)
+    ->get(),
 
         'osAbertas' => OrdemServico::where('status', 'aberta')->count(),
 

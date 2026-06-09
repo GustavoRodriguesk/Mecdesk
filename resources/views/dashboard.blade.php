@@ -97,6 +97,43 @@
         </div>
 
     </div>
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mt-6">
+
+    <h3 class="text-lg font-bold text-red-600 mb-4">
+        ⚠️ Estoque Baixo
+    </h3>
+
+    @if($pecasBaixas->count())
+
+        <ul class="space-y-2">
+
+            @foreach($pecasBaixas as $peca)
+
+                <li class="flex justify-between border-b pb-2">
+
+                    <span>
+                        {{ $peca->nome }}
+                    </span>
+
+                    <span class="font-bold text-red-500">
+                        {{ $peca->estoque }} un.
+                    </span>
+
+                </li>
+
+            @endforeach
+
+        </ul>
+
+    @else
+
+        <p class="text-green-600">
+            Nenhuma peça com estoque baixo.
+        </p>
+
+    @endif
+
+</div>
 
     {{-- Ações rápidas --}}
     <p class="text-xs font-medium uppercase tracking-widest text-gray-400 mt-8 mb-3">Ações rápidas</p>
