@@ -75,4 +75,16 @@ public function destroy(Veiculo $veiculo)
         ->route('veiculos.index')
         ->with('success', 'Veículo excluído com sucesso!');
 }
+public function show(Veiculo $veiculo)
+{
+    $veiculo->load([
+        'cliente',
+        'ordensServico'
+    ]);
+
+    return view(
+        'veiculos.show',
+        compact('veiculo')
+    );
+}
 }

@@ -119,6 +119,10 @@
                                             Excluir
 
                                         </button>
+                                        <a href="{{ route('veiculos.show', $veiculo->id) }}"
+   class="bg-blue-500 text-white px-3 py-1 rounded">
+    Histórico
+</a>
 
                                     </form>
 

@@ -6,6 +6,7 @@ use App\Models\Veiculo;
 use App\Models\Servico;
 use App\Models\OrdemServico;
 use App\Models\User;
+use App\Models\Peca;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -23,10 +24,10 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
         // User::factory(10)->create();
-      Cliente::factory(50)->create();
-      Veiculo::factory(120)->create();
+      Cliente::factory(10)->create();
+      Veiculo::factory(20)->create();
         Servico::factory(20)->create();
-        OrdemServico::factory(30)->create();
+        OrdemServico::factory(10)->create();
         Peca::factory(50)->create();
         Peca::factory(10)->estoqueBaixo()->create();
 

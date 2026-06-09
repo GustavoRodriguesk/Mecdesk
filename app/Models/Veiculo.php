@@ -3,6 +3,7 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\OrdemServico;
 
 class Veiculo extends Model
 {
@@ -17,13 +18,18 @@ class Veiculo extends Model
         'cor',
         'quilometragem',
     ];
+    
 
     public function cliente()
     {
         return $this->belongsTo(Cliente::class);
     }
-    public function ordensServico()
+  
+public function ordensServico()
 {
-    return $this->hasMany(OrdemServico::class);
+    return $this->hasMany(
+        OrdemServico::class,
+        'veiculo_id'
+    );
 }
 }
