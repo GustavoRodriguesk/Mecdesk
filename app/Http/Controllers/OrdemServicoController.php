@@ -14,32 +14,101 @@ use Illuminate\Support\Facades\Auth;
 
 class OrdemServicoController extends Controller
 {
-    public function index(Request $request)
-    {
-        $query = OrdemServico::with(['cliente', 'veiculo']);
-        
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        
-        if ($search = $request->search) {
-            $query->where('numero_os', 'like', "%{$search}%");
-        }
+   public function index(Request $request)
+{
+    $query = OrdemServico::with(['cliente', 'veiculo']);
 
-        $ordens = $query
-            ->latest()
-            ->paginate(10);
+    // Busca geral
+    if ($request->filled('search')) {
 
-        return view('ordens.index', compact('ordens'));
-        {
-            $search = $request->search;
+        $search = $request->search;
 
-            $clientes = Cliente::where('nome', 'like', "%{$search}%")
-                ->paginate(10);
+        $query->where(function ($q) use ($search) {
 
-            return view('clientes.index', compact('clientes', 'search'));
-        }
+            $q->where('numero_os', 'like', "%{$search}%")
+
+              ->orWhere('status', 'like', "%{$search}%")
+
+              ->orWhereHas('cliente', function ($cliente) use ($search) {
+
+                  $cliente->where('nome', 'like', "%{$search}%");
+
+              })
+
+              ->orWhereHas('veiculo', function ($veiculo) use ($search) {
+
+                  $veiculo->where('placa', 'like', "%{$search}%")
+                           ->orWhere('marca', 'like', "%{$search}%")
+                           ->orWhere('modelo', 'like', "%{$search}%");
+
+              });
+
+        });
     }
+
+    // Status
+    if ($request->filled('status')) {
+
+        $query->where('status', $request->status);
+
+    }
+
+    // Cliente
+    if ($request->filled('cliente_id')) {
+
+        $query->where('cliente_id', $request->cliente_id);
+
+    }
+
+    // Data inicial
+    if ($request->filled('inicio')) {
+
+        $query->whereDate(
+            'created_at',
+            '>=',
+            $request->inicio
+        );
+
+    }
+
+    // Data final
+    if ($request->filled('fim')) {
+
+        $query->whereDate(
+            'created_at',
+            '<=',
+            $request->fim
+        );
+
+    }
+
+    // Ordenação
+    match ($request->sort) {
+
+        'antigas' =>
+            $query->oldest(),
+
+        'valor_maior' =>
+            $query->orderByDesc('valor_total'),
+
+        'valor_menor' =>
+            $query->orderBy('valor_total'),
+
+        default =>
+            $query->latest(),
+    };
+
+    $ordens = $query
+        ->paginate(10)
+        ->withQueryString();
+
+    $clientes = Cliente::orderBy('nome')->get();
+
+    return view(
+        'ordens.index',
+        compact('ordens', 'clientes')
+    );
+}
     
     public function create()
     {

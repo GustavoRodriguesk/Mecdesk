@@ -22,6 +22,87 @@
             </a>
 
         </div>
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+
+    <form method="GET">
+
+        <div class="grid md:grid-cols-4 gap-4">
+
+            <input
+                type="text"
+                name="search"
+                value="{{ request('search') }}"
+                placeholder="Busca rápida"
+                class="border rounded-lg px-4 py-2">
+
+            <input
+                type="text"
+                name="nome"
+                value="{{ request('nome') }}"
+                placeholder="Nome"
+                class="border rounded-lg px-4 py-2">
+
+            <input
+                type="text"
+                name="codigo"
+                value="{{ request('codigo') }}"
+                placeholder="Código"
+                class="border rounded-lg px-4 py-2">
+
+            <input
+                type="number"
+                name="estoque_min"
+                value="{{ request('estoque_min') }}"
+                placeholder="Estoque mínimo"
+                class="border rounded-lg px-4 py-2">
+
+            <input
+                type="number"
+                name="estoque_max"
+                value="{{ request('estoque_max') }}"
+                placeholder="Estoque máximo"
+                class="border rounded-lg px-4 py-2">
+
+            <input
+                type="number"
+                step="0.01"
+                name="valor_min"
+                value="{{ request('valor_min') }}"
+                placeholder="Valor mínimo"
+                class="border rounded-lg px-4 py-2">
+
+            <input
+                type="number"
+                step="0.01"
+                name="valor_max"
+                value="{{ request('valor_max') }}"
+                placeholder="Valor máximo"
+                class="border rounded-lg px-4 py-2">
+
+        </div>
+
+        <div class="mt-4 flex gap-2">
+
+            <button
+                class="bg-blue-600 text-white px-4 py-2 rounded">
+
+                Filtrar
+
+            </button>
+
+            <a
+                href="{{ route('pecas.index') }}"
+                class="bg-gray-500 text-white px-4 py-2 rounded">
+
+                Limpar
+
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
 
         <table class="w-full">
 

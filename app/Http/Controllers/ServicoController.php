@@ -7,11 +7,55 @@ use Illuminate\Http\Request;
 
 class ServicoController extends Controller
 {
-public function index()
+public function index(Request $request)
 {
-    $servicos = Servico::latest()->paginate(10);
+    $query = Servico::query();
 
-    return view('servicos.index', compact('servicos'));
+    if ($request->filled('search')) {
+
+        $query->where(
+            'nome',
+            'like',
+            '%' . $request->search . '%'
+        );
+    }
+
+    if ($request->filled('nome')) {
+
+        $query->where(
+            'nome',
+            'like',
+            '%' . $request->nome . '%'
+        );
+    }
+
+    if ($request->filled('valor_min')) {
+
+        $query->where(
+            'valor_base',
+            '>=',
+            $request->valor_min
+        );
+    }
+
+    if ($request->filled('valor_max')) {
+
+        $query->where(
+            'valor_base',
+            '<=',
+            $request->valor_max
+        );
+    }
+
+    $servicos = $query
+        ->latest()
+        ->paginate(10)
+        ->withQueryString();
+
+    return view(
+        'servicos.index',
+        compact('servicos')
+    );
 }
 public function create()
 {

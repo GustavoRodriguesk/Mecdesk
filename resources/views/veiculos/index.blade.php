@@ -22,9 +22,140 @@
                 Novo Veículo
 
             </a>
+            
+        
+
+</form>
 
         </div>
 
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+
+    <form
+        method="GET"
+        action="{{ route('veiculos.index') }}">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+            {{-- Busca Global --}}
+            <div>
+
+                <label class="block text-sm font-medium mb-1">
+                    Busca rápida
+                </label>
+
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ request('search') }}"
+                    placeholder="Placa, marca, modelo ou cliente..."
+                    class="w-full border rounded-lg px-4 py-2">
+
+            </div>
+
+            {{-- Placa --}}
+            <div>
+
+                <label class="block text-sm font-medium mb-1">
+                    Placa
+                </label>
+
+                <input
+                    type="text"
+                    name="placa"
+                    value="{{ request('placa') }}"
+                    class="w-full border rounded-lg px-4 py-2">
+
+            </div>
+
+            {{-- Marca --}}
+            <div>
+
+                <label class="block text-sm font-medium mb-1">
+                    Marca
+                </label>
+
+                <input
+                    type="text"
+                    name="marca"
+                    value="{{ request('marca') }}"
+                    class="w-full border rounded-lg px-4 py-2">
+
+            </div>
+
+            {{-- Modelo --}}
+            <div>
+
+                <label class="block text-sm font-medium mb-1">
+                    Modelo
+                </label>
+
+                <input
+                    type="text"
+                    name="modelo"
+                    value="{{ request('modelo') }}"
+                    class="w-full border rounded-lg px-4 py-2">
+
+            </div>
+
+            {{-- Cliente --}}
+            <div>
+
+                <label class="block text-sm font-medium mb-1">
+                    Cliente
+                </label>
+
+                <select
+                    name="cliente_id"
+                    class="w-full border rounded-lg px-4 py-2">
+
+                    <option value="">
+                        Todos
+                    </option>
+
+                    @foreach($clientes as $cliente)
+
+                        <option
+                            value="{{ $cliente->id }}"
+                            @selected(
+                                request('cliente_id') == $cliente->id
+                            )>
+
+                            {{ $cliente->nome }}
+
+                        </option>
+
+                    @endforeach
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <div class="flex gap-2 mt-4">
+
+            <button
+                type="submit"
+                class="bg-blue-600 text-white px-5 py-2 rounded-lg">
+
+                Filtrar
+
+            </button>
+
+            <a
+                href="{{ route('veiculos.index') }}"
+                class="bg-gray-500 text-white px-5 py-2 rounded-lg">
+
+                Limpar
+
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
         <div class="overflow-x-auto">
 
             <table class="w-full">

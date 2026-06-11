@@ -7,12 +7,86 @@ use Illuminate\Http\Request;
 
 class PecaController extends Controller
 {
-    public function index()
-    {
-        $pecas = Peca::latest()->paginate(10);
+  public function index(Request $request)
+{
+    $query = Peca::query();
 
-        return view('pecas.index', compact('pecas'));
+    if ($request->filled('search')) {
+
+        $search = $request->search;
+
+        $query->where(function ($q) use ($search) {
+
+            $q->where('nome', 'like', "%{$search}%")
+              ->orWhere('codigo', 'like', "%{$search}%");
+
+        });
     }
+
+    if ($request->filled('nome')) {
+
+        $query->where(
+            'nome',
+            'like',
+            '%' . $request->nome . '%'
+        );
+    }
+
+    if ($request->filled('codigo')) {
+
+        $query->where(
+            'codigo',
+            'like',
+            '%' . $request->codigo . '%'
+        );
+    }
+
+    if ($request->filled('estoque_min')) {
+
+        $query->where(
+            'estoque',
+            '>=',
+            $request->estoque_min
+        );
+    }
+
+    if ($request->filled('estoque_max')) {
+
+        $query->where(
+            'estoque',
+            '<=',
+            $request->estoque_max
+        );
+    }
+
+    if ($request->filled('valor_min')) {
+
+        $query->where(
+            'valor_unitario',
+            '>=',
+            $request->valor_min
+        );
+    }
+
+    if ($request->filled('valor_max')) {
+
+        $query->where(
+            'valor_unitario',
+            '<=',
+            $request->valor_max
+        );
+    }
+
+    $pecas = $query
+        ->latest()
+        ->paginate(10)
+        ->withQueryString();
+
+    return view(
+        'pecas.index',
+        compact('pecas')
+    );
+}
 
     public function create()
     {

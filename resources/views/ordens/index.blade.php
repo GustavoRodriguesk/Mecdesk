@@ -23,55 +23,173 @@
 
         </div>
 
-        <div class="mb-4 flex gap-4">
+   <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
 
-            <form method="GET"
-                action="{{ route('ordens.index') }}"
-                class="flex-1">
+    <form method="GET" action="{{ route('ordens.index') }}">
 
-                <input type="text"
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+            {{-- Busca Geral --}}
+            <div>
+                <label class="block text-sm font-medium mb-1">
+                    Buscar
+                </label>
+
+                <input
+                    type="text"
                     name="search"
                     value="{{ request('search') }}"
-                    placeholder="Buscar OS..."
-                    class="border rounded-lg px-4 py-2 w-full">
+                    placeholder="OS, cliente, placa..."
+                    class="w-full border rounded-lg px-4 py-2">
+            </div>
 
-            </form>
-
-            <form method="GET"
-                action="{{ route('ordens.index') }}">
+            {{-- Status --}}
+            <div>
+                <label class="block text-sm font-medium mb-1">
+                    Status
+                </label>
 
                 <select
                     name="status"
-                    onchange="this.form.submit()"
-                    class="border rounded-lg px-3 py-2 w-64">
+                    class="w-full border rounded-lg px-4 py-2">
 
-                    <option value="">Todas as OS</option>
+                    <option value="">Todos</option>
 
                     <option value="aberta"
-                        {{ request('status') == 'aberta' ? 'selected' : '' }}>
-                        Abertas
-                    </option>
-
-                    <option value="concluida"
-                        {{ request('status') == 'concluida' ? 'selected' : '' }}>
-                        Concluídas
-                    </option>
-
-                    <option value="cancelada"
-                        {{ request('status') == 'cancelada' ? 'selected' : '' }}>
-                        Canceladas
+                        @selected(request('status') == 'aberta')>
+                        Aberta
                     </option>
 
                     <option value="aguardando_aprovacao"
-                        {{ request('status') == 'aguardando_aprovacao' ? 'selected' : '' }}>
+                        @selected(request('status') == 'aguardando_aprovacao')>
                         Aguardando Aprovação
                     </option>
 
-                </select>
+                    <option value="concluida"
+                        @selected(request('status') == 'concluida')>
+                        Concluída
+                    </option>
 
-            </form>
+                    <option value="cancelada"
+                        @selected(request('status') == 'cancelada')>
+                        Cancelada
+                    </option>
+
+                </select>
+            </div>
+
+            {{-- Cliente --}}
+            <div>
+                <label class="block text-sm font-medium mb-1">
+                    Cliente
+                </label>
+
+                <select
+                    name="cliente_id"
+                    class="w-full border rounded-lg px-4 py-2">
+
+                    <option value="">
+                        Todos os clientes
+                    </option>
+
+                    @foreach($clientes as $cliente)
+
+                        <option
+                            value="{{ $cliente->id }}"
+                            @selected(request('cliente_id') == $cliente->id)>
+
+                            {{ $cliente->nome }}
+
+                        </option>
+
+                    @endforeach
+
+                </select>
+            </div>
+
+            {{-- Ordenação --}}
+            <div>
+                <label class="block text-sm font-medium mb-1">
+                    Ordenar
+                </label>
+
+                <select
+                    name="sort"
+                    class="w-full border rounded-lg px-4 py-2">
+
+                    <option value="recentes">
+                        Mais recentes
+                    </option>
+
+                    <option value="antigas"
+                        @selected(request('sort') == 'antigas')>
+                        Mais antigas
+                    </option>
+
+                    <option value="valor_maior"
+                        @selected(request('sort') == 'valor_maior')>
+                        Maior valor
+                    </option>
+
+                    <option value="valor_menor"
+                        @selected(request('sort') == 'valor_menor')>
+                        Menor valor
+                    </option>
+
+                </select>
+            </div>
+
+            {{-- Data Inicial --}}
+            <div>
+                <label class="block text-sm font-medium mb-1">
+                    Data Inicial
+                </label>
+
+                <input
+                    type="date"
+                    name="inicio"
+                    value="{{ request('inicio') }}"
+                    class="w-full border rounded-lg px-4 py-2">
+            </div>
+
+            {{-- Data Final --}}
+            <div>
+                <label class="block text-sm font-medium mb-1">
+                    Data Final
+                </label>
+
+                <input
+                    type="date"
+                    name="fim"
+                    value="{{ request('fim') }}"
+                    class="w-full border rounded-lg px-4 py-2">
+            </div>
 
         </div>
+
+        <div class="flex gap-2 mt-4">
+
+            <button
+                type="submit"
+                class="bg-blue-600 text-white px-5 py-2 rounded-lg">
+
+                Filtrar
+
+            </button>
+
+            <a
+                href="{{ route('ordens.index') }}"
+                class="bg-gray-500 text-white px-5 py-2 rounded-lg">
+
+                Limpar
+
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
         <table class="w-full">
 
             <thead>
@@ -80,6 +198,7 @@
 
                     <th class="text-left p-2">Cliente</th>
                     <th class="text-left p-2">Veículo</th>
+                    <th class="text-left p-2">Numero Os</th>
                     <th class="text-left p-2">Status</th>
                     <th class="text-left p-2">Ações</th>
 
@@ -103,6 +222,8 @@
                         </td>
 
                         <td class="p-2">
+                            {{ $ordem->numero_os }}
+                        </td>
 
    <td class="p-2">
 

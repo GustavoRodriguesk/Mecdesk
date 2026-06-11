@@ -8,15 +8,88 @@ use Illuminate\Http\Request;
 
 class VeiculoController extends Controller
 {
-   public function index()
+ public function index(Request $request)
 {
-    $veiculos = Veiculo::with('cliente')
+    $query = Veiculo::with('cliente');
+
+    // Busca global
+    if ($request->filled('search')) {
+
+        $search = $request->search;
+
+        $query->where(function ($q) use ($search) {
+
+            $q->where('placa', 'like', "%{$search}%")
+              ->orWhere('marca', 'like', "%{$search}%")
+              ->orWhere('modelo', 'like', "%{$search}%")
+
+              ->orWhereHas('cliente', function ($cliente) use ($search) {
+
+                    $cliente->where(
+                        'nome',
+                        'like',
+                        "%{$search}%"
+                    );
+
+              });
+
+        });
+    }
+
+    // Filtro individual de placa
+    if ($request->filled('placa')) {
+
+        $query->where(
+            'placa',
+            'like',
+            "%{$request->placa}%"
+        );
+    }
+
+    // Filtro individual de marca
+    if ($request->filled('marca')) {
+
+        $query->where(
+            'marca',
+            'like',
+            "%{$request->marca}%"
+        );
+    }
+
+    // Filtro individual de modelo
+    if ($request->filled('modelo')) {
+
+        $query->where(
+            'modelo',
+            'like',
+            "%{$request->modelo}%"
+        );
+    }
+
+    // Cliente
+    if ($request->filled('cliente_id')) {
+
+        $query->where(
+            'cliente_id',
+            $request->cliente_id
+        );
+    }
+
+    $veiculos = $query
         ->latest()
-        ->paginate(10);
+        ->paginate(10)
+        ->withQueryString();
 
-    return view('veiculos.index', compact('veiculos'));
+    $clientes = Cliente::orderBy('nome')->get();
+
+    return view(
+        'veiculos.index',
+        compact(
+            'veiculos',
+            'clientes'
+        )
+    );
 }
-
 public function create(Request $request)
 {
     $clientes = Cliente::orderBy('nome')->get();
