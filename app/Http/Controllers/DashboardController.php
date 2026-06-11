@@ -1,0 +1,70 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Cliente;
+use App\Models\OrdemServico;
+use App\Models\Peca;
+use App\Models\Servico;
+use App\Models\Veiculo;
+
+class DashboardController extends Controller
+{
+    public function index()
+    {
+        return view('dashboard', [
+
+            'clientes' => Cliente::count(),
+
+            'veiculos' => Veiculo::count(),
+
+            'ordens' => OrdemServico::count(),
+
+            'servicos' => Servico::count(),
+
+            'pecasBaixas' => Peca::where('estoque', '<=', 5)
+                ->orderBy('estoque')
+                ->take(5)
+                ->get(),
+
+            'osAbertas' => OrdemServico::where('status', 'aberta')->count(),
+
+            'osAndamento' => OrdemServico::where('status', 'em_andamento')->count(),
+
+            'osConcluidas' => OrdemServico::where('status', 'concluida')->count(),
+
+            'osCanceladas' => OrdemServico::where('status', 'cancelada')->count(),
+
+            'faturamentoTotal' => OrdemServico::where(
+                'status',
+                'concluida'
+            )->sum('valor_total'),
+
+            'faturamentoMes' => OrdemServico::where(
+                'status',
+                'concluida'
+            )
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->sum('valor_total'),
+
+            'faturamentoChart' => OrdemServico::selectRaw(
+                'MONTH(created_at) as mes_num,
+                 MONTHNAME(created_at) as mes,
+                 SUM(valor_total) as total'
+            )
+            ->where('status', 'concluida')
+            ->groupBy('mes_num', 'mes')
+            ->orderBy('mes_num')
+            ->get(),
+
+            'statusChart' => OrdemServico::selectRaw(
+                'status,
+                 COUNT(*) as total'
+            )
+            ->groupBy('status')
+            ->get(),
+
+        ]);
+    }
+}

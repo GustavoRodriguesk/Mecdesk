@@ -75,6 +75,34 @@
         </div>
 
     </div>
+    {{-- Gráficos --}}
+<p class="text-xs font-medium uppercase tracking-widest text-gray-400 mt-8 mb-3">
+    Indicadores
+</p>
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <h3 class="font-semibold text-lg mb-4">
+            Faturamento por Mês
+        </h3>
+
+        <div class="h-80">
+            <canvas id="faturamentoChart"></canvas>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <h3 class="font-semibold text-lg mb-4">
+            Ordens por Status
+        </h3>
+
+        <div class="h-80">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+</div>
 
     {{-- Status das OS --}}
     <p class="text-xs font-medium uppercase tracking-widest text-gray-400 mt-8 mb-3">Status das ordens</p>
@@ -153,5 +181,57 @@
         </a>
 
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const faturamentoCtx =
+        document.getElementById('faturamentoChart');
+
+    if (faturamentoCtx) {
+
+        new Chart(faturamentoCtx, {
+            type: 'bar',
+            data: {
+                labels: @json($faturamentoChart->pluck('mes')),
+                datasets: [{
+                    label: 'Faturamento',
+                    data: @json($faturamentoChart->pluck('total'))
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+    }
+
+    const statusCtx =
+        document.getElementById('statusChart');
+
+    if (statusCtx) {
+
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: @json($statusChart->pluck('status')),
+                datasets: [{
+                    data: @json($statusChart->pluck('total'))
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+    }
+
+});
+
+</script>
 
 </x-app-layout>

@@ -2,40 +2,67 @@
 
 namespace Database\Factories;
 
-use App\Models\OrdemServico;
 use App\Models\Cliente;
 use App\Models\Veiculo;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Carbon\Carbon;
 
 class OrdemServicoFactory extends Factory
 {
-
     public function definition(): array
-{
-    return [
-        'numero_os' => 'OS-' . fake()->unique()->numberBetween(1000, 9999),
+    {
+        $dataEntrada = fake()->dateTimeBetween(
+            '-6 months',
+            'now'
+        );
 
-        'cliente_id' => Cliente::inRandomOrder()->first()->id,
+        $status = fake()->randomElement([
+            'concluida',
+            'concluida',
+            'concluida',
+            'concluida',
+            'concluida',
+            'concluida',
 
-        'veiculo_id' => Veiculo::inRandomOrder()->first()->id,
+            'em_andamento',
+            'em_andamento',
 
-        'user_id' => 1,
+            'aberta',
 
+            'cancelada'
+        ]);
 
-            'status' => fake()->randomElement([
-                'aberta',
-                'em_andamento',
-                'aguardando_aprovacao',
-                'concluida',
-                'cancelada'
-            ]),
-        'descricao_problema' => fake()->paragraph(),
+        return [
 
-        'valor_total' => 0,
+            'numero_os' => 'OS-' . fake()->unique()->numberBetween(1000, 9999),
 
-        'aprovado_cliente' => false,
+            'cliente_id' => Cliente::inRandomOrder()->first()->id,
 
-        'data_entrada' => now(),
-    ];
-}
+            'veiculo_id' => Veiculo::inRandomOrder()->first()->id,
+
+            'user_id' => 1,
+
+            'status' => $status,
+
+            'descricao_problema' => fake()->sentence(10),
+
+            'valor_total' => match ($status) {
+                'cancelada' => 0,
+                default => fake()->randomFloat(
+                    2,
+                    80,
+                    5000
+                )
+            },
+
+            'aprovado_cliente' => fake()->boolean(80),
+
+            'data_entrada' => $dataEntrada,
+
+            'created_at' => $dataEntrada,
+
+            'updated_at' => Carbon::parse($dataEntrada)
+                ->addDays(rand(1, 30)),
+        ];
+    }
 }
