@@ -36,13 +36,6 @@
                 class="border rounded-lg px-4 py-2">
 
             <input
-                type="text"
-                name="nome"
-                value="{{ request('nome') }}"
-                placeholder="Nome do serviço"
-                class="border rounded-lg px-4 py-2">
-
-            <input
                 type="number"
                 step="0.01"
                 name="valor_min"
@@ -70,7 +63,7 @@
             </button>
 
             <a
-                href="{{ route('servicos.index') }}"
+                href="{{ route('pecas.index') }}"
                 class="bg-gray-500 text-white px-4 py-2 rounded">
 
                 Limpar

@@ -53,35 +53,112 @@
 
             </div>
 
-            {{-- Placa --}}
-            <div>
-
-                <label class="block text-sm font-medium mb-1">
-                    Placa
-                </label>
-
-                <input
-                    type="text"
-                    name="placa"
-                    value="{{ request('placa') }}"
-                    class="w-full border rounded-lg px-4 py-2">
-
-            </div>
-
             {{-- Marca --}}
             <div>
 
-                <label class="block text-sm font-medium mb-1">
-                    Marca
-                </label>
+            <label class="block text-sm font-medium mb-1">
+                Marca
+            </label>
 
-                <input
-                    type="text"
-                    name="marca"
-                    value="{{ request('marca') }}"
-                    class="w-full border rounded-lg px-4 py-2">
+            <select name="marca" class="w-full border rounded-lg p-3">
+                <option value="">Selecionar Marca</option>
 
+                <option value="Chevrolet"
+                    {{ request('marca') == 'aberta' ? 'selected' : '' }}>
+                        Chevrolet
+                    </option>
+
+                    <option value="Fiat"
+                        {{ request('marca') == 'concluida' ? 'selected' : '' }}>
+                        Fiat
+                    </option>
+
+                    <option value="Volkswagen"
+                        {{ request('marca') == 'Volkswagen' ? 'selected' : '' }}>
+                        Volkswagen
+                    </option>
+
+                    <option value="Honda"
+                        {{ request('marca') == 'Honda' ? 'selected' : '' }}>
+                        Honda
+                    </option>
+
+                    <option value="Ford"
+                        {{ request('marca') == 'Ford' ? 'selected' : '' }}>
+                        Ford
+                    </option>
+
+                    <option value="Renault"
+                        {{ request('marca') == 'Renault' ? 'selected' : '' }}>
+                        Renault
+                    </option>
+
+                    <option value="Hyundai"
+                        {{ request('marca') == 'Hyundai' ? 'selected' : '' }}>
+                        Hyundai
+                    </option>
+
+                    <option value="Jeep"
+                        {{ request('marca') == 'Jeep' ? 'selected' : '' }}>
+                        Jeep
+                    </option>
+
+                    <option value="Citroen">
+                        Citroen
+                    </option>
+
+                    <option value="Peugeot">
+                        Peugeot
+                    </option>
+
+                    <option value="BMW"
+                        {{ request('marca') == 'BMW' ? 'selected' : '' }}>
+                        BMW
+                    </option>
+
+                    <option value="Mercedes-Benz"
+                        {{ request('marca') == 'Mercedes-Benz' ? 'selected' : '' }}>
+                        Mercedes-Benz
+                    </option>
+
+                    <option value="Audi"
+                        {{ request('marca') == 'Audi' ? 'selected' : '' }}>
+                        Audi
+                    </option>
+
+                    <option value="Volvo"
+                        {{ request('marca') == 'Volvo' ? 'selected' : '' }}>
+                        Volvo
+                    </option>
+
+                    <option value="Nissan"
+                        {{ request('marca') == 'Nissan' ? 'selected' : '' }}>
+                        Nissan
+                    </option>
+
+                    <option value="Toyota"
+                        {{ request('marca') == 'Toyota' ? 'selected' : '' }}>
+                        Toyota
+                    </option>
+
+                    <option value="Kia"
+                        {{ request('marca') == 'Kia' ? 'selected' : '' }}>
+                        Kia
+                    </option>
+
+                    <option value="Suzuki"
+                        {{ request('marca') == 'Suzuki' ? 'selected' : '' }}>
+                        Suzuki
+                    </option>
+
+                    <option value="Outros"
+                        {{ request('marca') == 'Outros' ? 'selected' : '' }}>
+                        Outros
+                    </option>
+
+                </select>
             </div>
+
 
             {{-- Modelo --}}
             <div>
