@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\DB;
 use App\Models\Cliente;
 use App\Models\OrdemServico;
 use App\Models\Peca;
@@ -64,6 +64,33 @@ class DashboardController extends Controller
             )
             ->groupBy('status')
             ->get(),
+            'servicosChart' => DB::table('ordem_servico_itens')
+    ->join(
+        'servicos',
+        'ordem_servico_itens.servico_id',
+        '=',
+        'servicos.id'
+    )
+    ->where('tipo_item', 'servico')
+    ->selectRaw('servicos.nome as nome, COUNT(*) as total')
+    ->groupBy('servicos.id', 'servicos.nome')
+    ->orderByDesc('total')
+    ->limit(5)
+    ->get(),
+    'pecasChart' => DB::table('ordem_servico_itens')
+    ->join(
+        'pecas',
+        'ordem_servico_itens.peca_id',
+        '=',
+        'pecas.id'
+    )
+    ->where('tipo_item', 'peca')
+    ->selectRaw('pecas.nome as nome, SUM(ordem_servico_itens.quantidade) as total')
+    ->groupBy('pecas.id', 'pecas.nome')
+    ->orderByDesc('total')
+    ->limit(5)
+    ->get(),
+
 
         ]);
     }
