@@ -30,6 +30,7 @@
                 </p>
             </div>
 
+            @if(auth()->user()->isAdmin())
             <a href="{{ route('clientes.create') }}"
                class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-3 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -37,6 +38,7 @@
                 </svg>
                 Novo Cliente
             </a>
+            @endif
         </div>
 
         {{-- Card principal --}}
@@ -144,6 +146,7 @@
                                             Ver
                                         </a>
 
+                                        @if(auth()->user()->isAdmin())
                                         {{-- Editar --}}
                                         <a href="{{ route('clientes.edit', $cliente->id) }}"
                                            class="btn-action inline-flex items-center gap-1.5 px-3 py-3 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 whitespace-nowrap">
@@ -164,6 +167,7 @@
                                                 Excluir
                                             </button>
                                         </form>
+                                        @endif
 
                                     </div>
                                 </td>

@@ -10,4 +10,5 @@ class OrdemServicoHistorico extends Model
         'ordem_servico_id',
         'status'
     ];
+    
 }

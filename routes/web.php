@@ -8,6 +8,8 @@ use App\Http\Controllers\PecaController;
 use App\Http\Controllers\OrdemServicoController;
 use App\Http\Controllers\OrdemServicoItemController;
 use App\Http\Controllers\ServicoController;
+use App\Http\Controllers\EmpresaController;
+use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
 use App\Models\Cliente;
 use App\Models\Veiculo;
@@ -21,11 +23,16 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-Route::get(
+    Route::get(
     '/dashboard',
     [DashboardController::class, 'index']
 )->name('dashboard');
 
+    Route::get('/empresa', [EmpresaController::class, 'edit'])->name('empresa.edit');
+    Route::put('/empresa', [EmpresaController::class, 'update'])->name('empresa.update');
+    
+    Route::get('/usuarios/create', [UsuarioController::class, 'create'])->name('usuarios.create');
+    Route::post('/usuarios', [UsuarioController::class, 'store'])->name('usuarios.store');
 
     Route::resource('clientes', ClienteController::class);
     Route::resource('pecas', PecaController::class)

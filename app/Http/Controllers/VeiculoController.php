@@ -92,6 +92,8 @@ class VeiculoController extends Controller
 }
 public function create(Request $request)
 {
+    abort_if(!auth()->user()->isAdmin(), 403);
+
     $clientes = Cliente::orderBy('nome')->get();
 
     $clienteId = $request->cliente;
@@ -103,6 +105,8 @@ public function create(Request $request)
 }
 public function store(Request $request)
 {
+    abort_if(!auth()->user()->isAdmin(), 403);
+
     $request->validate([
         'cliente_id' => 'required|exists:clientes,id',
         'marca' => 'required',
@@ -119,6 +123,8 @@ public function store(Request $request)
 
 public function edit(Veiculo $veiculo)
 {
+    abort_if(!auth()->user()->isAdmin(), 403);
+
     $clientes = Cliente::orderBy('nome')->get();
 
     return view('veiculos.edit', compact('veiculo', 'clientes'));
@@ -126,6 +132,8 @@ public function edit(Veiculo $veiculo)
 
 public function update(Request $request, Veiculo $veiculo)
 {
+    abort_if(!auth()->user()->isAdmin(), 403);
+
     $request->validate([
         'cliente_id' => 'required|exists:clientes,id',
         'marca' => 'required',
@@ -142,6 +150,8 @@ public function update(Request $request, Veiculo $veiculo)
 
 public function destroy(Veiculo $veiculo)
 {
+    abort_if(!auth()->user()->isAdmin(), 403);
+
     $veiculo->delete();
 
     return redirect()

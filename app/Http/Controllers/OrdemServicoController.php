@@ -214,6 +214,8 @@ if ($statusAnterior != $request->status) {
 
     public function destroy(OrdemServico $ordem)
     {
+        abort_if(!auth()->user()->isAdmin(), 403);
+
         $ordem->delete();
 
         return redirect()

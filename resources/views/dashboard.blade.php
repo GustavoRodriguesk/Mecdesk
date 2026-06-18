@@ -103,29 +103,9 @@
     </div>
 
 </div>
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
 
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-        <h3 class="font-bold mb-4">
-            Serviços Mais Executados
-        </h3>
 
-        <div class="h-72">
-            <canvas id="servicosChart"></canvas>
-        </div>
-    </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-        <h3 class="font-bold mb-4">
-            Peças Mais Vendidas
-        </h3>
-
-        <div class="h-72">
-            <canvas id="pecasChart"></canvas>
-        </div>
-    </div>
-
-</div>
 
     {{-- Status das OS --}}
     <p class="text-xs font-medium uppercase tracking-widest text-gray-400 mt-8 mb-3">Status das ordens</p>
@@ -254,35 +234,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 });
-new Chart(document.getElementById('servicosChart'), {
-    type: 'bar',
-    data: {
-        labels: @json($servicosChart->pluck('nome')),
-        datasets: [{
-            label: 'Execuções',
-            data: @json($servicosChart->pluck('total'))
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        indexAxis: 'y'
-    }
-});
 
-new Chart(document.getElementById('pecasChart'), {
-    type: 'doughnut',
-    data: {
-        labels: @json($pecasChart->pluck('nome')),
-        datasets: [{
-            data: @json($pecasChart->pluck('total'))
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false
-    }
-});
+
+
 
 </script>
 

@@ -90,11 +90,15 @@ class PecaController extends Controller
 
     public function create()
     {
+        abort_if(!auth()->user()->isAdmin(), 403);
+
         return view('pecas.create');
     }
 
     public function store(Request $request)
     {
+        abort_if(!auth()->user()->isAdmin(), 403);
+
         $request->validate([
             'nome' => 'required',
             'codigo' => 'unique:pecas,codigo',
@@ -116,11 +120,15 @@ class PecaController extends Controller
 
     public function edit(Peca $peca)
     {
+        abort_if(!auth()->user()->isAdmin(), 403);
+
         return view('pecas.edit', compact('peca'));
     }
 
     public function update(Request $request, Peca $peca)
     {
+        abort_if(!auth()->user()->isAdmin(), 403);
+
         $request->validate([
             'nome' => 'required',
             'codigo' => 'required|unique:pecas,codigo,' . $peca->id,
@@ -137,6 +145,8 @@ class PecaController extends Controller
 
     public function destroy(Peca $peca)
     {
+        abort_if(!auth()->user()->isAdmin(), 403);
+
         $peca->delete();
 
         return redirect()

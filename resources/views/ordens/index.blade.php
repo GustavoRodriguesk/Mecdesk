@@ -249,6 +249,7 @@
                                 Editar
                             </a>
 
+                            @if(auth()->user()->isAdmin())
                             <form action="{{ route('ordens.destroy', $ordem->id) }}"
                                   method="POST">
 
@@ -260,6 +261,7 @@
                                 </button>
 
                             </form>
+                            @endif
 
                         </td>
 

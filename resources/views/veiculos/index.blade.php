@@ -16,12 +16,14 @@
                 Lista de Veículos
             </h1>
 
+            @if(auth()->user()->isAdmin())
             <a href="{{ route('veiculos.create') }}"
                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
 
                 Novo Veículo
 
             </a>
+            @endif
             
         
 
@@ -307,32 +309,28 @@
 
                                 <div class="flex gap-2">
 
+                                    @if(auth()->user()->isAdmin())
                                     <a href="{{ route('veiculos.edit', $veiculo->id) }}"
                                        class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded">
-
                                         Editar
-
                                     </a>
 
                                     <form action="{{ route('veiculos.destroy', $veiculo->id) }}"
                                           method="POST"
                                           onsubmit="return confirm('Deseja realmente excluir este veículo?')">
-
                                         @csrf
                                         @method('DELETE')
-
                                         <button type="submit"
                                                 class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">
-
                                             Excluir
-
                                         </button>
-                                        <a href="{{ route('veiculos.show', $veiculo->id) }}"
-   class="bg-blue-500 text-white px-3 py-1 rounded">
-    Histórico
-</a>
-
                                     </form>
+                                    @endif
+
+                                    <a href="{{ route('veiculos.show', $veiculo->id) }}"
+                                       class="bg-blue-500 text-white px-3 py-1 rounded">
+                                        Histórico
+                                    </a>
 
                                 </div>
 

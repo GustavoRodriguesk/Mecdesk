@@ -19,11 +19,15 @@ class ClienteController extends Controller
 
     public function create()
     {
+        abort_if(!auth()->user()->isAdmin(), 403);
+
         return view('clientes.create');
     }
 
     public function store(Request $request)
 {
+    abort_if(!auth()->user()->isAdmin(), 403);
+
     $request->validate([
         'nome' => 'required',
         'telefone' => 'required',
@@ -37,6 +41,8 @@ class ClienteController extends Controller
 }
     public function edit(Cliente $cliente)
     {
+        abort_if(!auth()->user()->isAdmin(), 403);
+
         return view('clientes.edit', compact('cliente'));
     }
 
@@ -48,6 +54,8 @@ class ClienteController extends Controller
 }
     public function update(Request $request, Cliente $cliente)
     {
+        abort_if(!auth()->user()->isAdmin(), 403);
+
         $request->validate([
             'nome' => 'required',
             'telefone' => 'required',
@@ -62,6 +70,8 @@ class ClienteController extends Controller
 
     public function destroy(Cliente $cliente)
     {
+        abort_if(!auth()->user()->isAdmin(), 403);
+
         $cliente->delete();
 
         return redirect()

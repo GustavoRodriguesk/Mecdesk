@@ -14,12 +14,14 @@
                 Lista de Serviços
             </h1>
 
+            @if(auth()->user()->isAdmin())
             <a href="{{ route('servicos.create') }}"
                class="bg-blue-600 text-white px-4 py-2 rounded">
 
                 Novo Serviço
 
             </a>
+            @endif
 
         </div>
 <div class="bg-gray-50 rounded-lg p-4 mb-6">
@@ -101,6 +103,7 @@
 
                         <td class="flex gap-2">
 
+                            @if(auth()->user()->isAdmin())
                             <a href="{{ route('servicos.edit', $servico->id) }}"
                                class="bg-yellow-500 text-white px-3 py-1 rounded">
 
@@ -122,6 +125,7 @@
                                 </button>
 
                             </form>
+                            @endif
 
                         </td>
 

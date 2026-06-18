@@ -1,36 +1,78 @@
 <?php
 
 namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\Empresa;
+use App\Models\User;
 use App\Models\Cliente;
 use App\Models\Veiculo;
 use App\Models\Servico;
-use App\Models\OrdemServico;
-use App\Models\User;
 use App\Models\Peca;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
+use App\Models\OrdemServico;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-        // User::factory(10)->create();
-      Cliente::factory(10)->create();
-      Veiculo::factory(20)->create();
-        Servico::factory(20)->create();
-        OrdemServico::factory(10)->create();
-        Peca::factory(50)->create();
-        Peca::factory(10)->estoqueBaixo()->create();
+        $empresas = [
 
-       
+            [
+                'nome' => 'Oficina Demo',
+                'plano' => 'business',
+                'email' => 'teste1@gmail.com'
+            ],
+
+            [
+                'nome' => 'Auto Center Brasil',
+                'plano' => 'starter',
+                'email' => 'teste2@gmail.com'
+            ],
+
+            [
+                'nome' => 'Mecânica do João',
+                'plano' => 'pro',
+                'email' => 'teste3@gmail.com'
+            ]
+
+        ];
+
+        foreach ($empresas as $dadosEmpresa) {
+
+            $empresa = Empresa::create([
+                'nome' => $dadosEmpresa['nome'],
+                'email' => $dadosEmpresa['email'],
+                'plano' => $dadosEmpresa['plano'],
+                'ativo' => true,
+            ]);
+
+           $user = User::factory()->create([
+    'name' => $dadosEmpresa['nome'],
+    'email' => $dadosEmpresa['email'],
+    'empresa_id' => $empresa->id,
+    'password' => bcrypt('12345678'),
+]);
+
+            Cliente::factory(30)->create([
+                'empresa_id' => $empresa->id,
+            ]);
+
+            Veiculo::factory(60)->create([
+                'empresa_id' => $empresa->id,
+            ]);
+
+            Servico::factory(30)->create([
+                'empresa_id' => $empresa->id,
+            ]);
+
+            Peca::factory(80)->create([
+                'empresa_id' => $empresa->id,
+            ]);
+
+            OrdemServico::factory(200)->create([
+                'empresa_id' => $empresa->id,
+                'user_id' => $user->id,
+            ]);
+        }
     }
 }

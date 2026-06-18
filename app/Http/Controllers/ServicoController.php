@@ -59,11 +59,15 @@ public function index(Request $request)
 }
 public function create()
 {
+    abort_if(!auth()->user()->isAdmin(), 403);
+
     return view('servicos.create');
 
 }
 public function store(Request $request)
 {
+    abort_if(!auth()->user()->isAdmin(), 403);
+
     $request->validate([
         'nome' => 'required',
         'descricao' => 'required',
@@ -83,10 +87,14 @@ public function show(Servico $servico)
 }
 public function edit(Servico $servico)
 {
+    abort_if(!auth()->user()->isAdmin(), 403);
+
     return view('servicos.edit', compact('servico'));
 }
 public function update(Request $request, Servico $servico)
 {
+    abort_if(!auth()->user()->isAdmin(), 403);
+
     $request->validate([
         'nome' => 'required',
         'descricao' => 'required',
@@ -99,6 +107,8 @@ public function update(Request $request, Servico $servico)
 }
 public function destroy(Servico $servico)
 {
+    abort_if(!auth()->user()->isAdmin(), 403);
+
     $servico->delete();
     return redirect()->route('servicos.index')
                     ->with('success', 'Serviço deletado com sucesso.');
