@@ -5,13 +5,23 @@ use Illuminate\Database\Eloquent\Model;
 
 class Empresa extends Model
 {
+
     protected $fillable = [
-        'nome',
+        'nome_fantasia',
+        'razao_social',
         'cnpj',
         'email',
         'telefone',
+        'whatsapp',
+        'cep',
+        'logradouro',
+        'numero',
+        'bairro',
+        'cidade',
+        'estado',
+        'logo',
         'plano',
-        'ativo'
+        'ativo',
     ];
 
     public function users()

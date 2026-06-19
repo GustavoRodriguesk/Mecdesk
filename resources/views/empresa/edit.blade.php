@@ -39,8 +39,8 @@
                         @method('PUT')
 
                         <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome da Oficina</label>
-                            <input type="text" name="nome" value="{{ old('nome', $empresa->nome) }}" class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors duration-150">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome Fantasia</label>
+                            <input type="text" name="nome" value="{{ old('nome', $empresa->nome_fantasia) }}" class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors duration-150">
                             @error('nome') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
 

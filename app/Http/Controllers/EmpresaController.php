@@ -23,14 +23,21 @@ class EmpresaController extends Controller
         abort_if(!auth()->user()->isAdmin(), 403);
 
         $request->validate([
-            'nome' => 'required|string|max:255',
+            'nome_fantasia' => 'required|string|max:255',
             'cnpj' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'telefone' => 'nullable|string|max:20',
         ]);
 
         $empresa = auth()->user()->empresa;
-        $empresa->update($request->only(['nome', 'cnpj', 'email', 'telefone']));
+        $empresa->update(
+            $request->only([
+                'nome_fantasia',
+                'cnpj',
+                'email',
+                'telefone'
+            ])
+        );
 
         return redirect()->back()->with('success', 'Dados da empresa atualizados com sucesso!');
     }

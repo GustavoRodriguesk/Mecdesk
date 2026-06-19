@@ -7,6 +7,7 @@ use App\Models\Peca;
 use App\Models\Servico;
 use App\Models\Cliente;
 use App\Models\Veiculo;
+use App\Models\Empresa;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -241,6 +242,7 @@ if ($statusAnterior != $request->status) {
 
         return view('budgets.index', compact('approved', 'cancelled', 'pending'));
     }
+
     public function pdf(OrdemServico $ordem)
 {
     $ordem->load([
@@ -249,15 +251,17 @@ if ($statusAnterior != $request->status) {
         'itens'
     ]);
 
+    $empresa = Empresa::first();
+
     $pdf = Pdf::loadView(
         'ordens.pdf',
-        compact('ordem')
+        compact('ordem', 'empresa')
     );
-$nomeArquivo = str($ordem->cliente->nome)
-    ->slug('-');
 
-return $pdf->download(
-    $nomeArquivo . '-orcamento.pdf'
-);
+    $nomeArquivo = str($ordem->cliente->nome)->slug('-');
+
+    return $pdf->download(
+        $nomeArquivo . '-orcamento.pdf'
+    );
 }
 }

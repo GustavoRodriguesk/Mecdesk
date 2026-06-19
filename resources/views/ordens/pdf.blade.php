@@ -8,7 +8,7 @@
         body {
             font-family: DejaVu Sans, sans-serif;
             font-size: 12px;
-            color: #333;
+            color: #121212ff;
         }
 
         .header {
@@ -98,7 +98,6 @@
 </head>
 
 <body>
-
     <table class="header" style="border: none;">
         <tr style="border:none;">
             <td style="border:none; width:120px;">
@@ -106,11 +105,21 @@
             </td>
 
             <td style="border:none;" class="empresa">
-                <h1>Pai e Filho Auto Elétrica e Mecânica Ltda</h1>
+                @csrf
+                <h1>{{ $empresa->nome }}</h1>
 
-                <p>CNPJ: 59.253.187/0001-88</p>
-                <p>Telefone: (11) 99525-3420</p>
-                <p>Rua Mercedes Maria de Jesus, 383, Guararema - SP, 08.900-000</p>
+                @if($empresa->email)
+                <p>E-mail: {{ old('email', $empresa->email) }}</p>
+                @endif
+                @if($empresa->cnpj)
+                <p>CNPJ: {{ old('cnpj', $empresa->cnpj) }}</p>
+                @endif
+                @if($empresa->telefone)
+                <p>Telefone: {{ old('telefone', $empresa->telefone) }}</p>
+                @endif
+                @if($empresa->endereco)
+                <p>{{ old('endereco', $empresa->endereco) }}</p>
+                @endif
             </td>
         </tr>
     </table>

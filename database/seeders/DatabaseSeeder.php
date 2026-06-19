@@ -15,43 +15,47 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $empresas = [
+    $empresas = [
 
-            [
-                'nome' => 'Oficina Demo',
-                'plano' => 'business',
-                'email' => 'teste1@gmail.com'
-            ],
+        [
+            'nome_fantasia' => 'Oficina Demo',
+            'razao_social'  => 'Oficina Demo LTDA',
+            'email'         => 'teste1@gmail.com',
+            'plano'         => 'business',
+        ],
 
-            [
-                'nome' => 'Auto Center Brasil',
-                'plano' => 'starter',
-                'email' => 'teste2@gmail.com'
-            ],
+        [
+            'nome_fantasia' => 'Auto Center Brasil',
+            'razao_social'  => 'Auto Center Brasil LTDA',
+            'email'         => 'teste2@gmail.com',
+            'plano'         => 'starter',
+        ],
 
-            [
-                'nome' => 'Mecânica do João',
-                'plano' => 'pro',
-                'email' => 'teste3@gmail.com'
-            ]
+        [
+            'nome_fantasia' => 'Mecânica do João',
+            'razao_social'  => 'Mecânica do João LTDA',
+            'email'         => 'teste3@gmail.com',
+            'plano'         => 'pro',
+        ],
 
-        ];
+    ];
 
-        foreach ($empresas as $dadosEmpresa) {
+    foreach ($empresas as $dadosEmpresa) {
 
-            $empresa = Empresa::create([
-                'nome' => $dadosEmpresa['nome'],
-                'email' => $dadosEmpresa['email'],
-                'plano' => $dadosEmpresa['plano'],
-                'ativo' => true,
-            ]);
+    $empresa = Empresa::create([
+        'nome_fantasia' => $dadosEmpresa['nome_fantasia'],
+        'razao_social' => $dadosEmpresa['razao_social'],
+        'email' => $dadosEmpresa['email'],
+        'plano' => $dadosEmpresa['plano'],
+        'ativo' => true,
+    ]);
 
-           $user = User::factory()->create([
-    'name' => $dadosEmpresa['nome'],
-    'email' => $dadosEmpresa['email'],
-    'empresa_id' => $empresa->id,
-    'password' => bcrypt('12345678'),
-]);
+    $user = User::factory()->create([
+        'name' => $dadosEmpresa['nome_fantasia'],
+        'email' => $dadosEmpresa['email'],
+        'empresa_id' => $empresa->id,
+        'password' => bcrypt('12345678'),
+    ]);
 
             Cliente::factory(30)->create([
                 'empresa_id' => $empresa->id,
