@@ -22,7 +22,7 @@
         .data-row:hover { background-color: #F0F4FA; }
     </style>
 
-    <div class="py-8 px-8 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="py-8 px-8 max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         {{-- Coluna Principal --}}
         <div class="lg:col-span-2 space-y-6">
@@ -149,7 +149,7 @@
                         @csrf
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Serviço</label>
-                            <select name="servico_id" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required>
+                            <select name="servico_id" class="mb-4 w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required>
                                 <option value="">Selecione...</option>
                                 @foreach($servicos as $servico)
                                     <option value="{{ $servico->id }}">{{ $servico->nome }} (R$ {{ number_format($servico->valor_base, 2, ',', '.') }})</option>
@@ -158,7 +158,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Quantidade</label>
-                            <input type="number" name="quantidade" min="1" value="1" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required>
+                            <input type="number" name="quantidade" min="1" value="1" class="mb-4 w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required>
                         </div>
                         <button type="submit" class="w-full bg-gray-800 hover:bg-gray-900 text-white text-sm font-medium py-2 rounded-md transition-colors">
                             Adicionar Serviço
@@ -176,7 +176,7 @@
                         @csrf
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Peça</label>
-                            <select name="peca_id" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required>
+                            <select name="peca_id" class="mb-4 w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required>
                                 <option value="">Selecione...</option>
                                 @foreach($pecas as $peca)
                                     <option value="{{ $peca->id }}">{{ $peca->nome }} (R$ {{ number_format($peca->valor_unitario, 2, ',', '.') }}) - Estq: {{ $peca->estoque }}</option>
@@ -185,7 +185,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Quantidade</label>
-                            <input type="number" name="quantidade" min="1" value="1" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required>
+                            <input type="number" name="quantidade" min="1" value="1" class="mb-4 w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required>
                         </div>
                         <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium py-2 rounded-md transition-colors">
                             Adicionar Peça
@@ -206,16 +206,9 @@
                     Histórico da Ordem
                 </h3>
                 
-                <div class="relative border-l border-gray-200 ml-3 space-y-6">
+                <div>
                     @forelse($ordem->historicos as $historico)
                         @php
-                            $dotColor = match($historico->status) {
-                                'aberta' => 'bg-blue-500',
-                                'em_andamento' => 'bg-yellow-500',
-                                'concluida' => 'bg-green-500',
-                                'cancelada' => 'bg-red-500',
-                                default => 'bg-gray-400'
-                            };
                             $statusText = match($historico->status) {
                                 'aberta' => 'Aberta',
                                 'em_andamento' => 'Em andamento',
@@ -226,7 +219,6 @@
                             };
                         @endphp
                         <div class="relative pl-6">
-                            <div class="absolute -left-1.5 mt-1.5 w-3 h-3 rounded-full {{ $dotColor }} ring-4 ring-white"></div>
                             <div class="text-sm font-semibold text-gray-900">{{ $statusText }}</div>
                             <div class="text-xs text-gray-500 mt-0.5">
                                 {{ $historico->created_at->format('d/m/Y \à\s H:i') }}
