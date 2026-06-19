@@ -61,8 +61,7 @@
                     Veículos ({{ $cliente->veiculos->count() }})
                 </h3>
                 <a href="{{ route('veiculos.create', ['cliente' => $cliente->id]) }}" class="inline-flex items-center gap-1.5 px-3 py-3 text-xs font-medium text-white bg-blue-700 hover:bg-blue-800 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
-                    <i class="bi bi-plus-lg"></i>
-                    Novo Veículo
+                    <i class="bi bi-car-front"></i> Novo Veículo
                 </a>
             </div>
             

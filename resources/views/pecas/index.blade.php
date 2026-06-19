@@ -26,37 +26,51 @@
             <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex flex-col gap-4">
                 <form method="GET" action="{{ route('pecas.index') }}" class="flex flex-col gap-4">
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
-                        {{-- Busca Global --}}
-                        <div class="xl:col-span-2">
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Busca rápida</label>
-                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Nome ou código..." class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors duration-150">
-                        </div>
+        <div class="space-y-4">
 
-                        {{-- Nome --}}
-                        <div class="xl:col-span-2">
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Nome</label>
-                            <input type="text" name="nome" value="{{ request('nome') }}" placeholder="Nome da peça" class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors duration-150">
-                        </div>
+            {{-- Busca Global --}}
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                    Busca rápida
+                </label>
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ request('search') }}"
+                    placeholder="Nome ou código..."
+                    class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors duration-150">
+            </div>
 
-                        {{-- Código --}}
-                        <div class="xl:col-span-1">
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Código</label>
-                            <input type="text" name="codigo" value="{{ request('codigo') }}" placeholder="Código" class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors duration-150">
-                        </div>
+            {{-- Estoque Min e Max --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                        {{-- Estoque --}}
-                        <div class="xl:col-span-1">
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Estoque Min</label>
-                            <input type="number" name="estoque_min" value="{{ request('estoque_min') }}" placeholder="Mínimo" class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors duration-150">
-                        </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                        Estoque Min
+                    </label>
+                    <input
+                        type="number"
+                        name="estoque_min"
+                        value="{{ request('estoque_min') }}"
+                        placeholder="Mínimo"
+                        class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors duration-150">
+                </div>
 
-                        <div class="xl:col-span-1">
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Estoque Max</label>
-                            <input type="number" name="estoque_max" value="{{ request('estoque_max') }}" placeholder="Máximo" class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors duration-150">
-                        </div>
-                    </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                        Estoque Max
+                    </label>
+                    <input
+                        type="number"
+                        name="estoque_max"
+                        value="{{ request('estoque_max') }}"
+                        placeholder="Máximo"
+                        class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors duration-150">
+                </div>
 
+            </div>
+
+        </div>
                     <div class="flex items-center justify-between mt-2">
                         <div class="flex items-center gap-2 text-sm text-gray-400">
                             @if(request('search') || request('nome') || request('codigo') || request('estoque_min') || request('estoque_max') || request('valor_min') || request('valor_max'))

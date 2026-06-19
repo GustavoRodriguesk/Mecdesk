@@ -266,7 +266,7 @@
             <div class="topbar-actions">
                 <a href="{{ route('clientes.create') }}"
                 class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    + Novo Cliente
+                    <i class="bi bi-person-fill-add"></i> Novo Cliente
                 </a>
             </div>
             @elseIf (request()->routeIs('servicos.index'))

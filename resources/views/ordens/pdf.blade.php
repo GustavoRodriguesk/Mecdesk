@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
-
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
-            font-size: 12px;
+            font-size: 10px;
             color: #222;
+            line-height: 1.35;
         }
 
         * {
@@ -17,13 +16,13 @@
 
         .header {
             width: 100%;
-            border-bottom: 3px solid #1F2937;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
+            border-bottom: 2px solid #1F2937;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .logo {
-            width: 90px;
+            width: 60px;
             height: auto;
         }
 
@@ -32,32 +31,60 @@
         }
 
         .empresa h1 {
-            margin: 0;
+            margin: 0 0 2px 0;
             color: #1F2937;
-            font-size: 22px;
+            font-size: 16px;
         }
 
         .empresa p {
-            margin: 2px 0;
-            font-size: 11px;
+            margin: 0;
+            font-size: 9px;
             color: #555;
+            line-height: 1.3;
         }
 
-        .titulo-box {
+        .titulo-os {
             background: #1F2937;
             color: white;
-            padding: 8px 10px;
-            font-size: 13px;
+            padding: 5px 8px;
+            font-size: 12px;
             font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .titulo-os .status {
+            float: right;
+            background: #4B5563;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+
+        .info-linha {
+            font-size: 9px;
+            color: #555;
+            margin-bottom: 10px;
         }
 
         .box {
             border: 1px solid #dcdcdc;
-            margin-bottom: 18px;
+            margin-bottom: 8px;
+        }
+
+        .titulo-box {
+            background: #374151;
+            color: white;
+            padding: 3px 8px;
+            font-size: 10px;
+            font-weight: bold;
         }
 
         .conteudo {
-            padding: 10px;
+            padding: 6px 8px;
+        }
+
+        .conteudo p {
+            margin: 1px 0;
         }
 
         table {
@@ -68,425 +95,183 @@
         table th {
             background: #374151;
             color: white;
-            padding: 8px;
-            font-size: 11px;
+            padding: 4px 6px;
+            font-size: 9px;
+            text-align: left;
         }
 
         table td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 4px 6px;
+            font-size: 9.5px;
         }
 
-        .info td {
+        .duas-colunas {
+            width: 100%;
+        }
+
+        .duas-colunas td {
             border: none;
-            padding: 4px;
+            padding: 0;
+            vertical-align: top;
+            width: 50%;
         }
 
         .total {
-            margin-top: 15px;
+            margin-top: 6px;
             text-align: right;
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
             color: #111827;
+            padding: 0 8px 6px 8px;
         }
 
         .assinaturas {
-            margin-top: 70px;
+            width: 100%;
+            margin-top: 30px;
         }
 
         .assinatura {
             width: 45%;
             text-align: center;
             display: inline-block;
+            font-size: 9px;
         }
 
         .linha {
             border-top: 1px solid #000;
-            margin-top: 40px;
-            padding-top: 5px;
+            margin-top: 25px;
+            padding-top: 4px;
         }
 
         .rodape {
-            margin-top: 40px;
+            margin-top: 15px;
             text-align: center;
-            color: #666;
-            font-size: 10px;
+            color: #888;
+            font-size: 8px;
         }
-
-        .status {
-            display: inline-block;
-            padding: 4px 8px;
-            background: #e5e7eb;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-
     </style>
-
 </head>
 
 <body>
 
 <table class="header">
-
     <tr>
-
-        <td width="120">
-
+        <td width="70">
             @if($empresa->logo && file_exists(storage_path('app/public/'.$empresa->logo)))
-
-                <img
-                    src="{{ storage_path('app/public/'.$empresa->logo) }}"
-                    class="logo">
-
+                <img src="{{ storage_path('app/public/'.$empresa->logo) }}" class="logo">
             @else
-
-                <img
-                    src="{{ public_path('img/logo.png') }}"
-                    class="logo">
-
+                <img src="{{ public_path('img/logo.png') }}" class="logo">
             @endif
-
         </td>
-
         <td class="empresa">
-
             <h1>{{ $empresa->nome_fantasia }}</h1>
-
-            @if($empresa->razao_social)
-                <p>{{ $empresa->razao_social }}</p>
-            @endif
-
-            @if($empresa->cnpj)
-                <p>CNPJ: {{ $empresa->cnpj }}</p>
-            @endif
-
-            @if($empresa->email)
-                <p>{{ $empresa->email }}</p>
-            @endif
-
-            @if($empresa->telefone)
-                <p>Telefone: {{ $empresa->telefone }}</p>
-            @endif
-
-            @if($empresa->whatsapp)
-                <p>WhatsApp: {{ $empresa->whatsapp }}</p>
-            @endif
-
+            <p>
+                @if($empresa->razao_social){{ $empresa->razao_social }}@endif
+                @if($empresa->cnpj) &nbsp;|&nbsp; CNPJ: {{ $empresa->cnpj }} @endif
+            </p>
+            <p>
+                @if($empresa->telefone) Tel: {{ $empresa->telefone }} @endif
+                @if($empresa->whatsapp) &nbsp;|&nbsp; WhatsApp: {{ $empresa->whatsapp }} @endif
+                @if($empresa->email) &nbsp;|&nbsp; {{ $empresa->email }} @endif
+            </p>
             @if($empresa->logradouro)
-
                 <p>
-
-                    {{ $empresa->logradouro }},
-                    {{ $empresa->numero }}
-
-                </p>
-
-                <p>
-
-                    {{ $empresa->bairro }}
-
-                    -
-
+                    {{ $empresa->logradouro }}, {{ $empresa->numero }} {{ $empresa->bairro }} -
                     {{ $empresa->cidade }}/{{ $empresa->estado }}
-
+                    @if($empresa->cep) &nbsp;|&nbsp; CEP {{ $empresa->cep }} @endif
                 </p>
-
-                @if($empresa->cep)
-
-                    <p>CEP {{ $empresa->cep }}</p>
-
-                @endif
-
             @endif
-
         </td>
-
     </tr>
-
 </table>
 
+<div class="titulo-os">
+    ORDEM DE SERVIÇO Nº {{ $ordem->numero_os }}
+    <span class="status">{{ $ordem->status_formatado }}</span>
+</div>
+<div class="info-linha">
+    Entrada: {{ optional($ordem->data_entrada)->format('d/m/Y') }}
+</div>
+
 <div class="box">
-
-    <div class="titulo-box">
-
-        ORDEM DE SERVIÇO Nº {{ $ordem->numero_os }}
-
-    </div>
-
+    <div class="titulo-box">CLIENTE E VEÍCULO</div>
     <div class="conteudo">
-
-        <table class="info">
-
+        <table class="duas-colunas">
             <tr>
-
-                <td width="35%">
-
-                    <strong>Status:</strong>
-
-                    <span class="status">
-
-                        {{ $ordem->status_formatado }}
-
-                    </span>
-
-                </td>
-
                 <td>
-
-                    <strong>Entrada:</strong>
-
-                    {{ optional($ordem->data_entrada)->format('d/m/Y') }}
-
+                    <p><strong>Cliente:</strong> {{ $ordem->cliente->nome }}</p>
+                    @if($ordem->cliente->telefone)
+                        <p><strong>Telefone:</strong> {{ $ordem->cliente->telefone }}</p>
+                    @endif
+                    @if($ordem->cliente->email)
+                        <p><strong>E-mail:</strong> {{ $ordem->cliente->email }}</p>
+                    @endif
                 </td>
-
+                <td>
+                    <p><strong>Veículo:</strong> {{ $ordem->veiculo->marca }} {{ $ordem->veiculo->modelo }}
+                        ({{ $ordem->veiculo->ano }}) - {{ $ordem->veiculo->cor }}</p>
+                    <p><strong>Placa:</strong> {{ $ordem->veiculo->placa }}</p>
+                    @if($ordem->veiculo->quilometragem)
+                        <p><strong>KM:</strong> {{ number_format($ordem->veiculo->quilometragem,0,',','.') }} km</p>
+                    @endif
+                </td>
             </tr>
-
         </table>
-
     </div>
-
 </div>
 
+@if($ordem->descricao_problema)
 <div class="box">
-
-    <div class="titulo-box">
-
-        CLIENTE
-
-    </div>
-
+    <div class="titulo-box">PROBLEMA RELATADO</div>
     <div class="conteudo">
-
-        <p>
-
-            <strong>Nome:</strong>
-
-            {{ $ordem->cliente->nome }}
-
-        </p>
-
-        @if($ordem->cliente->telefone)
-
-            <p>
-
-                <strong>Telefone:</strong>
-
-                {{ $ordem->cliente->telefone }}
-
-            </p>
-
-        @endif
-
-        @if($ordem->cliente->email)
-
-            <p>
-
-                <strong>E-mail:</strong>
-
-                {{ $ordem->cliente->email }}
-
-            </p>
-
-        @endif
-
-    </div>
-
-</div>
-
-<div class="box">
-
-    <div class="titulo-box">
-
-        VEÍCULO
-
-    </div>
-
-    <div class="conteudo">
-
-        <p>
-
-            <strong>Marca:</strong>
-
-            {{ $ordem->veiculo->marca }}
-
-        </p>
-
-        <p>
-
-            <strong>Modelo:</strong>
-
-            {{ $ordem->veiculo->modelo }}
-
-        </p>
-
-        <p>
-
-            <strong>Ano:</strong>
-
-            {{ $ordem->veiculo->ano }}
-
-        </p>
-
-        <p>
-
-            <strong>Cor:</strong>
-
-            {{ $ordem->veiculo->cor }}
-
-        </p>
-
-        <p>
-
-            <strong>Placa:</strong>
-
-            {{ $ordem->veiculo->placa }}
-
-        </p>
-
-        @if($ordem->veiculo->quilometragem)
-
-            <p>
-
-                <strong>Quilometragem:</strong>
-
-                {{ number_format($ordem->veiculo->quilometragem,0,',','.') }} km
-
-            </p>
-
-        @endif
-
-    </div>
-
-</div>
-
-<div class="box">
-
-    <div class="titulo-box">
-
-        PROBLEMA RELATADO
-
-    </div>
-
-    <div class="conteudo">
-
         {{ $ordem->descricao_problema }}
-
     </div>
-
 </div>
+@endif
 
 <div class="box">
-
-    <div class="titulo-box">
-
-        SERVIÇOS E PEÇAS
-
-    </div>
-
+    <div class="titulo-box">SERVIÇOS E PEÇAS</div>
     <table>
-
         <thead>
-
         <tr>
-
             <th width="15%">Tipo</th>
-
             <th>Descrição</th>
-
-            <th width="12%">Qtd.</th>
-
-            <th width="20%">Valor</th>
-
+            <th width="10%">Qtd.</th>
+            <th width="18%">Valor</th>
         </tr>
-
         </thead>
-
         <tbody>
-
         @foreach($ordem->itens as $item)
-
             <tr>
-
-                <td>
-
-                    {{ ucfirst($item->tipo_item) }}
-
-                </td>
-
-                <td>
-
-                    {{ $item->descricao }}
-
-                </td>
-
-                <td>
-
-                    {{ $item->quantidade }}
-
-                </td>
-
-                <td>
-
-                    R$ {{ number_format($item->valor_total,2,',','.') }}
-
-                </td>
-
+                <td>{{ ucfirst($item->tipo_item) }}</td>
+                <td>{{ $item->descricao }}</td>
+                <td>{{ $item->quantidade }}</td>
+                <td>R$ {{ number_format($item->valor_total,2,',','.') }}</td>
             </tr>
-
         @endforeach
-
         </tbody>
-
     </table>
-
-    <div class="conteudo">
-
-        <div class="total">
-
-            TOTAL
-
-            R$
-
-            {{ number_format($ordem->valor_total,2,',','.') }}
-
-        </div>
-
+    <div class="total">
+        TOTAL: R$ {{ number_format($ordem->valor_total,2,',','.') }}
     </div>
-
 </div>
 
-<div class="assinaturas">
-
-    <div class="assinatura">
-
-        <div class="linha">
-
-            Assinatura do Cliente
-
-        </div>
-
-    </div>
-
-    <div class="assinatura" style="float:right;">
-
-        <div class="linha">
-
-            {{ $empresa->nome_fantasia }}
-
-        </div>
-
-    </div>
-
-</div>
+<table class="assinaturas">
+    <tr>
+        <td style="width:45%; text-align:center; font-size:9px;">
+            <div class="linha">Assinatura do Cliente</div>
+        </td>
+        <td style="width:10%;"></td>
+        <td style="width:45%; text-align:center; font-size:9px;">
+            <div class="linha">{{ $empresa->nome_fantasia }}</div>
+        </td>
+    </tr>
+</table>
 
 <div class="rodape">
-
-    Documento emitido automaticamente pelo <strong>MecDesk</strong> em
-    {{ now()->format('d/m/Y H:i') }}
-
+    Documento emitido automaticamente pelo <strong>MecDesk</strong> em {{ now()->format('d/m/Y H:i') }}
 </div>
 
 </body>
-
 </html>
