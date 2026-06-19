@@ -148,7 +148,7 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <h1>⚙ MecDesk</h1>
+            <h1><i class="bi bi-gear-fill"></i> MecDesk</h1>
             <p>Gestão de Oficina</p>
         </div>
 
@@ -221,7 +221,8 @@
         </nav>
 
         <div class="sidebar-footer">
-            <div class="sidebar-user">
+            <a href="{{ route('profile.edit') }}">
+                <div class="sidebar-user">
                 <div class="sidebar-avatar">
                     {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 1)) }}
                 </div>
@@ -229,7 +230,8 @@
                     <p>{{ Auth::user()->name ?? 'Usuário' }}</p>
                     <span>{{ Auth::user()->email ?? '' }}</span>
                 </div>
-            </div>
+                </div>
+            </a>
             <form method="POST" action="{{ route('logout') }}" style="margin-top:8px">
                 @csrf
                 <button type="submit" class="sidebar-link" style="width:100%;border:none;cursor:pointer;background:none;text-align:left;">
@@ -260,13 +262,46 @@
                 @endisset
             </span>
 
+            @if (request()->routeIs('clientes.index'))
             <div class="topbar-actions">
-                <a href="{{ route('profile.edit') }}" class="topbar-btn" title="Perfil">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
-                    </svg>
+                <a href="{{ route('clientes.create') }}"
+                class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    + Novo Cliente
                 </a>
             </div>
+            @elseIf (request()->routeIs('servicos.index'))
+            <div class="topbar-actions">
+                @if(auth()->user()->isAdmin())
+                <a href="{{ route('servicos.create') }}"
+                class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    <i class="bi bi-tools"></i> Novo Serviço
+                </a>
+                @endif
+            </div>
+            @elseIf (request()->routeIs('pecas.index'))
+            <div class="topbar-actions">
+                @if(auth()->user()->isAdmin())
+                <a href="{{ route('pecas.create') }}"
+                class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    <i class="bi bi-tools"></i> Nova Peça
+                </a>
+                @endif
+            </div>
+            @elseIf (request()->routeIs('veiculos.index'))
+            <div class="topbar-actions">
+                <a href="{{ route('veiculos.create') }}"
+                class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    <i class="bi bi-car-front"> </i> Novo Veículo
+                </a>
+            </div>
+            @elseIf (request()->routeIs('ordens.index'))
+            <div class="topbar-actions">               
+                <a href="{{ route('ordens.create') }}"
+                class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    <i class="bi bi-file-earmark-plus"></i> Nova Ordem
+                </a>
+            </div>
+            @endIf
         </header>
 
         <!-- Content -->

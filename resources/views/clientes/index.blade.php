@@ -19,26 +19,6 @@
 
     <div class="py-8 px-8 max-w-5xl mx-auto">
 
-        {{-- Cabeçalho da seção --}}
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">
-                    Clientes
-                </h1>
-                <p class="text-sm text-gray-500 mt-0.5">
-                    Gerencie sua base de clientes
-                </p>
-            </div>
-
-            <a href="{{ route('clientes.create') }}"
-               class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-3 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                Novo Cliente
-            </a>
-        </div>
-
         {{-- Card principal --}}
         <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
 
