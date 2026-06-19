@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use App\Models\Empresa;
 
 class UsuarioController extends Controller
 {
@@ -17,24 +18,26 @@ class UsuarioController extends Controller
     }
 
     public function store(Request $request)
-    {
-        abort_if(!auth()->user()->isAdmin(), 403);
+{
+    abort_if(!auth()->user()->isAdmin(), 403);
 
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'in:admin,funcionario'],
-        ]);
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+        'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        'role' => ['required', 'in:admin,funcionario'],
+    ]);
 
-        User::create([
-            'empresa_id' => auth()->user()->empresa_id,
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
-        ]);
+    User::create([
+        'empresa_id' => auth()->user()->empresa_id,
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'password' => Hash::make($validated['password']),
+        'role' => $validated['role'],
+    ]);
 
-        return redirect()->route('empresa.edit')->with('success', 'Funcionário cadastrado com sucesso!');
-    }
+    return redirect()
+        ->route('empresa.edit')
+        ->with('success', 'Funcionário cadastrado com sucesso!');
+}
 }

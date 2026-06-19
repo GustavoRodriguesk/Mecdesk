@@ -1,55 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
 
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
             font-size: 12px;
-            color: #121212ff;
+            color: #222;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         .header {
             width: 100%;
-            border-bottom: 2px solid #1f2937;
-            padding-bottom: 10px;
+            border-bottom: 3px solid #1F2937;
+            padding-bottom: 15px;
             margin-bottom: 20px;
         }
 
         .logo {
             width: 90px;
+            height: auto;
         }
 
         .empresa {
-            text-align: center;
+            text-align: right;
         }
 
         .empresa h1 {
             margin: 0;
+            color: #1F2937;
             font-size: 22px;
-            color: #1f2937;
         }
 
         .empresa p {
-            margin: 2px;
+            margin: 2px 0;
             font-size: 11px;
+            color: #555;
+        }
+
+        .titulo-box {
+            background: #1F2937;
+            color: white;
+            padding: 8px 10px;
+            font-size: 13px;
+            font-weight: bold;
         }
 
         .box {
-            border: 1px solid #d1d5db;
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 4px;
+            border: 1px solid #dcdcdc;
+            margin-bottom: 18px;
         }
 
-        .titulo {
-            background: #1f2937;
-            color: white;
-            padding: 6px;
-            font-weight: bold;
-            margin-bottom: 8px;
+        .conteudo {
+            padding: 10px;
         }
 
         table {
@@ -58,167 +66,426 @@
         }
 
         table th {
-            background: #1f2937;
+            background: #374151;
             color: white;
             padding: 8px;
-            text-align: left;
+            font-size: 11px;
         }
 
         table td {
-            border: 1px solid #d1d5db;
+            border: 1px solid #ddd;
             padding: 8px;
         }
 
+        .info td {
+            border: none;
+            padding: 4px;
+        }
+
         .total {
-            margin-top: 20px;
+            margin-top: 15px;
             text-align: right;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
+            color: #111827;
+        }
+
+        .assinaturas {
+            margin-top: 70px;
         }
 
         .assinatura {
-            margin-top: 80px;
+            width: 45%;
             text-align: center;
+            display: inline-block;
         }
 
-        .linha-assinatura {
-            width: 300px;
+        .linha {
             border-top: 1px solid #000;
-            margin: 0 auto;
+            margin-top: 40px;
             padding-top: 5px;
         }
 
         .rodape {
             margin-top: 40px;
             text-align: center;
-            font-size: 10px;
             color: #666;
+            font-size: 10px;
         }
+
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
     </style>
+
 </head>
 
 <body>
-    <table class="header" style="border: none;">
-        <tr style="border:none;">
-            <td style="border:none; width:120px;">
-                <img src="{{ public_path('img/logo.png') }}" class="logo">
-            </td>
 
-            <td style="border:none;" class="empresa">
-                @csrf
-                <h1>{{ $empresa->nome }}</h1>
+<table class="header">
 
-                @if($empresa->email)
-                <p>E-mail: {{ old('email', $empresa->email) }}</p>
+    <tr>
+
+        <td width="120">
+
+            @if($empresa->logo && file_exists(storage_path('app/public/'.$empresa->logo)))
+
+                <img
+                    src="{{ storage_path('app/public/'.$empresa->logo) }}"
+                    class="logo">
+
+            @else
+
+                <img
+                    src="{{ public_path('img/logo.png') }}"
+                    class="logo">
+
+            @endif
+
+        </td>
+
+        <td class="empresa">
+
+            <h1>{{ $empresa->nome_fantasia }}</h1>
+
+            @if($empresa->razao_social)
+                <p>{{ $empresa->razao_social }}</p>
+            @endif
+
+            @if($empresa->cnpj)
+                <p>CNPJ: {{ $empresa->cnpj }}</p>
+            @endif
+
+            @if($empresa->email)
+                <p>{{ $empresa->email }}</p>
+            @endif
+
+            @if($empresa->telefone)
+                <p>Telefone: {{ $empresa->telefone }}</p>
+            @endif
+
+            @if($empresa->whatsapp)
+                <p>WhatsApp: {{ $empresa->whatsapp }}</p>
+            @endif
+
+            @if($empresa->logradouro)
+
+                <p>
+
+                    {{ $empresa->logradouro }},
+                    {{ $empresa->numero }}
+
+                </p>
+
+                <p>
+
+                    {{ $empresa->bairro }}
+
+                    -
+
+                    {{ $empresa->cidade }}/{{ $empresa->estado }}
+
+                </p>
+
+                @if($empresa->cep)
+
+                    <p>CEP {{ $empresa->cep }}</p>
+
                 @endif
-                @if($empresa->cnpj)
-                <p>CNPJ: {{ old('cnpj', $empresa->cnpj) }}</p>
-                @endif
-                @if($empresa->telefone)
-                <p>Telefone: {{ old('telefone', $empresa->telefone) }}</p>
-                @endif
-                @if($empresa->endereco)
-                <p>{{ old('endereco', $empresa->endereco) }}</p>
-                @endif
-            </td>
+
+            @endif
+
+        </td>
+
+    </tr>
+
+</table>
+
+<div class="box">
+
+    <div class="titulo-box">
+
+        ORDEM DE SERVIÇO Nº {{ $ordem->numero_os }}
+
+    </div>
+
+    <div class="conteudo">
+
+        <table class="info">
+
+            <tr>
+
+                <td width="35%">
+
+                    <strong>Status:</strong>
+
+                    <span class="status">
+
+                        {{ $ordem->status_formatado }}
+
+                    </span>
+
+                </td>
+
+                <td>
+
+                    <strong>Entrada:</strong>
+
+                    {{ optional($ordem->data_entrada)->format('d/m/Y') }}
+
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+<div class="box">
+
+    <div class="titulo-box">
+
+        CLIENTE
+
+    </div>
+
+    <div class="conteudo">
+
+        <p>
+
+            <strong>Nome:</strong>
+
+            {{ $ordem->cliente->nome }}
+
+        </p>
+
+        @if($ordem->cliente->telefone)
+
+            <p>
+
+                <strong>Telefone:</strong>
+
+                {{ $ordem->cliente->telefone }}
+
+            </p>
+
+        @endif
+
+        @if($ordem->cliente->email)
+
+            <p>
+
+                <strong>E-mail:</strong>
+
+                {{ $ordem->cliente->email }}
+
+            </p>
+
+        @endif
+
+    </div>
+
+</div>
+
+<div class="box">
+
+    <div class="titulo-box">
+
+        VEÍCULO
+
+    </div>
+
+    <div class="conteudo">
+
+        <p>
+
+            <strong>Marca:</strong>
+
+            {{ $ordem->veiculo->marca }}
+
+        </p>
+
+        <p>
+
+            <strong>Modelo:</strong>
+
+            {{ $ordem->veiculo->modelo }}
+
+        </p>
+
+        <p>
+
+            <strong>Ano:</strong>
+
+            {{ $ordem->veiculo->ano }}
+
+        </p>
+
+        <p>
+
+            <strong>Cor:</strong>
+
+            {{ $ordem->veiculo->cor }}
+
+        </p>
+
+        <p>
+
+            <strong>Placa:</strong>
+
+            {{ $ordem->veiculo->placa }}
+
+        </p>
+
+        @if($ordem->veiculo->quilometragem)
+
+            <p>
+
+                <strong>Quilometragem:</strong>
+
+                {{ number_format($ordem->veiculo->quilometragem,0,',','.') }} km
+
+            </p>
+
+        @endif
+
+    </div>
+
+</div>
+
+<div class="box">
+
+    <div class="titulo-box">
+
+        PROBLEMA RELATADO
+
+    </div>
+
+    <div class="conteudo">
+
+        {{ $ordem->descricao_problema }}
+
+    </div>
+
+</div>
+
+<div class="box">
+
+    <div class="titulo-box">
+
+        SERVIÇOS E PEÇAS
+
+    </div>
+
+    <table>
+
+        <thead>
+
+        <tr>
+
+            <th width="15%">Tipo</th>
+
+            <th>Descrição</th>
+
+            <th width="12%">Qtd.</th>
+
+            <th width="20%">Valor</th>
+
         </tr>
+
+        </thead>
+
+        <tbody>
+
+        @foreach($ordem->itens as $item)
+
+            <tr>
+
+                <td>
+
+                    {{ ucfirst($item->tipo_item) }}
+
+                </td>
+
+                <td>
+
+                    {{ $item->descricao }}
+
+                </td>
+
+                <td>
+
+                    {{ $item->quantidade }}
+
+                </td>
+
+                <td>
+
+                    R$ {{ number_format($item->valor_total,2,',','.') }}
+
+                </td>
+
+            </tr>
+
+        @endforeach
+
+        </tbody>
+
     </table>
 
-    <div class="box">
-        <div class="titulo">
-            ORDEM DE SERVIÇO Nº {{ $ordem->numero_os }}
-        </div>
-
-        <table style="border:none;">
-            <tr>
-                <td style="border:none;">
-                    <strong>Status:</strong> {{ $ordem->status }}
-                </td>
-
-                <td style="border:none;">
-                    <strong>Data:</strong>
-                    {{ $ordem->created_at->format('d/m/Y') }}
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="box">
-        <div class="titulo">
-            DADOS DO CLIENTE
-        </div>
-
-        <p>
-            <strong>Nome:</strong>
-            {{ $ordem->cliente->nome }}
-        </p>
-
-        <p>
-            <strong>Veículo:</strong>
-            {{ $ordem->veiculo->marca }} - {{ $ordem->veiculo->modelo }}
-        </p>
-
-        <p>
-            <strong>Placa:</strong>
-            {{ $ordem->veiculo->placa }}
-        </p>
-
-    </div>
-
-    <div class="box">
-        <div class="titulo">
-            PROBLEMA RELATADO
-        </div>
-
-        <p>
-            {{ $ordem->descricao_problema }}
-        </p>
-    </div>
-
-    <div class="box">
-        <div class="titulo">
-            SERVIÇOS E PEÇAS
-        </div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Tipo</th>
-                    <th>Descrição</th>
-                    <th>Qtd.</th>
-                    <th>Valor</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @foreach($ordem->itens as $item)
-                <tr>
-                    <td>{{ $item->tipo_item == 'servico' ? 'Serviço' : 'Peça' }}</td>
-                    <td>{{ $item->descricao }}</td>
-                    <td>{{ $item->quantidade }}</td>
-                    <td>
-                        R$ {{ number_format($item->valor_total, 2, ',', '.') }}
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+    <div class="conteudo">
 
         <div class="total">
-            TOTAL: R$ {{ number_format($ordem->valor_total, 2, ',', '.') }}
+
+            TOTAL
+
+            R$
+
+            {{ number_format($ordem->valor_total,2,',','.') }}
+
         </div>
+
     </div>
+
+</div>
+
+<div class="assinaturas">
 
     <div class="assinatura">
-        <div class="linha-assinatura">
+
+        <div class="linha">
+
             Assinatura do Cliente
+
         </div>
+
     </div>
 
-    <div class="rodape">
-        Documento emitido em
-        {{ now()->format('d/m/Y') }}
+    <div class="assinatura" style="float:right;">
+
+        <div class="linha">
+
+            {{ $empresa->nome_fantasia }}
+
+        </div>
+
     </div>
+
+</div>
+
+<div class="rodape">
+
+    Documento emitido automaticamente pelo <strong>MecDesk</strong> em
+    {{ now()->format('d/m/Y H:i') }}
+
+</div>
 
 </body>
 

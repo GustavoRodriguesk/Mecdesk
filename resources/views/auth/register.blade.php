@@ -30,6 +30,21 @@
             @csrf
 
             <div class="auth-form-group">
+                <div class="mt-4">
+    <x-input-label for="empresa" value="Nome da oficina" />
+
+    <x-text-input
+        id="empresa"
+        class="block mt-1 w-full"
+        type="text"
+        name="empresa"
+        :value="old('empresa')"
+        required
+        autofocus
+    />
+
+    <x-input-error :messages="$errors->get('empresa')" class="mt-2" />
+</div>
                 <label for="name" class="auth-label">Nome completo</label>
                 <div class="auth-input-wrap">
                     <span class="auth-input-icon">
@@ -77,6 +92,19 @@
                     <p class="auth-input-error">{{ $message }}</p>
                 @enderror
             </div>
+            <div class="mt-4">
+    <x-input-label for="telefone" value="Telefone" />
+
+    <x-text-input
+        id="telefone"
+        class="block mt-1 w-full"
+        type="text"
+        name="telefone"
+        :value="old('telefone')"
+    />
+
+    <x-input-error :messages="$errors->get('telefone')" class="mt-2" />
+</div>
 
             <div class="auth-form-group">
                 <label for="password" class="auth-label">Senha</label>

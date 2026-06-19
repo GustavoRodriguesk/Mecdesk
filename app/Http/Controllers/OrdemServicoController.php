@@ -244,24 +244,25 @@ if ($statusAnterior != $request->status) {
     }
 
     public function pdf(OrdemServico $ordem)
-{
-    $ordem->load([
-        'cliente',
-        'veiculo',
-        'itens'
-    ]);
+    {
+        $ordem->load([
+            'cliente',
+            'veiculo',
+            'itens',
+            'empresa'
+        ]);
 
-    $empresa = Empresa::first();
+        $empresa = $ordem->empresa;
 
-    $pdf = Pdf::loadView(
-        'ordens.pdf',
-        compact('ordem', 'empresa')
-    );
+        $pdf = Pdf::loadView(
+            'ordens.pdf',
+            compact('ordem', 'empresa')
+        );
 
-    $nomeArquivo = str($ordem->cliente->nome)->slug('-');
+        $nomeArquivo = str($ordem->cliente->nome)->slug('-');
 
-    return $pdf->download(
-        $nomeArquivo . '-orcamento.pdf'
-    );
-}
+        return $pdf->download(
+            $nomeArquivo . '-orcamento.pdf'
+        );
+    }
 }
