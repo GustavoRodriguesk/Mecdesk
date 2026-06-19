@@ -1,235 +1,114 @@
 <x-app-layout>
 
     <x-slot name="header">
-
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             Editar Veículo
         </h2>
-
     </x-slot>
 
-    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+    <div class="py-8 px-8 max-w-3xl mx-auto">
 
-        <form action="{{ route('veiculos.update', $veiculo->id) }}"
-              method="POST"
-              class="space-y-4">
-
-            @csrf
-            @method('PUT')
-
+        <div class="flex items-center justify-between mb-6">
             <div>
-
-                <label class="block mb-1 font-medium mt-4">
-                    Cliente
-                </label>
-
-                <select name="cliente_id"
-                        class="w-full border rounded-lg">
-
-                    @foreach($clientes as $cliente)
-
-                        <option value="{{ $cliente->id }}"
-                            {{ $veiculo->cliente_id == $cliente->id ? 'selected' : '' }}>
-
-                            {{ $cliente->nome }}
-
-                        </option>
-
-                    @endforeach
-
-                </select>
-
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">
+                    Editar Veículo
+                </h1>
+                <p class="text-sm text-gray-500 mt-0.5">
+                    Atualize os dados do veículo {{ $veiculo->placa }}
+                </p>
             </div>
+            
+            <a href="{{ route('veiculos.index') }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors">
+                <i class="bi bi-arrow-left"></i>
+                Voltar
+            </a>
+        </div>
 
-            <div>
-                <label class="block mb-1 font-medium mt-4   ">Marca</label>
-                <select
-                    name="marca"
-                    class="w-full border rounded-lg p-3"
-                >
-                    <option value="">{{$veiculo->marca}}</option>
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden p-6">
 
-                    <option value="Chevrolet"
-                        {{ request('marca') == 'aberta' ? 'selected' : '' }}>
-                        Chevrolet
-                    </option>
+            <form action="{{ route('veiculos.update', $veiculo->id) }}" method="POST" class="space-y-5">
+                @csrf
+                @method('PUT')
 
-                    <option value="Fiat"
-                        {{ request('marca') == 'concluida' ? 'selected' : '' }}>
-                        Fiat
-                    </option>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="md:col-span-2">
+                        <label class="block mb-1.5 text-sm font-medium text-gray-700">
+                            Cliente
+                        </label>
+                        <select name="cliente_id" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150" required>
+                            @foreach($clientes as $cliente)
+                                <option value="{{ $cliente->id }}" {{ $veiculo->cliente_id == $cliente->id ? 'selected' : '' }}>
+                                    {{ $cliente->nome }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                    <option value="Volkswagen"
-                        {{ request('marca') == 'Volkswagen' ? 'selected' : '' }}>
-                        Volkswagen
-                    </option>
+                    <div>
+                        <label class="block mb-1.5 text-sm font-medium text-gray-700">Marca</label>
+                        <select name="marca" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150" required>
+                            @php
+                                $marcas = ['Chevrolet', 'Fiat', 'Volkswagen', 'Honda', 'Ford', 'Renault', 'Hyundai', 'Jeep', 'Citroen', 'Peugeot', 'BMW', 'Mercedes-Benz', 'Audi', 'Volvo', 'Nissan', 'Toyota', 'Kia', 'Suzuki', 'Outros'];
+                                $isOutros = !in_array($veiculo->marca, $marcas);
+                            @endphp
+                            <option value="{{ $veiculo->marca }}" selected>{{ $veiculo->marca }}</option>
+                            @foreach($marcas as $marca)
+                                @if($marca != $veiculo->marca)
+                                    <option value="{{ $marca }}">{{ $marca }}</option>
+                                @endif
+                            @endforeach
+                        </select>
+                    </div>
 
-                    <option value="Honda"
-                        {{ request('marca') == 'Honda' ? 'selected' : '' }}>
-                        Honda
-                    </option>
+                    <div>
+                        <label class="block mb-1.5 text-sm font-medium text-gray-700">
+                            Modelo
+                        </label>
+                        <input type="text" name="modelo" value="{{ old('modelo', $veiculo->modelo) }}" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150" required>
+                    </div>
 
-                    <option value="Ford"
-                        {{ request('marca') == 'Ford' ? 'selected' : '' }}>
-                        Ford
-                    </option>
+                    <div>
+                        <label class="block mb-1.5 text-sm font-medium text-gray-700">
+                            Ano
+                        </label>
+                        <input type="number" name="ano" value="{{ old('ano', $veiculo->ano) }}" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150">
+                    </div>
 
-                    <option value="Renault"
-                        {{ request('marca') == 'Renault' ? 'selected' : '' }}>
-                        Renault
-                    </option>
+                    <div>
+                        <label class="block mb-1.5 text-sm font-medium text-gray-700">
+                            Placa
+                        </label>
+                        <input type="text" name="placa" value="{{ old('placa', $veiculo->placa) }}" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150 uppercase" required>
+                    </div>
 
-                    <option value="Hyundai"
-                        {{ request('marca') == 'Hyundai' ? 'selected' : '' }}>
-                        Hyundai
-                    </option>
+                    <div>
+                        <label class="block mb-1.5 text-sm font-medium text-gray-700">
+                            Cor
+                        </label>
+                        <input type="text" name="cor" value="{{ old('cor', $veiculo->cor) }}" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150">
+                    </div>
 
-                    <option value="Jeep"
-                        {{ request('marca') == 'Jeep' ? 'selected' : '' }}>
-                        Jeep
-                    </option>
+                    <div>
+                        <label class="block mb-1.5 text-sm font-medium text-gray-700">
+                            Quilometragem
+                        </label>
+                        <input type="number" name="quilometragem" value="{{ old('quilometragem', $veiculo->quilometragem) }}" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150">
+                    </div>
+                </div>
 
-                    <option value="Citroen"
-                        {{ request('marca') == 'Citroen' ? 'selected' : '' }}>
-                        Citroen
-                    </option>
+                <div class="pt-4 flex items-center justify-end gap-3 border-t border-gray-100 mt-6">
+                    <a href="{{ route('veiculos.index') }}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                        <i class="bi bi-check2"></i>
+                        Atualizar Veículo
+                    </button>
+                </div>
 
-                    <option value="Peugeot"
-                        {{ request('marca') == 'Peugeot' ? 'selected' : '' }}>
-                        Peugeot
-                    </option>
+            </form>
 
-                    <option value="BMW"
-                        {{ request('marca') == 'BMW' ? 'selected' : '' }}>
-                        BMW
-                    </option>
-
-                    <option value="Mercedes-Benz"
-                        {{ request('marca') == 'Mercedes-Benz' ? 'selected' : '' }}>
-                        Mercedes-Benz
-                    </option>
-
-                    <option value="Audi"
-                        {{ request('marca') == 'Audi' ? 'selected' : '' }}>
-                        Audi
-                    </option>
-
-                    <option value="Volvo"
-                        {{ request('marca') == 'Volvo' ? 'selected' : '' }}>
-                        Volvo
-                    </option>
-
-                    <option value="Nissan"
-                        {{ request('marca') == 'Nissan' ? 'selected' : '' }}>
-                        Nissan
-                    </option>
-
-                    <option value="Toyota"
-                        {{ request('marca') == 'Toyota' ? 'selected' : '' }}>
-                        Toyota
-                    </option>
-
-                    <option value="Kia"
-                        {{ request('marca') == 'Kia' ? 'selected' : '' }}>
-                        Kia
-                    </option>
-
-                    <option value="Suzuki"
-                        {{ request('marca') == 'Suzuki' ? 'selected' : '' }}>
-                        Suzuki
-                    </option>
-
-                    <option value="Outros"
-                        {{ request('marca') == 'Outros' ? 'selected' : '' }}>
-                        Outros
-                    </option>
-
-                </select>
-
-            <div>
-
-                <label class="block mb-1 font-medium mt-4">
-                    Modelo
-                </label>
-
-                <input type="text"
-                       name="modelo"
-                       value="{{ old('modelo', $veiculo->modelo) }}"
-                       class="w-full border rounded-lg p-3">
-
-            </div>
-
-            <div>
-
-                <label class="block mb-1 font-medium mt-4">
-                    Ano
-                </label>
-
-                <input type="number"
-                       name="ano"
-                       value="{{ old('ano', $veiculo->ano) }}"
-                       class="w-full border rounded-lg p-3">
-
-            </div>
-
-            <div>
-
-                <label class="block mb-1 font-medium mt-4">
-                    Placa
-                </label>
-
-                <input type="text"
-                       name="placa"
-                       value="{{ old('placa', $veiculo->placa) }}"
-                       class="w-full border rounded-lg p-3">
-
-            </div>
-
-            <div>
-
-                <label class="block mb-1 font-medium mt-4">
-                    Cor
-                </label>
-
-                <input type="text"
-                       name="cor"
-                       value="{{ old('cor', $veiculo->cor) }}"
-                       class="w-full border rounded-lg p-3">
-
-            </div>
-
-            <div>
-
-                <label class="block mb-1 font-medium mt-4">
-                    Quilometragem
-                </label>
-
-                <input type="number"
-                       name="quilometragem"
-                       value="{{ old('quilometragem', $veiculo->quilometragem) }}"
-                       class="w-full border rounded-lg p-3">
-
-            </div>
-
-            <div class="flex gap-2 mt-4">
-
-                <button type="submit"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-
-                    Atualizar
-
-                </button>
-
-                <a href="{{ route('veiculos.index') }}"
-                   class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
-
-                    Cancelar
-
-                </a>
-
-            </div>
-
-        </form>
+        </div>
 
     </div>
 

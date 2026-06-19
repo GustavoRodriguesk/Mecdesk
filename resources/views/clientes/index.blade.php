@@ -17,7 +17,7 @@
         }
     </style>
 
-    <div class="py-8 px-8 max-w-7xl mx-auto">
+    <div class="py-8 px-8 max-w-5xl mx-auto">
 
         {{-- Cabeçalho da seção --}}
         <div class="flex items-center justify-between mb-6">
@@ -30,7 +30,6 @@
                 </p>
             </div>
 
-            @if(auth()->user()->isAdmin())
             <a href="{{ route('clientes.create') }}"
                class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-3 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -38,7 +37,6 @@
                 </svg>
                 Novo Cliente
             </a>
-            @endif
         </div>
 
         {{-- Card principal --}}
@@ -52,12 +50,6 @@
                       action="{{ route('clientes.index') }}"
                       class="flex items-center gap-2 w-full sm:w-96">
                     <div class="relative flex-1">
-                        <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-                            </svg>
-                        </span>
-
                         <input
                             type="text"
                             name="search"
@@ -146,7 +138,6 @@
                                             Ver
                                         </a>
 
-                                        @if(auth()->user()->isAdmin())
                                         {{-- Editar --}}
                                         <a href="{{ route('clientes.edit', $cliente->id) }}"
                                            class="btn-action inline-flex items-center gap-1.5 px-3 py-3 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 whitespace-nowrap">
@@ -167,7 +158,6 @@
                                                 Excluir
                                             </button>
                                         </form>
-                                        @endif
 
                                     </div>
                                 </td>
