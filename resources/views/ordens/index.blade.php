@@ -40,7 +40,10 @@
                                 <option value="">Todos</option>
                                 <option value="aberta" @selected(request('status') == 'aberta')>Aberta</option>
                                 <option value="aguardando_aprovacao" @selected(request('status') == 'aguardando_aprovacao')>Aguardando Aprovação</option>
+                                <option value="aprovada" @selected(request('status') == 'aprovada')>Aprovada</option>
+                                <option value="reprovada" @selected(request('status') == 'reprovada')>Reprovada</option>
                                 <option value="concluida" @selected(request('status') == 'concluida')>Concluída</option>
+                                <option value="entregue" @selected(request('status') == 'entregue')>Entregue</option>
                                 <option value="cancelada" @selected(request('status') == 'cancelada')>Cancelada</option>
                             </select>
                         </div>
@@ -110,20 +113,22 @@
 
             {{-- Tabela --}}
             <div class="overflow-x-auto">
-                <table class="w-full text-sm table-fixed min-w-[800px]">
+                <table class="w-full text-sm table-fixed min-w-[900px]">
                     <colgroup>
-                        <col style="width: 15%">
-                        <col style="width: 25%">
+                        <col style="width: 10%">
                         <col style="width: 20%">
-                        <col style="width: 15%">
-                        <col style="width: 25%">
+                        <col style="width: 18%">
+                        <col style="width: 14%">
+                        <col style="width: 18%">
+                        <col style="width: 20%">
                     </colgroup>
                     <thead>
                         <tr class="bg-white border-b border-gray-100">
                             <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">Nº OS</th>
                             <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">Cliente</th>
                             <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">Veículo</th>
-                            <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">Status</th>
+                            <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">Status OS</th>
+                            <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">Aprovação Cliente</th>
                             <th class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">Ações</th>
                         </tr>
                     </thead>
@@ -139,13 +144,41 @@
                                 <td class="px-6 py-4 font-medium text-gray-900 truncate">
                                     {{ $ordem->cliente->nome }}
                                 </td>
-                                <td class="px-6 py-4 text-gray-500">
+                                <td class="px-6 py-4 text-gray-500 truncate">
                                     {{ $ordem->veiculo->marca }} {{ $ordem->veiculo->modelo }}
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $ordem->status_color }}">
                                         {{ $ordem->status_formatado }}
                                     </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    @if($ordem->approval_token)
+                                        @php
+                                            $appStatusColor = match($ordem->approval_status) {
+                                                'approved' => 'bg-green-100 text-green-800',
+                                                'rejected' => 'bg-red-100 text-red-800',
+                                                default => 'bg-yellow-100 text-yellow-800',
+                                            };
+                                        @endphp
+                                        <div class="space-y-1">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $appStatusColor }}">
+                                                {{ $ordem->approval_status_formatado }}
+                                            </span>
+                                            @if($ordem->approval_requested_at)
+                                                <div class="text-[10px] text-gray-400">
+                                                    Envio: {{ $ordem->approval_requested_at->format('d/m/Y H:i') }}
+                                                </div>
+                                            @endif
+                                            @if($ordem->approval_response_at)
+                                                <div class="text-[10px] text-gray-500">
+                                                    Resp: {{ $ordem->approval_response_at->format('d/m/Y H:i') }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <span class="text-xs text-gray-400 italic">Não solicitada</span>
+                                    @endif
                                 </td>
                                 
                                 <td class="px-6 py-4">
@@ -172,7 +205,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-16 text-center">
+                                <td colspan="6" class="px-6 py-16 text-center">
                                     <div class="flex flex-col items-center gap-3 text-gray-400">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

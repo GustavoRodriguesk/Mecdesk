@@ -72,7 +72,10 @@
                             <option value="aberta" {{ $ordem->status == 'aberta' ? 'selected' : '' }}>Aberta</option>
                             <option value="em_andamento" {{ $ordem->status == 'em_andamento' ? 'selected' : '' }}>Em andamento</option>
                             <option value="aguardando_aprovacao" {{ $ordem->status == 'aguardando_aprovacao' ? 'selected' : '' }}>Aguardando aprovação</option>
+                            <option value="aprovada" {{ $ordem->status == 'aprovada' ? 'selected' : '' }}>Aprovada</option>
+                            <option value="reprovada" {{ $ordem->status == 'reprovada' ? 'selected' : '' }}>Reprovada</option>
                             <option value="concluida" {{ $ordem->status == 'concluida' ? 'selected' : '' }}>Concluída</option>
+                            <option value="entregue" {{ $ordem->status == 'entregue' ? 'selected' : '' }}>Entregue</option>
                             <option value="cancelada" {{ $ordem->status == 'cancelada' ? 'selected' : '' }}>Cancelada</option>
                         </select>
                     </div>

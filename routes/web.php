@@ -10,6 +10,7 @@ use App\Http\Controllers\OrdemServicoItemController;
 use App\Http\Controllers\ServicoController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\AprovacaoController;
 use Illuminate\Support\Facades\Route;
 use App\Models\Cliente;
 use App\Models\Veiculo;
@@ -21,6 +22,15 @@ use App\Models\Peca;
 Route::get('/', function () {
     return view('welcome');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Rotas Públicas — Aprovação de OS
+|--------------------------------------------------------------------------
+*/
+Route::get('/aprovacao/{token}', [AprovacaoController::class, 'show'])->name('aprovacao.show');
+Route::post('/aprovacao/{token}/aprovar', [AprovacaoController::class, 'approve'])->name('aprovacao.approve');
+Route::post('/aprovacao/{token}/reprovar', [AprovacaoController::class, 'reject'])->name('aprovacao.reject');
 
 Route::middleware(['auth'])->group(function () {
     Route::get(
@@ -62,6 +72,10 @@ Route::get(
     '/ordens/{ordem}/pdf',
     [OrdemServicoController::class, 'pdf']
 )->name('ordens.pdf');
+Route::post(
+    '/ordens/{ordem}/solicitar-aprovacao',
+    [OrdemServicoController::class, 'solicitarAprovacao']
+)->name('ordens.solicitar-aprovacao');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::get('/clientes/{cliente}/veiculos', function (\App\Models\Cliente $cliente) {
     return $cliente->veiculos;

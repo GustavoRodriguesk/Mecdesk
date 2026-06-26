@@ -198,8 +198,112 @@
 
         </div>
 
-        {{-- Coluna Lateral (Timeline) --}}
-        <div class="lg:col-span-1">
+        {{-- Coluna Lateral (Timeline & Aprovação) --}}
+        <div class="lg:col-span-1 space-y-6">
+            {{-- Card de Aprovação --}}
+            @if($ordem->status !== 'concluida' && $ordem->status !== 'cancelada')
+                <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+                        <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                            <i class="bi bi-shield-check text-gray-500"></i>
+                            Aprovação do Cliente
+                        </h3>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        @if(!$ordem->approval_token)
+                            <p class="text-xs text-gray-500">Gere um link seguro para enviar ao cliente para que ele possa aprovar ou reprovar esta OS sem precisar de login.</p>
+                            <form action="{{ route('ordens.solicitar-aprovacao', $ordem->id) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2 shadow-sm">
+                                    <i class="bi bi-send"></i>
+                                    Solicitar aprovação
+                                </button>
+                            </form>
+                        @else
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold text-gray-500 uppercase">Situação</span>
+                                @php
+                                    $appStatusColor = match($ordem->approval_status) {
+                                        'approved' => 'bg-green-100 text-green-800',
+                                        'rejected' => 'bg-red-100 text-red-800',
+                                        default => 'bg-yellow-100 text-yellow-800',
+                                    };
+                                @endphp
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $appStatusColor }}">
+                                    {{ $ordem->approval_status_formatado }}
+                                </span>
+                            </div>
+
+                            @if($ordem->approval_status === 'pending')
+                                <div class="space-y-2">
+                                    <label class="block text-xs font-semibold text-gray-500 uppercase">Link de Aprovação</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" readonly value="{{ route('aprovacao.show', $ordem->approval_token) }}" id="link-aprovacao" class="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50 text-gray-600 focus:outline-none">
+                                        <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('link-aprovacao').value); alert('Link copiado!');" class="px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-center" title="Copiar Link">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <a href="{{ $ordem->whatsapp_link }}" target="_blank" class="w-full bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2 shadow-sm">
+                                    <i class="bi bi-whatsapp"></i>
+                                    Enviar pelo WhatsApp
+                                </a>
+
+                                <form action="{{ route('ordens.solicitar-aprovacao', $ordem->id) }}" method="POST" class="pt-2 border-t border-gray-100">
+                                    @csrf
+                                    <button type="submit" class="w-full text-xs text-gray-500 hover:text-gray-700 text-center block bg-transparent border-0 cursor-pointer p-0">
+                                        Gerar novo link / Resetar
+                                    </button>
+                                </form>
+                            @endif
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            {{-- Histórico de Aprovação (se existir token) --}}
+            @if($ordem->approval_token)
+                <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+                        <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                            <i class="bi bi-clock-history text-gray-500"></i>
+                            Histórico da aprovação
+                        </h3>
+                    </div>
+                    <div class="p-6 space-y-3 text-sm">
+                        <div>
+                            <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">Status</span>
+                            <span class="font-medium text-gray-900">{{ $ordem->approval_status_formatado }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">Data do envio</span>
+                            <span class="font-medium text-gray-900">{{ $ordem->approval_requested_at ? $ordem->approval_requested_at->format('d/m/Y H:i') : '—' }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">Data da resposta</span>
+                            <span class="font-medium text-gray-900">{{ $ordem->approval_response_at ? $ordem->approval_response_at->format('d/m/Y H:i') : '—' }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">IP</span>
+                            <span class="font-medium text-gray-900">{{ $ordem->approval_ip ?? '—' }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">Navegador</span>
+                            <span class="font-medium text-gray-900 text-xs block break-all text-gray-600">{{ $ordem->approval_user_agent ?? '—' }}</span>
+                        </div>
+                        @if($ordem->approval_comment)
+                            <div class="pt-2 border-t border-gray-100">
+                                <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Comentário do cliente</span>
+                                <div class="p-2 bg-gray-50 rounded text-xs text-gray-700 border border-gray-100 break-words">
+                                    {{ $ordem->approval_comment }}
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
             <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 sticky top-6">
                 <h3 class="font-semibold text-gray-800 mb-6 flex items-center gap-2">
                     <i class="bi bi-clock-history text-gray-500"></i>
@@ -213,6 +317,8 @@
                                 'aberta' => 'Aberta',
                                 'em_andamento' => 'Em andamento',
                                 'aguardando_aprovacao' => 'Aguardando aprovação',
+                                'aprovada' => 'Aprovada pelo cliente',
+                                'reprovada' => 'Reprovada pelo cliente',
                                 'concluida' => 'Concluída',
                                 'cancelada' => 'Cancelada',
                                 default => $historico->status

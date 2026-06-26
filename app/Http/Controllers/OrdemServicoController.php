@@ -223,6 +223,26 @@ if ($statusAnterior != $request->status) {
             ->route('ordens.index')
             ->with('success', 'Ordem excluída com sucesso!');
     }
+    /**
+     * Solicitar aprovação do cliente (gera token e altera status).
+     */
+    public function solicitarAprovacao(OrdemServico $ordem)
+    {
+        $statusAnterior = $ordem->status;
+
+        $ordem->generateApprovalToken();
+
+        if ($statusAnterior !== 'aguardando_aprovacao') {
+            $ordem->historicos()->create([
+                'status' => 'aguardando_aprovacao',
+            ]);
+        }
+
+        return redirect()
+            ->route('ordens.show', $ordem->id)
+            ->with('success', 'Solicitação de aprovação enviada! Utilize o botão do WhatsApp para enviar ao cliente.');
+    }
+
     public function budgetsIndex()
     {
         $approved = OrdemServico::where('status', 'concluida')
