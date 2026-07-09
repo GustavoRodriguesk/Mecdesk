@@ -40,6 +40,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/empresa', [EmpresaController::class, 'edit'])->name('empresa.edit');
     Route::put('/empresa', [EmpresaController::class, 'update'])->name('empresa.update');
+
+    Route::get('/planos/upgrade', function () {
+        return view('planos.upgrade');
+    })->name('planos.upgrade');
     
     Route::get('/usuarios/create', [UsuarioController::class, 'create'])->name('usuarios.create');
     Route::post('/usuarios', [UsuarioController::class, 'store'])->name('usuarios.store');

@@ -218,7 +218,18 @@
                 Minha Empresa
             </a>
             @endif
+
+            <div class="sidebar-label" style="margin-top:16px">Plano</div>
+            <a href="{{ route('planos.upgrade') }}"
+               class="sidebar-link {{ request()->routeIs('planos.*') ? 'active' : '' }}"
+               style="{{ request()->routeIs('planos.*') ? '' : 'color: #60A5FA;' }}">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                Upgrade de Plano
+            </a>
         </nav>
+
 
         <div class="sidebar-footer">
             <a href="{{ route('profile.edit') }}">
