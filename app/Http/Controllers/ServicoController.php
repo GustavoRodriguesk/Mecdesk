@@ -74,7 +74,7 @@ public function store(Request $request)
         'valor_base' => 'required|numeric',
     ]);
 
-    Servico::create($request->all());
+    Servico::create($request->except('empresa_id'));
 
     return redirect()->route('servicos.index')
                     ->with('success', 'Serviço criado com sucesso.');
@@ -101,7 +101,7 @@ public function update(Request $request, Servico $servico)
         'valor_base' => 'required|numeric',
     ]);
 
-    $servico->update($request->all());
+    $servico->update($request->except('empresa_id'));
     return redirect()->route('servicos.index')
                     ->with('success', 'Serviço atualizado com sucesso.');
 }

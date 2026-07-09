@@ -101,12 +101,16 @@ class PecaController extends Controller
 
         $request->validate([
             'nome' => 'required',
-            'codigo' => 'unique:pecas,codigo',
+            'codigo' => [
+                'nullable',
+                \Illuminate\Validation\Rule::unique('pecas', 'codigo')
+                    ->where('empresa_id', auth()->user()->empresa_id)
+            ],
             'estoque' => 'required|integer|min:0',
             'valor_unitario' => 'required|numeric|min:0',
         ]);
 
-        Peca::create($request->all());
+        Peca::create($request->except('empresa_id'));
 
         return redirect()
             ->route('pecas.index')
@@ -131,12 +135,17 @@ class PecaController extends Controller
 
         $request->validate([
             'nome' => 'required',
-            'codigo' => 'required|unique:pecas,codigo,' . $peca->id,
+            'codigo' => [
+                'required',
+                \Illuminate\Validation\Rule::unique('pecas', 'codigo')
+                    ->ignore($peca->id)
+                    ->where('empresa_id', auth()->user()->empresa_id)
+            ],
             'estoque' => 'required|integer|min:0',
             'valor_unitario' => 'required|numeric|min:0',
         ]);
 
-        $peca->update($request->all());
+        $peca->update($request->except('empresa_id'));
 
         return redirect()
             ->route('pecas.index')

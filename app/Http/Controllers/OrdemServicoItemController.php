@@ -67,6 +67,8 @@ class OrdemServicoItemController extends Controller
 }
     public function destroy(OrdemServicoItem $item)
     {
+        abort_if(!$item->ordem, 403);
+
         if ($item->tipo_item === 'peca') {
             $peca = Peca::find($item->peca_id);
             if ($peca) {
@@ -74,14 +76,12 @@ class OrdemServicoItemController extends Controller
             }
         }
 
-        $ordem = OrdemServico::find($item->ordem_servico_id);
+        $ordem = $item->ordem;
         $item->delete();
 
-        if ($ordem) {
-            $ordem->update([
-                'valor_total' => $ordem->itens()->sum('valor_total')
-            ]);
-        }
+        $ordem->update([
+            'valor_total' => $ordem->itens()->sum('valor_total')
+        ]);
 
         return back()->with('success', 'Item removido da ordem.');
     }                               

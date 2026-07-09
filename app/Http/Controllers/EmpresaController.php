@@ -51,7 +51,7 @@ class EmpresaController extends Controller
         ]);
 
         $empresa = auth()->user()->empresa;
-        $data = $request->except(['_token', '_method', 'logo']);
+        $data = $request->except(['_token', '_method', 'logo', 'plano', 'ativo']);
 
         if ($request->hasFile('logo')) {
             // Delete old logo if exists

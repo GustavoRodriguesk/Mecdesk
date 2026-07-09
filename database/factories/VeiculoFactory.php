@@ -11,7 +11,15 @@ class VeiculoFactory extends Factory
     {
         return [
             
-            'cliente_id' => Cliente::inRandomOrder()->first()->id,
+            'cliente_id' => function (array $attributes) {
+                $empresaId = $attributes['empresa_id'] ?? null;
+                $query = Cliente::query();
+                if ($empresaId) {
+                    $query->where('empresa_id', $empresaId);
+                }
+                $cliente = $query->inRandomOrder()->first();
+                return $cliente ? $cliente->id : Cliente::factory()->create($empresaId ? ['empresa_id' => $empresaId] : [])->id;
+            },
 
             'marca' => fake()->randomElement([
                 'Honda',

@@ -36,9 +36,30 @@ class OrdemServicoFactory extends Factory
 
             'numero_os' => 'OS-' . fake()->unique()->numberBetween(1000, 9999),
 
-            'cliente_id' => Cliente::inRandomOrder()->first()->id,
+            'cliente_id' => function (array $attributes) {
+                $empresaId = $attributes['empresa_id'] ?? null;
+                $query = Cliente::query();
+                if ($empresaId) {
+                    $query->where('empresa_id', $empresaId);
+                }
+                $cliente = $query->inRandomOrder()->first();
+                return $cliente ? $cliente->id : Cliente::factory()->create($empresaId ? ['empresa_id' => $empresaId] : [])->id;
+            },
 
-            'veiculo_id' => Veiculo::inRandomOrder()->first()->id,
+            'veiculo_id' => function (array $attributes) {
+                $clienteId = $attributes['cliente_id'] ?? null;
+                if ($clienteId) {
+                    $veiculo = Veiculo::where('cliente_id', $clienteId)->inRandomOrder()->first();
+                    if ($veiculo) {
+                        return $veiculo->id;
+                    }
+                }
+                $empresaId = $attributes['empresa_id'] ?? null;
+                return Veiculo::factory()->create([
+                    'empresa_id' => $empresaId,
+                    'cliente_id' => $clienteId,
+                ])->id;
+            },
 
             'user_id' => 1,
 

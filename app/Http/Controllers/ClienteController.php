@@ -33,7 +33,7 @@ class ClienteController extends Controller
         'telefone' => 'required',
     ]);
 
-    Cliente::create($request->all());
+    Cliente::create($request->except('empresa_id'));
 
     return redirect()
         ->route('clientes.index')
@@ -61,7 +61,7 @@ class ClienteController extends Controller
             'telefone' => 'required',
         ]);
 
-        $cliente->update($request->all());
+        $cliente->update($request->except('empresa_id'));
 
         return redirect()
     ->route('clientes.index')

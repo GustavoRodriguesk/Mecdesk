@@ -108,13 +108,21 @@ public function store(Request $request)
     abort_if(!auth()->user()->isAdmin(), 403);
 
     $request->validate([
-        'cliente_id' => 'required|exists:clientes,id',
+        'cliente_id' => [
+            'required',
+            \Illuminate\Validation\Rule::exists('clientes', 'id')
+                ->where('empresa_id', auth()->user()->empresa_id)
+        ],
         'marca' => 'required',
         'modelo' => 'required',
-        'placa' => 'required|unique:veiculos,placa',
+        'placa' => [
+            'required',
+            \Illuminate\Validation\Rule::unique('veiculos', 'placa')
+                ->where('empresa_id', auth()->user()->empresa_id)
+        ],
     ]);
 
-    Veiculo::create($request->all());
+    Veiculo::create($request->except('empresa_id'));
 
     return redirect()
         ->route('veiculos.index')
@@ -135,13 +143,22 @@ public function update(Request $request, Veiculo $veiculo)
     abort_if(!auth()->user()->isAdmin(), 403);
 
     $request->validate([
-        'cliente_id' => 'required|exists:clientes,id',
+        'cliente_id' => [
+            'required',
+            \Illuminate\Validation\Rule::exists('clientes', 'id')
+                ->where('empresa_id', auth()->user()->empresa_id)
+        ],
         'marca' => 'required',
         'modelo' => 'required',
-        'placa' => 'required|unique:veiculos,placa,' . $veiculo->id,
+        'placa' => [
+            'required',
+            \Illuminate\Validation\Rule::unique('veiculos', 'placa')
+                ->ignore($veiculo->id)
+                ->where('empresa_id', auth()->user()->empresa_id)
+        ],
     ]);
 
-    $veiculo->update($request->all());
+    $veiculo->update($request->except('empresa_id'));
 
     return redirect()
         ->route('veiculos.index')

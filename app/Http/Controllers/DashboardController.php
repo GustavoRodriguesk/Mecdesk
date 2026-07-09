@@ -12,6 +12,8 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        $empresaId = auth()->user()->empresa_id;
+
         return view('dashboard', [
 
             'clientes' => Cliente::count(),
@@ -64,33 +66,48 @@ class DashboardController extends Controller
             )
             ->groupBy('status')
             ->get(),
-            'servicosChart' => DB::table('ordem_servico_itens')
-    ->join(
-        'servicos',
-        'ordem_servico_itens.servico_id',
-        '=',
-        'servicos.id'
-    )
-    ->where('tipo_item', 'servico')
-    ->selectRaw('servicos.nome as nome, COUNT(*) as total')
-    ->groupBy('servicos.id', 'servicos.nome')
-    ->orderByDesc('total')
-    ->limit(5)
-    ->get(),
-    'pecasChart' => DB::table('ordem_servico_itens')
-    ->join(
-        'pecas',
-        'ordem_servico_itens.peca_id',
-        '=',
-        'pecas.id'
-    )
-    ->where('tipo_item', 'peca')
-    ->selectRaw('pecas.nome as nome, SUM(ordem_servico_itens.quantidade) as total')
-    ->groupBy('pecas.id', 'pecas.nome')
-    ->orderByDesc('total')
-    ->limit(5)
-    ->get(),
 
+            'servicosChart' => DB::table('ordem_servico_itens')
+                ->join(
+                    'ordem_servicos',
+                    'ordem_servico_itens.ordem_servico_id',
+                    '=',
+                    'ordem_servicos.id'
+                )
+                ->join(
+                    'servicos',
+                    'ordem_servico_itens.servico_id',
+                    '=',
+                    'servicos.id'
+                )
+                ->where('ordem_servico_itens.tipo_item', 'servico')
+                ->where('ordem_servicos.empresa_id', $empresaId)
+                ->selectRaw('servicos.nome as nome, COUNT(*) as total')
+                ->groupBy('servicos.id', 'servicos.nome')
+                ->orderByDesc('total')
+                ->limit(5)
+                ->get(),
+
+            'pecasChart' => DB::table('ordem_servico_itens')
+                ->join(
+                    'ordem_servicos',
+                    'ordem_servico_itens.ordem_servico_id',
+                    '=',
+                    'ordem_servicos.id'
+                )
+                ->join(
+                    'pecas',
+                    'ordem_servico_itens.peca_id',
+                    '=',
+                    'pecas.id'
+                )
+                ->where('ordem_servico_itens.tipo_item', 'peca')
+                ->where('ordem_servicos.empresa_id', $empresaId)
+                ->selectRaw('pecas.nome as nome, SUM(ordem_servico_itens.quantidade) as total')
+                ->groupBy('pecas.id', 'pecas.nome')
+                ->orderByDesc('total')
+                ->limit(5)
+                ->get(),
 
         ]);
     }

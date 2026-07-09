@@ -126,28 +126,50 @@ class OrdemServicoController extends Controller
   public function store(Request $request)
 {
     $request->validate([
-        'cliente_id' => 'required|exists:clientes,id',
-        'veiculo_id' => 'required|exists:veiculos,id',
+        'cliente_id' => [
+            'required',
+            \Illuminate\Validation\Rule::exists('clientes', 'id')
+                ->where('empresa_id', auth()->user()->empresa_id)
+        ],
+        'veiculo_id' => [
+            'required',
+            \Illuminate\Validation\Rule::exists('veiculos', 'id')
+                ->where('empresa_id', auth()->user()->empresa_id)
+        ],
         'descricao_problema' => 'required',
     ]);
-$ordem = OrdemServico::create([
-    'numero_os' => 'OS-' . rand(1000, 9999),
 
-    'cliente_id' => $request->cliente_id,
-    'veiculo_id' => $request->veiculo_id,
+    $empresaId = auth()->user()->empresa_id;
 
-    'user_id' => Auth::id(),
+    // Buscar a última OS desta empresa para calcular o sequencial
+    $ultimoNumero = OrdemServico::where('empresa_id', $empresaId)
+        ->latest('id')
+        ->value('numero_os');
 
-    'status' => 'aberta',
+    $proximoNumero = 1;
+    if ($ultimoNumero && preg_match('/OS-(\d+)/', $ultimoNumero, $matches)) {
+        $proximoNumero = ((int)$matches[1]) + 1;
+    }
+    $numeroOs = 'OS-' . str_pad($proximoNumero, 4, '0', STR_PAD_LEFT);
 
-    'descricao_problema' => $request->descricao_problema,
+    $ordem = OrdemServico::create([
+        'numero_os' => $numeroOs,
 
-    'valor_total' => 0,
+        'cliente_id' => $request->cliente_id,
+        'veiculo_id' => $request->veiculo_id,
 
-    'aprovado_cliente' => false,
+        'user_id' => Auth::id(),
 
-    'data_entrada' => now(),
-]);
+        'status' => 'aberta',
+
+        'descricao_problema' => $request->descricao_problema,
+
+        'valor_total' => 0,
+
+        'aprovado_cliente' => false,
+
+        'data_entrada' => now(),
+    ]);
     
 
     return redirect()
@@ -190,15 +212,22 @@ $ordem = OrdemServico::create([
     public function update(Request $request, OrdemServico $ordem)
     {
         $request->validate([
-    'cliente_id' => 'required|exists:clientes,id',
-    'veiculo_id' => 'required|exists:veiculos,id',
-    'descricao_problema' => 'required',
-    'status' => 'required',
-    
-]);
+            'cliente_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('clientes', 'id')
+                    ->where('empresa_id', auth()->user()->empresa_id)
+            ],
+            'veiculo_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('veiculos', 'id')
+                    ->where('empresa_id', auth()->user()->empresa_id)
+            ],
+            'descricao_problema' => 'required',
+            'status' => 'required',
+        ]);
 $statusAnterior = $ordem->status;
 
-$ordem->update($request->all());
+$ordem->update($request->except('empresa_id'));
 
 if ($statusAnterior != $request->status) {
 
