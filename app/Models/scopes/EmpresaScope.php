@@ -14,12 +14,10 @@ class EmpresaScope implements Scope
     ): void
     {
         if (auth()->check()) {
-
             $builder->where(
                 $model->getTable() . '.empresa_id',
                 auth()->user()->empresa_id
             );
-
         }
     }
 }

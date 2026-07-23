@@ -2,35 +2,37 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: DejaVu Sans, sans-serif;
-            font-size: 9.5px;
-            color: #1a1a2e;
+            font-size: 9.5pt;
+            color: #1f2937;
             line-height: 1.5;
             padding: 28px 32px 24px 32px;
+            background: #ffffff;
         }
 
         /* ── HEADER ── */
         .header {
             width: 100%;
-            border-bottom: 3px solid #111827;
+            border-bottom: 2px solid #111827;
             padding-bottom: 12px;
             margin-bottom: 16px;
         }
         .header td { vertical-align: middle; }
-        .header .logo { width: 60px; height: auto; }
-        .header .empresa { text-align: right; }
-        .header .empresa h1 {
-            font-size: 18px;
-            font-weight: 700;
+        .logo-img { width: 60px; height: auto; }
+        .empresa { text-align: right; }
+        .empresa h1 {
+            font-size: 18pt;
+            font-weight: bold;
             color: #111827;
             margin-bottom: 2px;
         }
-        .header .empresa p {
-            font-size: 8px;
+        .empresa p {
+            font-size: 8pt;
             color: #6b7280;
             line-height: 1.6;
         }
@@ -46,76 +48,81 @@
         .os-banner td { vertical-align: middle; }
         .os-numero {
             color: #ffffff;
-            font-size: 12px;
-            font-weight: 700;
+            font-size: 12pt;
+            font-weight: bold;
             letter-spacing: 0.4px;
         }
         .os-status {
-            background: #10b981;
-            color: #ffffff;
-            font-size: 8px;
-            font-weight: 700;
+            background: #ffffff;
+            color: #111827;
+            font-size: 8pt;
+            font-weight: bold;
             padding: 3px 10px;
-            border-radius: 20px;
+            border-radius: 4px;
             letter-spacing: 0.8px;
             text-transform: uppercase;
         }
         .os-data {
-            font-size: 8px;
+            font-size: 8pt;
             color: #9ca3af;
             padding-left: 2px;
-            margin-bottom: 14px;
+            padding-top: 5px;
+            padding-bottom: 10px;
+            display: block;
         }
 
-        /* ── CARDS ── */
-        .card {
+        /* ── CARD WRAPPER ── */
+        .card-wrapper {
             width: 100%;
             border: 1px solid #e5e7eb;
             border-radius: 7px;
             margin-bottom: 10px;
-            border-collapse: collapse;
-            overflow: hidden;
         }
         .card-header {
-            background: #f8fafc;
+            background: #f3f4f6;
             border-bottom: 1px solid #e5e7eb;
             padding: 6px 12px;
-            font-size: 8.5px;
-            font-weight: 700;
+            font-size: 8.5pt;
+            font-weight: bold;
             color: #374151;
             letter-spacing: 0.8px;
             text-transform: uppercase;
+            border-radius: 7px 7px 0 0;
         }
         .card-body { padding: 10px 12px; }
 
         /* ── DOIS PAINÉIS LADO A LADO ── */
         .two-col { width: 100%; border-collapse: collapse; }
-        .two-col td { vertical-align: top; width: 50%; padding: 0 10px 0 0; }
+        .two-col td { vertical-align: top; width: 50%; padding: 0 10px 0 0; text-transform: uppercase;}
         .two-col td + td { padding: 0 0 0 10px; border-left: 1px solid #e5e7eb; }
 
         .field-label {
-            font-size: 7.5px;
+            font-size: 7.5pt;
             color: #9ca3af;
             text-transform: uppercase;
             letter-spacing: 0.6px;
             margin-bottom: 1px;
         }
         .field-value {
-            font-size: 9.5px;
+            font-size: 9.5pt;
             color: #111827;
-            font-weight: 500;
+            font-weight: bold;
             margin-bottom: 7px;
         }
-        .field-value.light { font-weight: 400; color: #374151; }
+        .field-value-light {
+            font-size: 9.5pt;
+            color: #374151;
+            font-weight: normal;
+            margin-bottom: 7px;
+        }
 
         /* ── PROBLEMA ── */
         .problema-text {
-            font-size: 9.5px;
-            color: #374151;
-            background: #fffbeb;
-            border-left: 3px solid #f59e0b;
+            font-size: 9.5pt;
+            color: #1f2937;
+            background: #f9fafb;
+            border-left: 3px solid #374151;
             padding: 7px 10px;
-            border-radius: 0 4px 4px 0;
             font-style: italic;
         }
 
@@ -124,86 +131,94 @@
         .itens-table thead tr { background: #111827; }
         .itens-table thead th {
             color: #ffffff;
-            font-size: 8px;
-            font-weight: 600;
+            font-size: 8pt;
+            font-weight: bold;
             letter-spacing: 0.7px;
             text-transform: uppercase;
             padding: 7px 12px;
             text-align: left;
         }
         .itens-table thead th.right { text-align: right; }
+        .itens-table thead th.center { text-align: center; }
         .itens-table tbody tr { border-bottom: 1px solid #f3f4f6; }
-        .itens-table tbody tr:last-child { border-bottom: none; }
+        .itens-table tbody tr.last { border-bottom: none; }
         .itens-table tbody td {
             padding: 7px 12px;
-            font-size: 9.5px;
+            font-size: 9.5pt;
             color: #374151;
         }
-        .itens-table tbody td.valor {
+        .itens-table tbody td.right {
             text-align: right;
-            font-weight: 600;
+            font-weight: bold;
             color: #111827;
+        }
+        .itens-table tbody td.center {
+            text-align: center;
+            text-transform: uppercase;
         }
 
         .badge-tipo {
-            background: #eff6ff;
-            color: #2563eb;
-            font-size: 7.5px;
-            font-weight: 700;
+            background: #f3f4f6;
+            color: #1f2937;
+            border: 1px solid #d1d5db;
+            font-size: 7.5pt;
+            font-weight: bold;
             padding: 2px 7px;
-            border-radius: 20px;
+            border-radius: 4px;
             letter-spacing: 0.4px;
             text-transform: uppercase;
         }
         .badge-peca {
-            background: #f0fdf4;
-            color: #16a34a;
-            font-size: 7.5px;
-            font-weight: 700;
+            background: #1f2937;
+            color: #ffffff;
+            font-size: 7.5pt;
+            font-weight: bold;
             padding: 2px 7px;
-            border-radius: 20px;
+            border-radius: 4px;
             letter-spacing: 0.4px;
             text-transform: uppercase;
         }
 
         /* ── TOTAL ── */
-        .total-row {
+        .total-bar {
+            width: 100%;
             background: #111827;
             border-radius: 0 0 6px 6px;
-            padding: 9px 12px;
+            padding: 10px;
         }
-        .total-row td { vertical-align: middle; }
         .total-label {
             color: #9ca3af;
-            font-size: 8.5px;
-            font-weight: 600;
+            font-size: 8.5pt;
+            font-weight: bold;
             letter-spacing: 1px;
             text-transform: uppercase;
-        }
-        .total-valor {
-            color: #ffffff;
-            font-size: 15px;
-            font-weight: 700;
-            text-align: right;
+            width: 1080px; /* Força esta coluna a ocupar todo o espaço sobrando */
         }
 
-        /* ── ASSINATURAS ── */
-        .assinaturas { width: 100%; margin-top: 32px; border-collapse: collapse; }
-        .assinaturas td { width: 50%; vertical-align: top; padding: 0 16px 0 0; }
-        .assinaturas td + td { padding: 0 0 0 16px; }
-        .assinatura-area {
-            height: 54px;
-            border: 1.5px dashed #d1d5db;
-            border-radius: 6px;
-            background: #fafafa;
+        .total-valor {
+            color: #ffffff;
+            font-size: 15pt;
+            font-weight: bold;
+            white-space: nowrap; /* Impede que o valor quebre de linha */
+        }
+
+        /* ── ASSINATURA ── */
+        .assinatura-section {
+            margin-top: 45px;
+            text-align: center;
+            width: 100%;
+        }
+        .assinatura-linha-wrap {
+            width: 100%;
+            text-align: center;
             margin-bottom: 5px;
         }
         .assinatura-label {
-            text-align: center;
-            font-size: 8px;
-            color: #9ca3af;
-            letter-spacing: 0.4px;
+            font-size: 8pt;
+            color: #4b5563;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
+            font-weight: bold;
         }
 
         /* ── RODAPÉ ── */
@@ -212,22 +227,22 @@
             padding-top: 8px;
             border-top: 1px solid #f3f4f6;
             text-align: center;
-            color: #d1d5db;
-            font-size: 7.5px;
+            color: #9ca3af;
+            font-size: 7.5pt;
         }
-        .rodape strong { color: #9ca3af; }
+        .rodape-strong { color: #4b5563; font-weight: bold; }
     </style>
 </head>
 <body>
 
 {{-- HEADER --}}
-<table class="header">
+<table class="header" cellpadding="0" cellspacing="0">
     <tr>
         <td width="70">
             @if($empresa->logo && file_exists(storage_path('app/public/'.$empresa->logo)))
-                <img src="{{ storage_path('app/public/'.$empresa->logo) }}" class="logo">
+                <img src="{{ storage_path('app/public/'.$empresa->logo) }}" class="logo-img">
             @else
-                <img src="{{ public_path('img/logo.png') }}" class="logo">
+                <img src="{{ public_path('img/logo.png') }}" class="logo-img">
             @endif
         </td>
         <td class="empresa">
@@ -242,8 +257,9 @@
                 @if($empresa->email) &nbsp;|&nbsp; {{ $empresa->email }}@endif
             </p>
             @if($empresa->logradouro)
-                <p>{{ $empresa->logradouro }}, {{ $empresa->numero }} {{ $empresa->bairro }} —
-                {{ $empresa->cidade }}/{{ $empresa->estado }}
+                <p>{{ $empresa->logradouro }}, {{ $empresa->numero }}
+                @if($empresa->bairro) {{ $empresa->bairro }}@endif
+                &#8212; {{ $empresa->cidade }}/{{ $empresa->estado }}
                 @if($empresa->cep) &nbsp;|&nbsp; CEP {{ $empresa->cep }}@endif</p>
             @endif
         </td>
@@ -253,113 +269,116 @@
 {{-- BANNER OS --}}
 <table class="os-banner" cellpadding="0" cellspacing="0">
     <tr>
-        <td><span class="os-numero">ORDEM DE SERVIÇO &nbsp;#&nbsp;{{ $ordem->numero_os }}</span></td>
+        <td><span class="os-numero">ORDEM DE SERVI&Ccedil;O &nbsp;#&nbsp;{{ $ordem->numero_os }}</span></td>
         <td style="text-align:right"><span class="os-status">{{ $ordem->status_formatado }}</span></td>
     </tr>
 </table>
-<div class="os-data">Entrada: {{ optional($ordem->data_entrada)->format('d/m/Y') }}</div>
+<span class="os-data">Entrada: {{ optional($ordem->data_entrada)->format('d/m/Y') }}</span>
 
 {{-- CLIENTE E VEÍCULO --}}
-<div class="card-header" style="border-radius:7px 7px 0 0; border:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;">
-    Cliente &amp; Veículo
-</div>
-<div style="border:1px solid #e5e7eb; border-top:none; border-radius:0 0 7px 7px; margin-bottom:10px;">
-    <div class="card-body">
-        <table class="two-col">
-            <tr>
-                <td>
-                    <div class="field-label">Nome do Cliente</div>
-                    <div class="field-value">{{ $ordem->cliente->nome }}</div>
-                    @if($ordem->cliente->telefone)
-                        <div class="field-label">Telefone</div>
-                        <div class="field-value light">{{ $ordem->cliente->telefone }}</div>
-                    @endif
-                    @if($ordem->cliente->email)
-                        <div class="field-label">E-mail</div>
-                        <div class="field-value light">{{ $ordem->cliente->email }}</div>
-                    @endif
-                </td>
-                <td>
-                    <div class="field-label">Veículo</div>
-                    <div class="field-value">{{ $ordem->veiculo->marca }} {{ $ordem->veiculo->modelo }} ({{ $ordem->veiculo->ano }}) — {{ $ordem->veiculo->cor }}</div>
-                    <div class="field-label">Placa</div>
-                    <div class="field-value">{{ $ordem->veiculo->placa }}</div>
-                    @if($ordem->veiculo->quilometragem)
-                        <div class="field-label">Quilometragem</div>
-                        <div class="field-value light">{{ number_format($ordem->veiculo->quilometragem, 0, ',', '.') }} km</div>
-                    @endif
-                </td>
-            </tr>
-        </table>
-    </div>
-</div>
-
-{{-- PROBLEMA RELATADO --}}
-@if($ordem->descricao_problema)
-<div class="card-header" style="border-radius:7px 7px 0 0; border:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;">
-    Problema Relatado
-</div>
-<div style="border:1px solid #e5e7eb; border-top:none; border-radius:0 0 7px 7px; margin-bottom:10px;">
-    <div class="card-body">
-        <div class="problema-text">{{ $ordem->descricao_problema }}</div>
-    </div>
-</div>
-@endif
-
-{{-- SERVIÇOS E PEÇAS --}}
-<div class="card-header" style="border-radius:7px 7px 0 0; border:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;">
-    Serviços &amp; Peças
-</div>
-<div style="border:1px solid #e5e7eb; border-top:none; border-radius:0 0 7px 7px; margin-bottom:10px; overflow:hidden;">
-    <table class="itens-table">
-        <thead>
-            <tr>
-                <th style="width:14%">Tipo</th>
-                <th>Descrição</th>
-                <th style="width:10%; text-align:center">Qtd.</th>
-                <th class="right" style="width:18%">Valor</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($ordem->itens as $item)
-            <tr>
-                <td>
-                    <span class="{{ $item->tipo_item === 'servico' ? 'badge-tipo' : 'badge-peca' }}">
-                        {{ ucfirst($item->tipo_item) }}
-                    </span>
-                </td>
-                <td>{{ $item->descricao }}</td>
-                <td style="text-align:center">{{ $item->quantidade }}</td>
-                <td class="valor">R$ {{ number_format($item->valor_total, 2, ',', '.') }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-    <table class="total-row" cellpadding="0" cellspacing="0">
-        <tr>
-            <td><span class="total-label">Total a Pagar</span></td>
-            <td><span class="total-valor">R$ {{ number_format($ordem->valor_total, 2, ',', '.') }}</span></td>
-        </tr>
-    </table>
-</div>
-
-{{-- ASSINATURAS --}}
-<table class="assinaturas">
+<table class="card-wrapper" cellpadding="0" cellspacing="0" style="margin-bottom:10px;">
     <tr>
         <td>
-            <div class="assinatura-area"></div>
-            <div class="assinatura-label">Assinatura do Cliente</div>
-        </td>
-        <td>
-            <div class="assinatura-area"></div>
-            <div class="assinatura-label">Responsável — {{ $empresa->nome_fantasia }}</div>
+            <div class="card-header">Cliente &amp; Veículo</div>
+            <div class="card-body">
+                <table class="two-col">
+                    <tr>
+                        <td>
+                            <div class="field-label">Nome do Cliente</div>
+                            <div class="field-value">{{ $ordem->cliente->nome }}</div>
+                            @if($ordem->cliente->telefone)
+                                <div class="field-label">Telefone</div>
+                                <div class="field-value-light">{{ $ordem->cliente->telefone }}</div>
+                            @endif
+                            @if($ordem->cliente->email)
+                                <div class="field-label">E-mail</div>
+                                <div class="field-value-light">{{ $ordem->cliente->email }}</div>
+                            @endif
+                        </td>
+                        <td>
+                            <div class="field-label">Ve&iacute;culo</div>
+                            <div class="field-value">{{ $ordem->veiculo->marca }} {{ $ordem->veiculo->modelo }} ({{ $ordem->veiculo->ano }}) &#8212; {{ $ordem->veiculo->cor }}</div>
+                            <div class="field-label">Placa</div>
+                            <div class="field-value">{{ $ordem->veiculo->placa }}</div>
+                            @if($ordem->veiculo->quilometragem)
+                                <div class="field-label">Quilometragem</div>
+                                <div class="field-value-light">{{ number_format($ordem->veiculo->quilometragem, 0, ',', '.') }} km</div>
+                            @endif
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </td>
     </tr>
 </table>
 
+{{-- PROBLEMA RELATADO --}}
+@if($ordem->descricao_problema)
+<table class="card-wrapper" cellpadding="0" cellspacing="0" style="margin-bottom:10px;">
+    <tr>
+        <td>
+            <div class="card-header">Problema Relatado</div>
+            <div class="card-body">
+                <div class="problema-text">{{ $ordem->descricao_problema }}</div>
+            </div>
+        </td>
+    </tr>
+</table>
+@endif
+
+{{-- SERVIÇOS E PEÇAS --}}
+<table class="card-wrapper" cellpadding="0" cellspacing="0" style="margin-bottom:10px;">
+    <tr>
+        <td>
+            <div class="card-header">Serviços &amp; Peças</div>
+            <table class="itens-table">
+                <thead>
+                    <tr>
+                        <th style="width:14%">Tipo</th>
+                        <th>Descrição</th>
+                        <th class="center" style="width:10%">Qtd.</th>
+                        <th class="right" style="width:18%">Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php $itens = $ordem->itens; $total_itens = count($itens); @endphp
+                    @foreach($itens as $idx => $item)
+                    <tr class="{{ $idx + 1 === $total_itens ? 'last' : '' }}">
+                        <td>
+                            <span class="{{ $item->tipo_item === 'servico' ? 'badge-tipo' : 'badge-peca' }}">
+                                {{ ucfirst($item->tipo_item) }}
+                            </span>
+                        </td>
+                        <td>{{ $item->descricao }}</td>
+                        <td class="center">{{ $item->quantidade }}</td>
+                        <td class="right">R$ {{ number_format($item->valor_total, 2, ',', '.') }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            <table class="total-bar">
+                <tr>
+                    <td><span class="total-label">Total a Pagar</span></td>
+                    <td style="text-align: right;"><span class="total-valor">R$ {{ number_format($ordem->valor_total, 2, ',', '.') }}</span></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+{{-- ASSINATURA --}}
+<div class="assinatura-section">
+    <div class="assinatura-linha-wrap">
+        <table cellpadding="0" cellspacing="0" style="width:260px; margin:0 auto; border-bottom:1px solid #111827;">
+            <tr><td style="height:30px;">&nbsp;</td></tr>
+        </table>
+    </div>
+    <div class="assinatura-label">Assinatura do Cliente</div>
+</div>
+
 {{-- RODAPÉ --}}
 <div class="rodape">
-    Documento gerado automaticamente pelo <strong>MecDesk</strong> &nbsp;·&nbsp; {{ now()->format('d/m/Y H:i') }}
+    Documento gerado automaticamente pelo <span class="rodape-strong">MecDesk</span> &nbsp;&middot;&nbsp; {{ now()->format('d/m/Y H:i') }}
 </div>
 
 </body>

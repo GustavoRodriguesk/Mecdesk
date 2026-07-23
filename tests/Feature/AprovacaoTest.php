@@ -5,22 +5,44 @@ use App\Models\Empresa;
 use App\Models\OrdemServico;
 use App\Models\User;
 use App\Models\Veiculo;
+use App\Models\Plano;
+use App\Models\Assinatura;
 use App\Models\Scopes\EmpresaScope;
 use Illuminate\Support\Str;
 
 beforeEach(function () {
-    // 1. Criar empresa
-    $this->empresa = Empresa::create([
-        'nome_fantasia' => 'Oficina Mecânica Teste',
-        'razao_social' => 'Oficina Teste Ltda',
-        'cnpj' => '12.345.678/0001-90',
+    $plano = Plano::create([
+        'slug' => 'pro',
+        'nome' => 'Pro',
+        'preco_mensal' => 99.00,
         'ativo' => true,
+    ]);
+
+    // 1. Criar empresa (ativo não está no $fillable por segurança)
+    $this->empresa = new Empresa([
+        'nome_fantasia' => 'Oficina Mecânica Teste',
+        'razao_social'  => 'Oficina Teste Ltda',
+        'cnpj'          => '12.345.678/0001-90',
+        'plano_id'      => $plano->id,
+    ]);
+    $this->empresa->ativo = true;
+    $this->empresa->save();
+
+    // Assinatura ativa para autorizar os testes
+    Assinatura::create([
+        'empresa_id'       => $this->empresa->id,
+        'plano_id'         => $plano->id,
+        'metodo_pagamento' => 'cartao',
+        'status'           => 'authorized',
+        'preco_contratado' => 99.00,
+        'data_inicio'      => now(),
+        'valido_ate'       => now()->addMonth(),
     ]);
 
     // 2. Criar usuário associado a essa empresa
     $this->user = User::factory()->create([
         'empresa_id' => $this->empresa->id,
-        'role' => 'admin', // garante privilégios administrativos no sistema se necessário
+        'role'       => 'admin',
     ]);
 
     // 3. Criar cliente e veículo

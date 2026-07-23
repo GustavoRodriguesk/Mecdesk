@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Empresa extends Model
 {
+    protected $table = 'empresas';
 
     protected $fillable = [
         'nome_fantasia',
@@ -20,9 +22,31 @@ class Empresa extends Model
         'cidade',
         'estado',
         'logo',
-        'plano',
-        'ativo',
+        'plano_id',
+        // ATENÇÃO: 'ativo' foi removido intencionalmente do fillable por motivos de segurança.
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'ativo' => 'boolean',
+        ];
+    }
+
+    public function plano()
+    {
+        return $this->belongsTo(Plano::class);
+    }
+
+    public function assinaturas()
+    {
+        return $this->hasMany(Assinatura::class);
+    }
+
+    public function assinaturaAtiva()
+    {
+        return $this->hasOne(Assinatura::class)->latestOfMany();
+    }
 
     public function users()
     {
@@ -52,5 +76,19 @@ class Empresa extends Model
     public function ordens()
     {
         return $this->hasMany(OrdemServico::class);
+    }
+
+    /**
+     * Verifica se a empresa está ativa e com assinatura válida.
+     */
+    public function isAtiva(): bool
+    {
+        if (!$this->ativo) {
+            return false;
+        }
+
+        $assinatura = $this->assinaturaAtiva;
+
+        return $assinatura ? $assinatura->isValida() : false;
     }
 }
