@@ -489,7 +489,14 @@
                     <span class="plan-feat-label" style="color:#CBD5E1">Suporte prioritário</span>
                 </li>
             </ul>
-            @php $planoAtual = auth()->user()->empresa?->plano ?? 'free'; @endphp
+            @php
+                $empresaPlano = auth()->user()->empresa?->plano;
+                $planoAtual = is_object($empresaPlano) ? $empresaPlano->slug : ($empresaPlano ?? 'free');
+                $planoProModel = $planos->firstWhere('slug', 'pro');
+                $precoPro = number_format($planoProModel->preco_mensal ?? 0.10, 2, ',', '.');
+                $planoUltraModel = $planos->firstWhere('slug', 'ultra');
+                $precoUltra = number_format($planoUltraModel->preco_mensal ?? 0.20, 2, ',', '.');
+            @endphp
             @if($planoAtual === 'free')
                 <span class="btn-plan current"><i class="bi bi-check-circle-fill"></i> Plano Atual</span>
             @else
@@ -505,8 +512,8 @@
             <div class="plan-desc">Para oficinas em crescimento que precisam de mais recursos.</div>
             <div class="plan-price-wrap">
                 <div style="display:flex;align-items:baseline;gap:6px">
-                    <span class="plan-price" id="pro-price"><sup>R$</sup>97<sub>/mês</sub></span>
-                    <span class="plan-price-old" id="pro-old" style="display:none">R$97</span>
+                    <span class="plan-price" id="pro-price"><sup>R$</sup>{{ $precoPro }}<sub>/mês</sub></span>
+                    <span class="plan-price-old" id="pro-old" style="display:none">R$ {{ $precoPro }}</span>
                 </div>
                 <div class="plan-period" id="pro-period">Cobrado mensalmente</div>
             </div>
@@ -546,7 +553,7 @@
             @if($planoAtual === 'pro')
                 <span class="btn-plan current"><i class="bi bi-check-circle-fill"></i> Plano Atual</span>
             @else
-                <a href="#" class="btn-plan upgrade-pro" onclick="solicitarUpgrade('pro')">
+                <a href="{{ route('checkout.show', 'pro') }}" class="btn-plan upgrade-pro">
                     <i class="bi bi-arrow-up-circle"></i> Fazer Upgrade — Pro
                 </a>
             @endif
@@ -559,8 +566,8 @@
             <div class="plan-desc">Solução completa para redes e grandes operações.</div>
             <div class="plan-price-wrap">
                 <div style="display:flex;align-items:baseline;gap:6px">
-                    <span class="plan-price" id="ultra-price"><sup>R$</sup>197<sub>/mês</sub></span>
-                    <span class="plan-price-old" id="ultra-old" style="display:none">R$197</span>
+                    <span class="plan-price" id="ultra-price"><sup>R$</sup>{{ $precoUltra }}<sub>/mês</sub></span>
+                    <span class="plan-price-old" id="ultra-old" style="display:none">R$ {{ $precoUltra }}</span>
                 </div>
                 <div class="plan-period" id="ultra-period">Cobrado mensalmente</div>
             </div>
@@ -597,7 +604,7 @@
             @if($planoAtual === 'ultra')
                 <span class="btn-plan current"><i class="bi bi-check-circle-fill"></i> Plano Atual</span>
             @else
-                <a href="#" class="btn-plan upgrade-ultra" onclick="solicitarUpgrade('ultra')">
+                <a href="{{ route('checkout.show', 'ultra') }}" class="btn-plan upgrade-ultra">
                     <i class="bi bi-gem"></i> Fazer Upgrade — Ultra
                 </a>
             @endif
@@ -803,8 +810,8 @@
             <p>Junte-se a centenas de oficinas que já usam o MecDesk Pro.</p>
         </div>
         <div class="banner-actions">
-            <a href="#" class="btn-banner-ghost" onclick="solicitarUpgrade('pro')">Teste 14 dias grátis</a>
-            <a href="#" class="btn-banner-primary" onclick="solicitarUpgrade('pro')">
+            <a href="{{ route('checkout.show', 'pro') }}" class="btn-banner-ghost">Teste 14 dias grátis</a>
+            <a href="{{ route('checkout.show', 'pro') }}" class="btn-banner-primary">
                 <i class="bi bi-arrow-up-circle"></i> Fazer Upgrade Agora
             </a>
         </div>

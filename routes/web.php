@@ -12,6 +12,7 @@ use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AprovacaoController;
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\MercadoPagoWebhookController;
 use App\Http\Controllers\CheckoutController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,7 +25,7 @@ Route::get('/', function () {
 | Rotas Públicas & Webhooks
 |--------------------------------------------------------------------------
 */
-Route::post('/webhooks/mercadopago', [WebhookController::class, 'handle'])->name('webhooks.mercadopago');
+Route::post('/webhooks/mercadopago', [MercadoPagoWebhookController::class, 'handle'])->name('webhooks.mercadopago');
 
 Route::get('/aprovacao/{token}', [AprovacaoController::class, 'show'])->name('aprovacao.show');
 Route::post('/aprovacao/{token}/aprovar', [AprovacaoController::class, 'approve'])->name('aprovacao.approve');

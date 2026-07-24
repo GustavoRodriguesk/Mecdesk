@@ -31,11 +31,11 @@
                     <div class="flex items-center gap-2">
                         <h1 class="text-xl font-bold text-gray-900 tracking-tight">{{ $empresa->nome_fantasia }}</h1>
                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold tracking-wide uppercase bg-blue-600 text-white">
-                            {{ ucfirst($empresa->plano ?? 'starter') }}
+                            {{ $empresa->plano->nome ?? 'Free' }}
                         </span>
                     </div>
                     <p class="text-sm text-gray-500 mt-0.5">
-                        Plano {{ ucfirst($empresa->plano ?? 'starter') }} &middot; {{ $empresa->ativo ? 'Ativo' : 'Inativo' }}
+                        Plano {{ $empresa->plano->nome ?? 'Free' }} &middot; {{ $empresa->ativo ? 'Ativo' : 'Inativo' }}
                     </p>
                 </div>
             </div>
@@ -186,7 +186,7 @@
             <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
                 <div>
                     <h2 class="text-base font-semibold text-gray-900">Plano atual</h2>
-                    <p class="text-sm text-gray-500 mt-0.5">{{ ucfirst($empresa->plano ?? 'starter') }}</p>
+                    <p class="text-sm text-gray-500 mt-0.5">{{ $empresa->plano->nome ?? 'Free' }}</p>
                 </div>
                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
                     <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
@@ -196,7 +196,7 @@
             <div class="px-6 py-6 grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div>
                     <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Funcionários</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ $funcionarios->count() }}<span class="text-base font-normal text-gray-400">/3</span></p>
+                    <p class="text-3xl font-bold text-gray-900">{{ $funcionarios->count() }}<span class="text-base font-normal text-gray-400">/{{ $empresa->plano->max_usuarios ?? 1 }}</span></p>
                 </div>
                 <div>
                     <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Clientes</p>
@@ -212,7 +212,7 @@
                 </div>
             </div>
             <div class="px-6 pb-6">
-                <a href="#"
+                <a href="{{ route('planos.upgrade') }}"
                     class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />

@@ -27,7 +27,7 @@ class PlanoSeeder extends Seeder
                 'slug'         => 'pro',
                 'nome'         => 'Pro',
                 'descricao'    => 'Plano profissional completo para oficinas em crescimento.',
-                'preco_mensal' => 99.00,
+                'preco_mensal' => 1.00,
                 'max_usuarios' => 5,
                 'recursos'     => [
                     'ordens_servico'  => 'unlimited',
@@ -42,7 +42,7 @@ class PlanoSeeder extends Seeder
                 'slug'         => 'ultra',
                 'nome'         => 'Ultra',
                 'descricao'    => 'Plano avançado com recursos de alta capacidade e múltiplos usuários.',
-                'preco_mensal' => 199.00,
+                'preco_mensal' => 2.00,
                 'max_usuarios' => 20,
                 'recursos'     => [
                     'ordens_servico'  => 'unlimited',

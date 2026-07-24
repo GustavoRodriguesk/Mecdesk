@@ -59,15 +59,12 @@ class CheckoutController extends Controller
             ]
         );
 
-        // Se o plano mudou no checkout, atualiza a assinatura pendente
-        if ($assinatura->plano_id !== $plano->id) {
-            $assinatura->update([
-                'plano_id'         => $plano->id,
-                'preco_contratado' => $plano->preco_mensal,
-                'status'           => 'pending',
-            ]);
-            $empresa->update(['plano_id' => $plano->id]);
-        }
+        // Atualiza o plano e o preço contratado na assinatura
+        $assinatura->update([
+            'plano_id'         => $plano->id,
+            'preco_contratado' => $plano->preco_mensal,
+        ]);
+        $empresa->update(['plano_id' => $plano->id]);
 
         return view('planos.checkout', compact('plano', 'assinatura'));
     }
@@ -124,33 +121,30 @@ class CheckoutController extends Controller
         try {
             $resultadoPix = $this->mpService->criarCobrancaPix($assinatura, $user);
 
-            // Grava apenas os metadados do pagamento (Regra: NÃO grava QR Code no banco!)
+            // Grava os metadados da preferência gerada
             Pagamento::updateOrCreate(
                 ['mp_payment_id' => $resultadoPix['id']],
                 [
                     'assinatura_id'    => $assinatura->id,
                     'empresa_id'       => $empresa->id,
                     'metodo_pagamento' => 'pix',
-                    'status'           => $resultadoPix['status'] ?? 'pending',
-                    'status_detail'    => $resultadoPix['status_detail'] ?? null,
+                    'status'           => 'pending',
+                    'status_detail'    => null,
                     'valor'            => $resultadoPix['valor'],
-                    'data_vencimento'  => $resultadoPix['data_vencimento'] ?? now()->addDays(3),
+                    'data_vencimento'  => now()->addDays(3),
                 ]
             );
 
             $assinatura->update(['metodo_pagamento' => 'pix']);
 
-            $plano = $assinatura->plano;
+            // Redireciona direto para o checkout do Mercado Pago (onde o usuário escolhe PIX)
+            $checkoutUrl = $resultadoPix['checkout_url'] ?? $resultadoPix['ticket_url'];
 
-            // Retorna a view com os dados do PIX passados temporariamente para exibição
-            return view('planos.pix', [
-                'plano'          => $plano,
-                'assinatura'     => $assinatura,
-                'qr_code'        => $resultadoPix['qr_code'],
-                'qr_code_base64' => $resultadoPix['qr_code_base64'],
-                'ticket_url'     => $resultadoPix['ticket_url'],
-                'valor'          => $resultadoPix['valor'],
-            ]);
+            if ($checkoutUrl) {
+                return redirect()->away($checkoutUrl);
+            }
+
+            return redirect()->back()->with('error', 'Não foi possível gerar o link de pagamento PIX.');
         } catch (\Throwable $e) {
             Log::error('Erro ao gerar PIX: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Erro ao gerar cobrança PIX: ' . $e->getMessage());
