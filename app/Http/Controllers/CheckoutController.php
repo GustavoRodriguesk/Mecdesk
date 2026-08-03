@@ -19,7 +19,7 @@ class CheckoutController extends Controller
     /**
      * Exibe a tela de checkout com o Checkout Bricks para a empresa contratar/ativar um plano.
      */
-    public function show(Plano $plano)
+    public function show(Plano $plano, Request $request)
     {
         $user = auth()->user();
         $empresa = $user->empresa;
@@ -49,6 +49,14 @@ class CheckoutController extends Controller
             return redirect()->route('dashboard')->with('success', 'Plano Free ativado com sucesso!');
         }
 
+        $tipoPagamento = in_array($request->query('tipo'), ['mensal', 'unico'], true)
+            ? $request->query('tipo')
+            : 'mensal';
+
+        $precoMensal = (float) $plano->preco_mensal;
+        $precoUnico  = (float) $plano->getPrecoForTipo('unico');
+        $amount      = $plano->getPrecoForTipo($tipoPagamento);
+
         // Obtém ou cria a assinatura pendente para a empresa
         $assinatura = Assinatura::firstOrCreate(
             ['empresa_id' => $empresa->id],
@@ -56,21 +64,20 @@ class CheckoutController extends Controller
                 'plano_id'         => $plano->id,
                 'metodo_pagamento' => 'cartao',
                 'status'           => 'pending',
-                'preco_contratado' => $plano->preco_mensal,
+                'preco_contratado' => $amount,
             ]
         );
 
         // Atualiza o plano e o preço contratado na assinatura
         $assinatura->update([
             'plano_id'         => $plano->id,
-            'preco_contratado' => $plano->preco_mensal,
+            'preco_contratado' => $amount,
         ]);
         $empresa->update(['plano_id' => $plano->id]);
 
         $publicKey = config('mercadopago.public_key');
-        $amount = (float) $assinatura->preco_contratado;
 
-        return view('planos.checkout', compact('plano', 'assinatura', 'publicKey', 'amount'));
+        return view('planos.checkout', compact('plano', 'assinatura', 'publicKey', 'amount', 'precoMensal', 'precoUnico', 'tipoPagamento'));
     }
 
     /**
@@ -80,6 +87,7 @@ class CheckoutController extends Controller
     {
         $request->validate([
             'payment_method_id' => 'required|string',
+            'tipo_pagamento'    => 'nullable|string|in:mensal,unico',
         ]);
 
         $user = auth()->user();
@@ -95,8 +103,22 @@ class CheckoutController extends Controller
         }
 
         try {
+            $plano = $assinatura->plano;
+            $tipoPagamento = $request->input('tipo_pagamento', 'mensal');
+
+            // CÁLCULO ESTRITO DE VALOR NO SERVIDOR (Zero-Trust)
+            $valorCalculado = $plano->getPrecoForTipo($tipoPagamento);
+
+            // Atualiza o preço contratado na assinatura
+            $assinatura->update([
+                'preco_contratado' => $valorCalculado,
+            ]);
+
+            $formData = $request->all();
+            $formData['tipo_pagamento'] = $tipoPagamento;
+
             // Cria o pagamento no Mercado Pago utilizando valor estritamente do servidor
-            $resultado = $this->mpService->criarPagamento($request->all(), $assinatura, $user);
+            $resultado = $this->mpService->criarPagamento($formData, $assinatura, $user, $valorCalculado);
 
             $mpPaymentId   = (string) ($resultado['id'] ?? '');
             $status        = $resultado['status'] ?? 'pending';
@@ -112,7 +134,7 @@ class CheckoutController extends Controller
                         'metodo_pagamento' => $paymentMethod,
                         'status'           => $status,
                         'status_detail'    => $statusDetail,
-                        'valor'            => $assinatura->preco_contratado,
+                        'valor'            => $valorCalculado,
                         'data_pagamento'   => $status === 'approved' ? now() : null,
                         'payload_resposta' => $resultado,
                     ]
@@ -121,12 +143,14 @@ class CheckoutController extends Controller
 
             // Ativação prévia se o pagamento for aprovado imediatamente (ex: Cartão)
             if ($status === 'approved') {
+                $duracaoMeses = ($tipoPagamento === 'unico') ? 12 : 1;
+
                 $assinatura->update([
                     'status'             => 'authorized',
                     'metodo_pagamento'   => $paymentMethod,
                     'data_inicio'        => $assinatura->data_inicio ?? now(),
-                    'proximo_vencimento' => now()->addMonth(),
-                    'valido_ate'         => now()->addMonth(),
+                    'proximo_vencimento' => now()->addMonths($duracaoMeses),
+                    'valido_ate'         => now()->addMonths($duracaoMeses),
                 ]);
 
                 $empresa->ativo = true;

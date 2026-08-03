@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('nome', 100);
             $table->text('descricao')->nullable();
             $table->decimal('preco_mensal', 10, 2)->default(0.00);
+            $table->decimal('preco_unico', 10, 2)->nullable();
             $table->integer('max_usuarios')->default(1);
             $table->json('recursos')->nullable();
             $table->boolean('ativo')->default(true);

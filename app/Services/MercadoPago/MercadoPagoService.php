@@ -27,17 +27,25 @@ class MercadoPagoService
      * Processa um pagamento via Checkout Bricks (Cartão, PIX, Boleto, etc.).
      * Endpoint: POST /v1/payments
      */
-    public function criarPagamento(array $formData, Assinatura $assinatura, User $usuario): array
+    public function criarPagamento(array $formData, Assinatura $assinatura, User $usuario, ?float $valorCalculado = null): array
     {
         $plano = $assinatura->plano;
         $token = $this->getAccessToken();
 
-        // O valor é estritamente baseado no contrato do banco de dados (Server-Side Price Validation)
+        $tipoPagamento = $formData['tipo_pagamento'] ?? 'mensal';
+        $amount        = $valorCalculado ?? (float) $assinatura->preco_contratado;
+
+        // Regra Estrita de Segurança e Negócio:
+        // Assinaturas mensais PERMITEM APENAS 1 PARCELA (installments = 1).
+        // Qualquer valor enviado pelo frontend para assinatura mensal é ignorado.
+        $installments = ($tipoPagamento === 'mensal') ? 1 : (int) ($formData['installments'] ?? 1);
+
         $payload = [
-            'transaction_amount' => (float) $assinatura->preco_contratado,
-            'description'        => "Assinatura MecDesk - Plano {$plano->nome}",
+            'transaction_amount' => $amount,
+            'description'        => ($tipoPagamento === 'unico' ? 'Pagamento Único Anual' : 'Assinatura Mensal') . " MecDesk - Plano {$plano->nome}",
             'payment_method_id'  => $formData['payment_method_id'] ?? null,
             'external_reference' => (string) $assinatura->id,
+            'installments'       => $installments,
             'payer'              => [
                 'email' => $formData['payer']['email'] ?? $usuario->email,
             ],
@@ -46,10 +54,6 @@ class MercadoPagoService
 
         if (!empty($formData['token'])) {
             $payload['token'] = $formData['token'];
-        }
-
-        if (!empty($formData['installments'])) {
-            $payload['installments'] = (int) $formData['installments'];
         }
 
         if (!empty($formData['issuer_id'])) {
