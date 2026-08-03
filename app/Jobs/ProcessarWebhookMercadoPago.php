@@ -18,7 +18,7 @@ class ProcessarWebhookMercadoPago implements ShouldQueue
     use Queueable;
 
     /**
-     * The number of times the job may be attempted.
+     * O número de tentativas de execução do Job.
      */
     public int $tries = 3;
 
@@ -39,10 +39,8 @@ class ProcessarWebhookMercadoPago implements ShouldQueue
             $resourceId = $log->resource_id;
 
             // Determinar o tipo de notificação e consultar na API do Mercado Pago (Zero-Trust)
-            if (str_contains($action, 'payment') || str_contains($action, 'pay')) {
+            if (str_contains($action, 'payment') || str_contains($action, 'pay') || empty($action) || $action === 'unknown') {
                 $this->processarPagamento($mpService, $resourceId, $log);
-            } elseif (str_contains($action, 'subscription') || str_contains($action, 'preapproval')) {
-                $this->processarAssinatura($mpService, $resourceId, $log);
             }
 
             $log->update([
@@ -64,6 +62,11 @@ class ProcessarWebhookMercadoPago implements ShouldQueue
 
     protected function processarPagamento(MercadoPagoService $mpService, string $paymentId, WebhookLog $log): void
     {
+        if (empty($paymentId)) {
+            Log::warning("Webhook #{$log->id} recebido sem ID de pagamento válido.");
+            return;
+        }
+
         // 1. DUPLA CHECAGEM OBRIGATÓRIA NA API DO MERCADO PAGO
         $dadosPagamento = $mpService->consultarPagamento($paymentId);
 
@@ -123,53 +126,6 @@ class ProcessarWebhookMercadoPago implements ShouldQueue
                 // Se falhou o pagamento e a vigência atual já venceu, marca como overdue
                 if (!$assinatura->valido_ate || $assinatura->valido_ate->isPast()) {
                     $assinatura->update(['status' => 'overdue']);
-                }
-            }
-        });
-    }
-
-    protected function processarAssinatura(MercadoPagoService $mpService, string $preapprovalId, WebhookLog $log): void
-    {
-        // DUPLA CHECAGEM OBRIGATÓRIA NA API DE ASSINATURAS DO MERCADO PAGO
-        $dadosAssinatura   = $mpService->consultarAssinatura($preapprovalId);
-        $status            = $dadosAssinatura['status'] ?? 'pending';
-        $externalReference = $dadosAssinatura['external_reference'] ?? null;
-
-        if (!$externalReference) {
-            return;
-        }
-
-        $assinatura = Assinatura::find($externalReference);
-
-        if (!$assinatura) {
-            return;
-        }
-
-        DB::transaction(function () use ($assinatura, $preapprovalId, $status) {
-            $statusMapeado = match ($status) {
-                'authorized' => 'authorized',
-                'paused'     => 'paused',
-                'cancelled'  => 'cancelled',
-                default      => 'pending',
-            };
-
-            $assinatura->update([
-                'mp_preapproval_id' => $preapprovalId,
-                'status'            => $statusMapeado,
-            ]);
-
-            $empresa = $assinatura->empresa;
-
-            if ($statusMapeado === 'authorized') {
-                $empresa->ativo = true;
-                $empresa->save();
-
-                AssinaturaAtivada::dispatch($assinatura);
-            } elseif (in_array($statusMapeado, ['cancelled', 'paused'], true)) {
-                // Se a assinatura for cancelada ou pausada e a vigência expirou, inativa a empresa
-                if (!$assinatura->valido_ate || $assinatura->valido_ate->isPast()) {
-                    $empresa->ativo = false;
-                    $empresa->save();
                 }
             }
         });

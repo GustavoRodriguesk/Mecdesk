@@ -6,6 +6,7 @@ use App\Models\Assinatura;
 use App\Models\Pagamento;
 use App\Models\Plano;
 use App\Services\MercadoPago\MercadoPagoService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -16,7 +17,7 @@ class CheckoutController extends Controller
     ) {}
 
     /**
-     * Exibe a tela de checkout para a empresa contratar/ativar um plano.
+     * Exibe a tela de checkout com o Checkout Bricks para a empresa contratar/ativar um plano.
      */
     public function show(Plano $plano)
     {
@@ -66,93 +67,89 @@ class CheckoutController extends Controller
         ]);
         $empresa->update(['plano_id' => $plano->id]);
 
-        return view('planos.checkout', compact('plano', 'assinatura'));
+        $publicKey = config('mercadopago.public_key');
+        $amount = (float) $assinatura->preco_contratado;
+
+        return view('planos.checkout', compact('plano', 'assinatura', 'publicKey', 'amount'));
     }
 
     /**
-     * Inicia o fluxo de Assinatura Recorrente em Cartão de Crédito no Mercado Pago.
+     * Processa a transação enviada pelo Checkout Bricks (POST AJAX).
      */
-    public function assinarCartao(Request $request)
+    public function processarPagamento(Request $request): JsonResponse
     {
+        $request->validate([
+            'payment_method_id' => 'required|string',
+        ]);
+
         $user = auth()->user();
         $empresa = $user->empresa;
 
         $assinatura = $empresa->assinaturaAtiva ?? $empresa->assinaturas()->latest()->first();
 
         if (!$assinatura) {
-            return redirect()->route('planos.upgrade')->with('error', 'Assinatura não encontrada.');
+            return response()->json([
+                'error'   => 'Assinatura não encontrada',
+                'message' => 'Nenhuma assinatura cadastrada para esta empresa.',
+            ], 404);
         }
 
         try {
-            $resultado = $this->mpService->criarAssinaturaCartao($assinatura, $user);
+            // Cria o pagamento no Mercado Pago utilizando valor estritamente do servidor
+            $resultado = $this->mpService->criarPagamento($request->all(), $assinatura, $user);
 
-            if (!empty($resultado['id'])) {
+            $mpPaymentId   = (string) ($resultado['id'] ?? '');
+            $status        = $resultado['status'] ?? 'pending';
+            $statusDetail  = $resultado['status_detail'] ?? null;
+            $paymentMethod = ($resultado['payment_method_id'] ?? '') === 'pix' ? 'pix' : 'cartao';
+
+            if (!empty($mpPaymentId)) {
+                Pagamento::updateOrCreate(
+                    ['mp_payment_id' => $mpPaymentId],
+                    [
+                        'assinatura_id'    => $assinatura->id,
+                        'empresa_id'       => $empresa->id,
+                        'metodo_pagamento' => $paymentMethod,
+                        'status'           => $status,
+                        'status_detail'    => $statusDetail,
+                        'valor'            => $assinatura->preco_contratado,
+                        'data_pagamento'   => $status === 'approved' ? now() : null,
+                        'payload_resposta' => $resultado,
+                    ]
+                );
+            }
+
+            // Ativação prévia se o pagamento for aprovado imediatamente (ex: Cartão)
+            if ($status === 'approved') {
                 $assinatura->update([
-                    'mp_preapproval_id' => $resultado['id'],
-                    'metodo_pagamento'   => 'cartao',
+                    'status'             => 'authorized',
+                    'metodo_pagamento'   => $paymentMethod,
+                    'data_inicio'        => $assinatura->data_inicio ?? now(),
+                    'proximo_vencimento' => now()->addMonth(),
+                    'valido_ate'         => now()->addMonth(),
                 ]);
+
+                $empresa->ativo = true;
+                $empresa->save();
             }
 
-            if (!empty($resultado['init_point'])) {
-                return redirect()->away($resultado['init_point']);
-            }
+            return response()->json($resultado, 200);
 
-            return redirect()->back()->with('error', 'Não foi possível gerar a URL de pagamento do Mercado Pago.');
         } catch (\Throwable $e) {
-            Log::error('Erro ao processar assinatura em cartão: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Erro ao conectar ao Mercado Pago: ' . $e->getMessage());
+            Log::error('Erro ao processar pagamento via Bricks: ' . $e->getMessage(), [
+                'user_id'    => $user->id,
+                'empresa_id' => $empresa->id,
+            ]);
+
+            return response()->json([
+                'error'   => 'Falha no processamento do pagamento',
+                'message' => $e->getMessage(),
+            ], 422);
         }
     }
 
     /**
-     * Gera a cobrança por ciclo via PIX (obtendo QR Code na hora, sem salvar no banco).
-     */
-    public function gerarPix(Request $request)
-    {
-        $user = auth()->user();
-        $empresa = $user->empresa;
-
-        $assinatura = $empresa->assinaturaAtiva ?? $empresa->assinaturas()->latest()->first();
-
-        if (!$assinatura) {
-            return redirect()->route('planos.upgrade')->with('error', 'Assinatura não encontrada.');
-        }
-
-        try {
-            $resultadoPix = $this->mpService->criarCobrancaPix($assinatura, $user);
-
-            // Grava os metadados da preferência gerada
-            Pagamento::updateOrCreate(
-                ['mp_payment_id' => $resultadoPix['id']],
-                [
-                    'assinatura_id'    => $assinatura->id,
-                    'empresa_id'       => $empresa->id,
-                    'metodo_pagamento' => 'pix',
-                    'status'           => 'pending',
-                    'status_detail'    => null,
-                    'valor'            => $resultadoPix['valor'],
-                    'data_vencimento'  => now()->addDays(3),
-                ]
-            );
-
-            $assinatura->update(['metodo_pagamento' => 'pix']);
-
-            // Redireciona direto para o checkout do Mercado Pago (onde o usuário escolhe PIX)
-            $checkoutUrl = $resultadoPix['checkout_url'] ?? $resultadoPix['ticket_url'];
-
-            if ($checkoutUrl) {
-                return redirect()->away($checkoutUrl);
-            }
-
-            return redirect()->back()->with('error', 'Não foi possível gerar o link de pagamento PIX.');
-        } catch (\Throwable $e) {
-            Log::error('Erro ao gerar PIX: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Erro ao gerar cobrança PIX: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Callback de retorno após o pagamento no checkout do Mercado Pago.
+     * Callback de retorno após a conclusão do fluxo no checkout.
      */
     public function callback(Request $request)
     {

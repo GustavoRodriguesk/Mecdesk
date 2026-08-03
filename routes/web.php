@@ -12,7 +12,6 @@ use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AprovacaoController;
 use App\Http\Controllers\WebhookController;
-use App\Http\Controllers\MercadoPagoWebhookController;
 use App\Http\Controllers\CheckoutController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,7 +24,7 @@ Route::get('/', function () {
 | Rotas Públicas & Webhooks
 |--------------------------------------------------------------------------
 */
-Route::post('/webhooks/mercadopago', [MercadoPagoWebhookController::class, 'handle'])->name('webhooks.mercadopago');
+Route::post('/webhooks/mercadopago', [WebhookController::class, 'handle'])->name('webhooks.mercadopago');
 
 Route::get('/aprovacao/{token}', [AprovacaoController::class, 'show'])->name('aprovacao.show');
 Route::post('/aprovacao/{token}/aprovar', [AprovacaoController::class, 'approve'])->name('aprovacao.approve');
@@ -50,8 +49,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('planos.upgrade');
 
     Route::get('/checkout/{plano:slug}', [CheckoutController::class, 'show'])->name('checkout.show');
-    Route::post('/checkout/cartao', [CheckoutController::class, 'assinarCartao'])->name('checkout.cartao');
-    Route::post('/checkout/pix', [CheckoutController::class, 'gerarPix'])->name('checkout.pix');
+    Route::post('/checkout/processar', [CheckoutController::class, 'processarPagamento'])->name('checkout.processar');
     Route::get('/planos/callback', [CheckoutController::class, 'callback'])->name('planos.callback');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -349,6 +349,6 @@
             document.getElementById('sidebarOverlay').classList.remove('open');
         }
     </script>
-
+    @stack('scripts')
     </body>
 </html>

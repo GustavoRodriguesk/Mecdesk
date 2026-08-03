@@ -6,6 +6,7 @@ use App\Models\Assinatura;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class MercadoPagoService
 {
@@ -22,137 +23,75 @@ class MercadoPagoService
         return $token ?? '';
     }
 
-    protected function getPayerEmail(User $usuario): string
-    {
-        $token = $this->getAccessToken();
-        
-        // Se o token for de Teste (TEST-) ou se o e-mail for o mesmo do vendedor
-        if (str_starts_with($token, 'TEST-') || str_contains(strtolower($usuario->email), 'gustavorodrig780')) {
-            return 'test_user_10000000@testuser.com';
-        }
-
-        return $usuario->email;
-    }
-
     /**
-     * Cria uma Assinatura Recorrente no Mercado Pago (Cartão de Crédito).
-     * Endpoint: POST /preapproval
+     * Processa um pagamento via Checkout Bricks (Cartão, PIX, Boleto, etc.).
+     * Endpoint: POST /v1/payments
      */
-    public function criarAssinaturaCartao(Assinatura $assinatura, User $usuario): array
-    {
-        $plano = $assinatura->plano;
-
-        $payload = [
-            'reason'             => "Assinatura MecDesk - Plano {$plano->nome}",
-            'external_reference' => (string) $assinatura->id,
-            'payer_email'        => $this->getPayerEmail($usuario),
-            'back_url'           => config('mercadopago.back_url'),
-            'auto_recurring'     => [
-                'frequency'          => 1,
-                'frequency_type'     => 'months',
-                'transaction_amount' => (float) $assinatura->preco_contratado,
-                'currency_id'        => 'BRL',
-            ],
-            'status'             => 'pending',
-        ];
-
-        $response = Http::withToken($this->getAccessToken())
-            ->acceptJson()
-            ->post("{$this->baseUrl}/preapproval", $payload);
-
-        if ($response->failed()) {
-            Log::error('Erro ao criar assinatura no Mercado Pago', [
-                'status'  => $response->status(),
-                'body'    => $response->json(),
-                'payload' => $payload,
-            ]);
-
-            throw new \RuntimeException('Falha na comunicação com o Mercado Pago: ' . ($response->json('message') ?? $response->body()));
-        }
-
-        $data = $response->json();
-
-        return [
-            'id'         => $data['id'] ?? null,
-            'init_point' => $data['init_point'] ?? null,
-            'status'     => $data['status'] ?? 'pending',
-            'raw'        => $data,
-        ];
-    }
-
-    /**
-     * Cria uma Cobrança PIX via Checkout Básico (Preference).
-     * Funciona com chaves APP_USR sem necessidade de homologação.
-     * Endpoint: POST /checkout/preferences
-     */
-    public function criarCobrancaPix(Assinatura $assinatura, User $usuario): array
+    public function criarPagamento(array $formData, Assinatura $assinatura, User $usuario): array
     {
         $plano = $assinatura->plano;
         $token = $this->getAccessToken();
-        $isSandbox = str_starts_with($token, 'TEST-');
 
+        // O valor é estritamente baseado no contrato do banco de dados (Server-Side Price Validation)
         $payload = [
-            'items' => [
-                [
-                    'title'       => "MecDesk - Mensalidade Plano {$plano->nome}",
-                    'quantity'    => 1,
-                    'unit_price'  => (float) $assinatura->preco_contratado,
-                    'currency_id' => 'BRL',
-                ]
-            ],
-            'payment_methods' => [
-                'excluded_payment_types' => [
-                    ['id' => 'credit_card'],
-                    ['id' => 'debit_card'],
-                    ['id' => 'prepaid_card'],
-                    ['id' => 'ticket'],
-                    ['id' => 'atm'],
-                ],
-            ],
-            'payer' => [
-                'email' => $this->getPayerEmail($usuario),
-            ],
-            'back_urls' => [
-                'success' => config('mercadopago.back_url'),
-                'pending' => config('mercadopago.back_url'),
-                'failure' => config('mercadopago.back_url'),
-            ],
+            'transaction_amount' => (float) $assinatura->preco_contratado,
+            'description'        => "Assinatura MecDesk - Plano {$plano->nome}",
+            'payment_method_id'  => $formData['payment_method_id'] ?? null,
             'external_reference' => (string) $assinatura->id,
+            'payer'              => [
+                'email' => $formData['payer']['email'] ?? $usuario->email,
+            ],
+            'notification_url'   => route('webhooks.mercadopago'),
         ];
+
+        if (!empty($formData['token'])) {
+            $payload['token'] = $formData['token'];
+        }
+
+        if (!empty($formData['installments'])) {
+            $payload['installments'] = (int) $formData['installments'];
+        }
+
+        if (!empty($formData['issuer_id'])) {
+            $payload['issuer_id'] = $formData['issuer_id'];
+        }
+
+        if (!empty($formData['payer']['identification']['type']) && !empty($formData['payer']['identification']['number'])) {
+            $payload['payer']['identification'] = [
+                'type'   => $formData['payer']['identification']['type'],
+                'number' => $formData['payer']['identification']['number'],
+            ];
+        }
+
+        if (!empty($formData['payer']['first_name'])) {
+            $payload['payer']['first_name'] = $formData['payer']['first_name'];
+        }
+
+        if (!empty($formData['payer']['last_name'])) {
+            $payload['payer']['last_name'] = $formData['payer']['last_name'];
+        }
+
+        // Chave de Idempotência para prevenir cobranças duplicadas em retentativas
+        $idempotencyKey = (string) Str::uuid();
 
         $response = Http::withToken($token)
+            ->withHeaders([
+                'X-Idempotency-Key' => $idempotencyKey,
+            ])
             ->acceptJson()
-            ->post("{$this->baseUrl}/checkout/preferences", $payload);
+            ->post("{$this->baseUrl}/v1/payments", $payload);
 
         if ($response->failed()) {
-            Log::error('Erro ao gerar preferência PIX no Mercado Pago', [
+            Log::error('Erro ao criar pagamento no Mercado Pago via Bricks', [
                 'status'  => $response->status(),
                 'body'    => $response->json(),
                 'payload' => $payload,
             ]);
 
-            throw new \RuntimeException('Falha ao gerar QR Code PIX: ' . ($response->json('message') ?? $response->body()));
+            throw new \RuntimeException('Falha no processamento do pagamento: ' . ($response->json('message') ?? $response->body()));
         }
 
-        $data = $response->json();
-
-        // Em sandbox usa sandbox_init_point; em produção usa init_point
-        $checkoutUrl = $isSandbox
-            ? ($data['sandbox_init_point'] ?? $data['init_point'])
-            : ($data['init_point'] ?? null);
-
-        return [
-            'id'              => $data['id'] ?? '',
-            'status'          => 'pending',
-            'status_detail'   => null,
-            'valor'           => $assinatura->preco_contratado,
-            'qr_code'         => null,
-            'qr_code_base64'  => null,
-            'ticket_url'      => $checkoutUrl,
-            'checkout_url'    => $checkoutUrl,
-            'data_vencimento' => null,
-            'raw'             => $data,
-        ];
+        return $response->json();
     }
 
     /**

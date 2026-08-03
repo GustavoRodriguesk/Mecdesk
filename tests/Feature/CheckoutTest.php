@@ -53,46 +53,54 @@ test('selecting free plan activates company immediately', function () {
     expect($this->empresa->ativo)->toBeTrue();
 });
 
-test('checkout show renders payment choice for paid plans', function () {
+test('checkout show renders payment brick page for paid plans', function () {
     $response = $this->actingAs($this->user)->get(route('checkout.show', 'pro'));
 
     $response->assertStatus(200)
-        ->assertSee('Cartão de Crédito')
-        ->assertSee('PIX');
+        ->assertSee('paymentBrick_container')
+        ->assertSee('sdk.mercadopago.com/js/v2');
 });
 
-test('gerar pix endpoint creates payment metadata without saving qr code in db', function () {
+test('processarPagamento endpoint creates payment using server side amount and returns json', function () {
     Http::fake([
         'https://api.mercadopago.com/v1/payments' => Http::response([
             'id'                 => 555444333,
-            'status'             => 'pending',
-            'status_detail'      => 'pending_waiting_transfer',
+            'status'             => 'approved',
+            'status_detail'      => 'accredited',
+            'payment_method_id'  => 'visa',
             'transaction_amount' => 99.00,
-            'point_of_interaction' => [
-                'transaction_data' => [
-                    'qr_code'        => '00020126580014br.gov.bcb.pix...',
-                    'qr_code_base64' => 'iVBORw0KGgoAAAANSUhEUgAA...',
-                    'ticket_url'      => 'https://www.mercadopago.com.br/payments/555444333/ticket',
-                ],
-            ],
-            'date_of_expiration' => now()->addDays(3)->toIso8601String(),
         ], 201),
     ]);
 
-    $response = $this->actingAs($this->user)->post(route('checkout.pix'));
+    $payload = [
+        'token'             => 'FF8080814C122709014C2A1E6589083F',
+        'payment_method_id' => 'visa',
+        'installments'      => 1,
+        'issuer_id'         => '25',
+        'payer'             => [
+            'email' => 'cliente@testuser.com',
+        ],
+    ];
+
+    $response = $this->actingAs($this->user)->postJson(route('checkout.processar'), $payload);
 
     $response->assertStatus(200)
-        ->assertSee('00020126580014br.gov.bcb.pix...');
+        ->assertJson([
+            'id'     => 555444333,
+            'status' => 'approved',
+        ]);
 
-    // Verifica que o metadata foi gravado no banco sem o campo qr_code
     $this->assertDatabaseHas('pagamentos', [
         'mp_payment_id' => '555444333',
-        'status'        => 'pending',
+        'status'        => 'approved',
         'valor'         => 99.00,
     ]);
+
+    $this->empresa->refresh();
+    expect($this->empresa->ativo)->toBeTrue();
 });
 
-test('artisan command renovar assinaturas pix generates next cycle payments', function () {
+test('artisan command renovar assinaturas pix generates next cycle payments via bricks service', function () {
     Http::fake([
         'https://api.mercadopago.com/v1/payments' => Http::response([
             'id'                 => 888777666,
@@ -108,7 +116,7 @@ test('artisan command renovar assinaturas pix generates next cycle payments', fu
         'status'             => 'authorized',
         'preco_contratado'   => 99.00,
         'data_inicio'        => now()->subDays(25),
-        'valido_ate'         => now()->addDays(2), // Vence em 2 dias
+        'valido_ate'         => now()->addDays(2),
         'proximo_vencimento' => now()->addDays(2),
     ]);
 

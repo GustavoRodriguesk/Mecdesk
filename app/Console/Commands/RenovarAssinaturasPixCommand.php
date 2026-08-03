@@ -49,18 +49,25 @@ class RenovarAssinaturasPixCommand extends Command
                     continue;
                 }
 
-                $resultadoPix = $mpService->criarCobrancaPix($assinatura, $user);
+                $formData = [
+                    'payment_method_id' => 'pix',
+                    'payer' => [
+                        'email' => $user->email,
+                    ],
+                ];
 
-                // Registra apenas os metadados em pagamentos
+                $resultadoPix = $mpService->criarPagamento($formData, $assinatura, $user);
+
+                // Registra os metadados em pagamentos
                 Pagamento::create([
                     'assinatura_id'    => $assinatura->id,
                     'empresa_id'       => $assinatura->empresa_id,
-                    'mp_payment_id'    => $resultadoPix['id'],
+                    'mp_payment_id'    => (string) ($resultadoPix['id'] ?? ''),
                     'metodo_pagamento' => 'pix',
                     'status'           => $resultadoPix['status'] ?? 'pending',
                     'status_detail'    => $resultadoPix['status_detail'] ?? null,
-                    'valor'            => $resultadoPix['valor'],
-                    'data_vencimento'  => $resultadoPix['data_vencimento'] ?? now()->addDays(3),
+                    'valor'            => $resultadoPix['transaction_amount'] ?? $assinatura->preco_contratado,
+                    'data_vencimento'  => now()->addDays(3),
                 ]);
 
                 $assinatura->update([
