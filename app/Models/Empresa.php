@@ -35,7 +35,27 @@ class Empresa extends Model
 
     public function plano()
     {
-        return $this->belongsTo(Plano::class);
+        return $this->belongsTo(Plano::class, 'plano_id');
+    }
+
+    /**
+     * Accessor para resolver a colisão de nomes entre a coluna de banco 'plano' (string legada)
+     * e a relação Eloquent plano() (belongsTo Plano::class).
+     */
+    public function getPlanoAttribute()
+    {
+        if ($this->relationLoaded('plano')) {
+            return $this->getRelation('plano');
+        }
+
+        if (!empty($this->attributes['plano_id'])) {
+            $planoModel = Plano::find($this->attributes['plano_id']);
+            if ($planoModel) {
+                return $planoModel;
+            }
+        }
+
+        return null;
     }
 
     public function assinaturas()

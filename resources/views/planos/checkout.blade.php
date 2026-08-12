@@ -152,6 +152,7 @@
                     amount: currentAmount,
                     payer: {
                         email: '{{ auth()->user()->email }}',
+                        entityType: 'individual',
                     },
                 },
                 customization: {

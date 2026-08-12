@@ -93,7 +93,9 @@ class CheckoutController extends Controller
         $user = auth()->user();
         $empresa = $user->empresa;
 
-        $assinatura = $empresa->assinaturaAtiva ?? $empresa->assinaturas()->latest()->first();
+        // Usa ->first() para garantir que o null coalescing funcione corretamente
+        // assinaturaAtiva é uma relação Eloquent, não um accessor
+        $assinatura = $empresa->assinaturaAtiva()->first() ?? $empresa->assinaturas()->latest()->first();
 
         if (!$assinatura) {
             return response()->json([
@@ -153,6 +155,7 @@ class CheckoutController extends Controller
                     'valido_ate'         => now()->addMonths($duracaoMeses),
                 ]);
 
+                $empresa->plano_id = $assinatura->plano_id;
                 $empresa->ativo = true;
                 $empresa->save();
             }
@@ -174,12 +177,27 @@ class CheckoutController extends Controller
 
     /**
      * Callback de retorno após a conclusão do fluxo no checkout.
+     * Se o pagamento por cartão foi aprovado instantaneamente, redireciona ao dashboard.
+     * Para PIX e boleto, mantém na tela de pendência aguardando confirmação.
      */
     public function callback(Request $request)
     {
+        $user    = auth()->user();
+        $empresa = $user->empresa;
+
+        // Recarrega a empresa do banco para pegar o estado mais recente
+        $empresa->refresh();
+
+        if ($empresa->isAtiva()) {
+            return redirect()->route('dashboard')->with(
+                'success',
+                '🎉 Pagamento aprovado! Seja bem-vindo ao MecDesk.'
+            );
+        }
+
         return redirect()->route('assinatura.pendente')->with(
-            'success',
-            'Pagamento em processamento! Assim que o Mercado Pago confirmar a transação, seu acesso será liberado automaticamente.'
+            'info',
+            'Pagamento em processamento. Assim que o Mercado Pago confirmar, seu acesso será liberado automaticamente.'
         );
     }
 }

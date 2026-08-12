@@ -114,8 +114,9 @@ class ProcessarWebhookMercadoPago implements ShouldQueue
                     'valido_ate'         => now()->addMonth(),
                 ]);
 
-                // Ativa a empresa
+                // Ativa a empresa e atualiza seu plano para o plano da assinatura
                 $empresa = $assinatura->empresa;
+                $empresa->plano_id = $assinatura->plano_id;
                 $empresa->ativo = true;
                 $empresa->save();
 
