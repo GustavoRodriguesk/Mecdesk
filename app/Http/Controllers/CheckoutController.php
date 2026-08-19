@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\AssinaturaAtivada;
 use App\Models\Assinatura;
-use App\Models\Pagamento;
 use App\Models\Plano;
 use App\Services\MercadoPago\MercadoPagoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
@@ -17,159 +18,141 @@ class CheckoutController extends Controller
     ) {}
 
     /**
-     * Exibe a tela de checkout com o Checkout Bricks para a empresa contratar/ativar um plano.
+     * Exibe a tela de checkout para contratação do Plano Pro (R$ 99,90/mês).
      */
-    public function show(Plano $plano, Request $request)
+    public function show(?Plano $plano = null, Request $request = null)
     {
         $user = auth()->user();
         $empresa = $user->empresa;
 
-        // Se o plano for free, ativa a empresa imediatamente sem checkout
-        if ($plano->slug === 'free') {
-            $empresa->update(['plano_id' => $plano->id]);
+        // Garante o plano Pro ativo no banco de dados (Zero-Trust)
+        $planoPro = Plano::where('slug', 'pro')->where('ativo', true)->firstOrFail();
+        $amount = (float) $planoPro->preco_mensal;
 
-            $assinatura = $empresa->assinaturas()->firstOrCreate(
-                ['plano_id' => $plano->id],
-                [
-                    'metodo_pagamento' => 'free',
-                    'status'           => 'authorized',
-                    'preco_contratado' => 0.00,
-                    'data_inicio'      => now(),
-                ]
-            );
-
-            $assinatura->update([
-                'status'           => 'authorized',
-                'metodo_pagamento' => 'free',
-            ]);
-
-            $empresa->ativo = true;
-            $empresa->save();
-
-            return redirect()->route('dashboard')->with('success', 'Plano Free ativado com sucesso!');
-        }
-
-        $tipoPagamento = in_array($request->query('tipo'), ['mensal', 'unico'], true)
-            ? $request->query('tipo')
-            : 'mensal';
-
-        $precoMensal = (float) $plano->preco_mensal;
-        $precoUnico  = (float) $plano->getPrecoForTipo('unico');
-        $amount      = $plano->getPrecoForTipo($tipoPagamento);
-
-        // Obtém ou cria a assinatura pendente para a empresa
+        // Obtém ou cria a assinatura para a empresa
         $assinatura = Assinatura::firstOrCreate(
             ['empresa_id' => $empresa->id],
             [
-                'plano_id'         => $plano->id,
+                'plano_id'         => $planoPro->id,
                 'metodo_pagamento' => 'cartao',
                 'status'           => 'pending',
                 'preco_contratado' => $amount,
             ]
         );
 
-        // Atualiza o plano e o preço contratado na assinatura
         $assinatura->update([
-            'plano_id'         => $plano->id,
+            'plano_id'         => $planoPro->id,
             'preco_contratado' => $amount,
         ]);
-        $empresa->update(['plano_id' => $plano->id]);
+        $empresa->update(['plano_id' => $planoPro->id]);
 
         $publicKey = config('mercadopago.public_key');
 
-        return view('planos.checkout', compact('plano', 'assinatura', 'publicKey', 'amount', 'precoMensal', 'precoUnico', 'tipoPagamento'));
+        return view('planos.checkout', [
+            'plano'      => $planoPro,
+            'assinatura' => $assinatura,
+            'publicKey'  => $publicKey,
+            'amount'     => $amount,
+        ]);
     }
 
     /**
-     * Processa a transação enviada pelo Checkout Bricks (POST AJAX).
+     * Processa a criação ou atualização da assinatura recorrente no Mercado Pago (/preapproval).
      */
     public function processarPagamento(Request $request): JsonResponse
     {
         $request->validate([
-            'payment_method_id' => 'required|string',
-            'tipo_pagamento'    => 'nullable|string|in:mensal,unico',
+            'card_token_id'   => 'required|string',
+            'idempotency_key' => 'nullable|uuid',
         ]);
 
         $user = auth()->user();
         $empresa = $user->empresa;
 
-        // Usa ->first() para garantir que o null coalescing funcione corretamente
-        // assinaturaAtiva é uma relação Eloquent, não um accessor
-        $assinatura = $empresa->assinaturaAtiva()->first() ?? $empresa->assinaturas()->latest()->first();
-
-        if (!$assinatura) {
+        // Proteção contra duplicidade no backend: bloqueia se a empresa já estiver ativa com assinatura authorized
+        $assinaturaAtiva = $empresa->assinaturas()->where('status', 'authorized')->first();
+        if ($assinaturaAtiva && $empresa->isAtiva()) {
             return response()->json([
-                'error'   => 'Assinatura não encontrada',
-                'message' => 'Nenhuma assinatura cadastrada para esta empresa.',
-            ], 404);
+                'error'   => 'Assinatura já ativa',
+                'message' => 'Sua empresa já possui uma assinatura ativa no Plano Pro.',
+            ], 422);
         }
 
+        // Obtém o plano Pro ativo no servidor (Zero-Trust: valor indiscutível)
+        $plano = Plano::where('slug', 'pro')->where('ativo', true)->firstOrFail();
+        $cardTokenId = $request->input('card_token_id');
+        $idempotencyKey = $request->input('idempotency_key') ?? (string) Str::uuid();
+
+        // Localiza a assinatura existente da empresa
+        $assinatura = $empresa->assinaturas()->latest()->first();
+
         try {
-            $plano = $assinatura->plano;
-            $tipoPagamento = $request->input('tipo_pagamento', 'mensal');
-
-            // CÁLCULO ESTRITO DE VALOR NO SERVIDOR (Zero-Trust)
-            $valorCalculado = $plano->getPrecoForTipo($tipoPagamento);
-
-            // Atualiza o preço contratado na assinatura
-            $assinatura->update([
-                'preco_contratado' => $valorCalculado,
-            ]);
-
-            $formData = $request->all();
-            $formData['tipo_pagamento'] = $tipoPagamento;
-
-            // Cria o pagamento no Mercado Pago utilizando valor estritamente do servidor
-            $resultado = $this->mpService->criarPagamento($formData, $assinatura, $user, $valorCalculado);
-
-            $mpPaymentId   = (string) ($resultado['id'] ?? '');
-            $status        = $resultado['status'] ?? 'pending';
-            $statusDetail  = $resultado['status_detail'] ?? null;
-            $paymentMethod = ($resultado['payment_method_id'] ?? '') === 'pix' ? 'pix' : 'cartao';
-
-            if (!empty($mpPaymentId)) {
-                Pagamento::updateOrCreate(
-                    ['mp_payment_id' => $mpPaymentId],
-                    [
-                        'assinatura_id'    => $assinatura->id,
-                        'empresa_id'       => $empresa->id,
-                        'metodo_pagamento' => $paymentMethod,
-                        'status'           => $status,
-                        'status_detail'    => $statusDetail,
-                        'valor'            => $valorCalculado,
-                        'data_pagamento'   => $status === 'approved' ? now() : null,
-                        'payload_resposta' => $resultado,
-                    ]
-                );
+            // Se já existir mp_preapproval_id em status pending, atualiza o cartão via PUT /preapproval/{id} para evitar contrato duplicado
+            if ($assinatura && $assinatura->mp_preapproval_id && $assinatura->status === 'pending') {
+                $resultado = $this->mpService->atualizarAssinatura($assinatura->mp_preapproval_id, $cardTokenId);
+            } else {
+                $resultado = $this->mpService->criarAssinatura($empresa, $user, $cardTokenId, $idempotencyKey);
             }
 
-            // Ativação prévia se o pagamento for aprovado imediatamente (ex: Cartão)
-            if ($status === 'approved') {
-                $duracaoMeses = ($tipoPagamento === 'unico') ? 12 : 1;
+            $mpPreapprovalId = (string) ($resultado['id'] ?? $assinatura?->mp_preapproval_id ?? '');
+            $status          = $resultado['status'] ?? 'pending';
 
+            // Tratamento de Rejeição Síncrona (Cartão inválido, sem limite, etc.)
+            if ($status === 'rejected') {
+                return response()->json([
+                    'error'   => 'Cartão recusado',
+                    'message' => 'O pagamento não foi autorizado pelo seu cartão. Por favor, verifique os dados ou tente outro cartão.',
+                    'status'  => 'rejected',
+                ], 422);
+            }
+
+            $dbStatus = in_array($status, ['authorized', 'pending', 'paused', 'cancelled', 'overdue', 'expired'], true) ? $status : 'pending';
+
+            if (!$assinatura) {
+                $assinatura = Assinatura::create([
+                    'empresa_id'        => $empresa->id,
+                    'plano_id'          => $plano->id,
+                    'metodo_pagamento'  => 'cartao',
+                    'status'            => $dbStatus,
+                    'mp_preapproval_id' => $mpPreapprovalId ?: null,
+                    'preco_contratado'  => $plano->preco_mensal,
+                ]);
+            } else {
+                $assinatura->update([
+                    'plano_id'          => $plano->id,
+                    'metodo_pagamento'  => 'cartao',
+                    'status'            => $dbStatus,
+                    'mp_preapproval_id' => $mpPreapprovalId ?: $assinatura->mp_preapproval_id,
+                    'preco_contratado'  => $plano->preco_mensal,
+                ]);
+            }
+
+            // Se aprovado/autorizado síncronamente, ativa a empresa e o acesso imediatamente
+            if ($status === 'authorized') {
                 $assinatura->update([
                     'status'             => 'authorized',
-                    'metodo_pagamento'   => $paymentMethod,
                     'data_inicio'        => $assinatura->data_inicio ?? now(),
-                    'proximo_vencimento' => now()->addMonths($duracaoMeses),
-                    'valido_ate'         => now()->addMonths($duracaoMeses),
+                    'proximo_vencimento' => now()->addMonth(),
+                    'valido_ate'         => now()->addMonth(),
                 ]);
 
-                $empresa->plano_id = $assinatura->plano_id;
+                $empresa->plano_id = $plano->id;
                 $empresa->ativo = true;
                 $empresa->save();
+
+                AssinaturaAtivada::dispatch($assinatura);
             }
 
             return response()->json($resultado, 200);
 
         } catch (\Throwable $e) {
-            Log::error('Erro ao processar pagamento via Bricks: ' . $e->getMessage(), [
+            Log::error('Erro ao processar assinatura no Mercado Pago: ' . $e->getMessage(), [
                 'user_id'    => $user->id,
                 'empresa_id' => $empresa->id,
             ]);
 
             return response()->json([
-                'error'   => 'Falha no processamento do pagamento',
+                'error'   => 'Falha no processamento da assinatura',
                 'message' => $e->getMessage(),
             ], 422);
         }
@@ -177,27 +160,24 @@ class CheckoutController extends Controller
 
     /**
      * Callback de retorno após a conclusão do fluxo no checkout.
-     * Se o pagamento por cartão foi aprovado instantaneamente, redireciona ao dashboard.
-     * Para PIX e boleto, mantém na tela de pendência aguardando confirmação.
      */
     public function callback(Request $request)
     {
         $user    = auth()->user();
         $empresa = $user->empresa;
 
-        // Recarrega a empresa do banco para pegar o estado mais recente
         $empresa->refresh();
 
         if ($empresa->isAtiva()) {
             return redirect()->route('dashboard')->with(
                 'success',
-                '🎉 Pagamento aprovado! Seja bem-vindo ao MecDesk.'
+                '🎉 Assinatura aprovada! Seja bem-vindo ao MecDesk.'
             );
         }
 
         return redirect()->route('assinatura.pendente')->with(
             'info',
-            'Pagamento em processamento. Assim que o Mercado Pago confirmar, seu acesso será liberado automaticamente.'
+            'Sua assinatura está em processamento. Assim que o Mercado Pago confirmar a autorização, seu acesso será liberado automaticamente.'
         );
     }
 }

@@ -15,8 +15,8 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('planos.upgrade')" :active="request()->routeIs('planos.*')">
-                        {{ __('Meu Plano') }}
+                    <x-nav-link :href="route('assinatura.minha')" :active="request()->routeIs('assinatura.*')">
+                        {{ __('Minha Assinatura') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -73,8 +73,8 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('planos.upgrade')" :active="request()->routeIs('planos.*')">
-                {{ __('Meu Plano') }}
+            <x-responsive-nav-link :href="route('assinatura.minha')" :active="request()->routeIs('assinatura.*')">
+                {{ __('Minha Assinatura') }}
             </x-responsive-nav-link>
         </div>
 

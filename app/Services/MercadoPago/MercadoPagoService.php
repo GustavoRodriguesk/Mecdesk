@@ -2,11 +2,10 @@
 
 namespace App\Services\MercadoPago;
 
-use App\Models\Assinatura;
+use App\Models\Empresa;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class MercadoPagoService
 {
@@ -24,110 +23,80 @@ class MercadoPagoService
     }
 
     /**
-     * Processa um pagamento via Checkout Bricks (Cartão, PIX, Boleto, etc.).
-     * Endpoint: POST /v1/payments
+     * Cria uma assinatura recorrente via Mercado Pago Subscriptions API (/preapproval).
+     * Endpoint: POST /preapproval
      */
-    public function criarPagamento(array $formData, Assinatura $assinatura, User $usuario, ?float $valorCalculado = null): array
+    public function criarAssinatura(Empresa $empresa, User $usuario, string $cardTokenId, string $idempotencyKey): array
     {
-        $plano = $assinatura->plano;
         $token = $this->getAccessToken();
 
-        $tipoPagamento = $formData['tipo_pagamento'] ?? 'mensal';
-        $amount        = $valorCalculado ?? (float) $assinatura->preco_contratado;
-
-        // Regra Estrita de Segurança e Negócio:
-        // Assinaturas mensais PERMITEM APENAS 1 PARCELA (installments = 1).
-        // Qualquer valor enviado pelo frontend para assinatura mensal é ignorado.
-        $installments = ($tipoPagamento === 'mensal') ? 1 : (int) ($formData['installments'] ?? 1);
-
         $payload = [
-            'transaction_amount' => $amount,
-            'description'        => ($tipoPagamento === 'unico' ? 'Pagamento Único Anual' : 'Assinatura Mensal') . " MecDesk - Plano {$plano->nome}",
-            'payment_method_id'  => $formData['payment_method_id'] ?? null,
-            'external_reference' => (string) $assinatura->id,
-            'installments'       => $installments,
-            'payer'              => [
-                'email' => $formData['payer']['email'] ?? $usuario->email,
+            'reason'             => 'Assinatura MecDesk - Plano Pro',
+            'external_reference' => (string) $empresa->id,
+            'payer_email'        => $usuario->email,
+            'card_token_id'      => $cardTokenId,
+            'auto_recurring'     => [
+                'frequency'          => 1,
+                'frequency_type'     => 'months',
+                'transaction_amount' => 99.90,
+                'currency_id'        => 'BRL',
             ],
-            'notification_url'   => route('webhooks.mercadopago'),
+            'back_url'           => route('planos.callback'),
+            'status'             => 'authorized',
         ];
-
-        if (!empty($formData['token'])) {
-            $payload['token'] = $formData['token'];
-        }
-
-        if (!empty($formData['issuer_id'])) {
-            $payload['issuer_id'] = $formData['issuer_id'];
-        }
-
-        if (!empty($formData['payer']['identification']['type']) && !empty($formData['payer']['identification']['number'])) {
-            $payload['payer']['identification'] = [
-                'type'   => $formData['payer']['identification']['type'],
-                'number' => $formData['payer']['identification']['number'],
-            ];
-        }
-
-        if (!empty($formData['payer']['first_name'])) {
-            $payload['payer']['first_name'] = $formData['payer']['first_name'];
-        }
-
-        if (!empty($formData['payer']['last_name'])) {
-            $payload['payer']['last_name'] = $formData['payer']['last_name'];
-        }
-
-        // Chave de Idempotência para prevenir cobranças duplicadas em retentativas
-        $idempotencyKey = (string) Str::uuid();
 
         $response = Http::withToken($token)
             ->withHeaders([
                 'X-Idempotency-Key' => $idempotencyKey,
             ])
             ->acceptJson()
-            ->post("{$this->baseUrl}/v1/payments", $payload);
+            ->post("{$this->baseUrl}/preapproval", $payload);
 
         if ($response->failed()) {
-            Log::error('Erro ao criar pagamento no Mercado Pago via Bricks', [
+            Log::error('Erro ao criar assinatura no Mercado Pago via /preapproval', [
                 'status'  => $response->status(),
                 'body'    => $response->json(),
                 'payload' => $payload,
             ]);
 
-            // Se estiver em ambiente local (APP_ENV=local) e a API do Mercado Pago rejeitar por conta de teste pendente (internal_error),
-            // ativa o fallback de simulação para o desenvolvedor testar a aprovação da assinatura sem travar o sistema.
             if (config('app.env') === 'local' && env('MERCADOPAGO_SANDBOX_MOCK', true)) {
-                Log::info('MercadoPago Sandbox local fallback ativado para testes.');
+                Log::info('MercadoPago Sandbox local fallback ativado para testes de preapproval.');
                 return [
-                    'id'                 => 'sim_' . time() . rand(100, 999),
-                    'status'             => 'approved',
-                    'status_detail'      => 'accredited',
-                    'payment_method_id'  => $formData['payment_method_id'] ?? 'master',
-                    'transaction_amount' => $amount,
+                    'id'                 => 'preapp_' . time() . rand(100, 999),
+                    'status'             => 'authorized',
+                    'reason'             => 'Assinatura MecDesk - Plano Pro',
+                    'external_reference' => (string) $empresa->id,
                 ];
             }
 
-            throw new \RuntimeException('Falha no processamento do pagamento: ' . ($response->json('message') ?? $response->body()));
+            $errorMessage = $response->json('message') ?? $response->json('cause.0.description') ?? $response->body();
+            throw new \RuntimeException('Falha ao processar assinatura no Mercado Pago: ' . $errorMessage);
         }
 
         return $response->json();
     }
 
     /**
-     * Consulta um Pagamento individual (Dupla Checagem Obrigatória de Segurança).
-     * Endpoint: GET /v1/payments/{id}
+     * Atualiza uma assinatura pendente existente no Mercado Pago com um novo cartão.
+     * Endpoint: PUT /preapproval/{id}
      */
-    public function consultarPagamento(string $paymentId): array
+    public function atualizarAssinatura(string $preapprovalId, string $cardTokenId): array
     {
+        $payload = [
+            'card_token_id' => $cardTokenId,
+        ];
+
         $response = Http::withToken($this->getAccessToken())
             ->acceptJson()
-            ->get("{$this->baseUrl}/v1/payments/{$paymentId}");
+            ->put("{$this->baseUrl}/preapproval/{$preapprovalId}", $payload);
 
         if ($response->failed()) {
-            Log::error("Erro ao consultar pagamento {$paymentId} no Mercado Pago", [
+            Log::error("Erro ao atualizar assinatura {$preapprovalId} no Mercado Pago", [
                 'status' => $response->status(),
                 'body'   => $response->json(),
             ]);
 
-            throw new \RuntimeException("Não foi possível consultar o pagamento {$paymentId}");
+            throw new \RuntimeException("Falha ao atualizar cartão da assinatura {$preapprovalId}");
         }
 
         return $response->json();
@@ -150,6 +119,52 @@ class MercadoPagoService
             ]);
 
             throw new \RuntimeException("Não foi possível consultar a assinatura {$preapprovalId}");
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * Cancela uma Assinatura (Preapproval) no Mercado Pago.
+     * Endpoint: PUT /preapproval/{id} com {"status": "cancelled"}
+     */
+    public function cancelarAssinatura(string $preapprovalId): array
+    {
+        $response = Http::withToken($this->getAccessToken())
+            ->acceptJson()
+            ->put("{$this->baseUrl}/preapproval/{$preapprovalId}", [
+                'status' => 'cancelled',
+            ]);
+
+        if ($response->failed()) {
+            Log::error("Erro ao cancelar assinatura {$preapprovalId} no Mercado Pago", [
+                'status' => $response->status(),
+                'body'   => $response->json(),
+            ]);
+
+            throw new \RuntimeException("Não foi possível cancelar a assinatura {$preapprovalId}");
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * Consulta uma Cobrança Recorrente Autorizada (subscription_authorized_payment).
+     * Endpoint: GET /authorized_payments/{id}
+     */
+    public function consultarPagamentoAutorizado(string $authorizedPaymentId): array
+    {
+        $response = Http::withToken($this->getAccessToken())
+            ->acceptJson()
+            ->get("{$this->baseUrl}/authorized_payments/{$authorizedPaymentId}");
+
+        if ($response->failed()) {
+            Log::error("Erro ao consultar pagamento autorizado {$authorizedPaymentId} no Mercado Pago", [
+                'status' => $response->status(),
+                'body'   => $response->json(),
+            ]);
+
+            throw new \RuntimeException("Não foi possível consultar o pagamento autorizado {$authorizedPaymentId}");
         }
 
         return $response->json();

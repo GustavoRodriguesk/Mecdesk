@@ -219,14 +219,13 @@
             </a>
             @endif
 
-            <div class="sidebar-label" style="margin-top:16px">Plano</div>
-            <a href="{{ route('planos.upgrade') }}"
-               class="sidebar-link {{ request()->routeIs('planos.*') ? 'active' : '' }}"
-               style="{{ request()->routeIs('planos.*') ? '' : 'color: #60A5FA;' }}">
+            <div class="sidebar-label" style="margin-top:16px">Assinatura</div>
+            <a href="{{ route('assinatura.minha') }}"
+               class="sidebar-link {{ request()->routeIs('assinatura.minha') ? 'active' : '' }}">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-6.75 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5z"/>
                 </svg>
-                Upgrade de Plano
+                Minha Assinatura
             </a>
         </nav>
 

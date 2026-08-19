@@ -13,6 +13,7 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AprovacaoController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -29,6 +30,18 @@ Route::post('/webhooks/mercadopago', [WebhookController::class, 'handle'])->name
 Route::get('/aprovacao/{token}', [AprovacaoController::class, 'show'])->name('aprovacao.show');
 Route::post('/aprovacao/{token}/aprovar', [AprovacaoController::class, 'approve'])->name('aprovacao.approve');
 Route::post('/aprovacao/{token}/reprovar', [AprovacaoController::class, 'reject'])->name('aprovacao.reject');
+
+// Área pública de planos e contratação
+Route::get('/planos', function () {
+    return view('planos.index');
+})->name('planos.index');
+
+Route::get('/assinar', function () {
+    if (auth()->check()) {
+        return redirect()->route('checkout.show');
+    }
+    return redirect()->route('register');
+})->name('planos.assinar');
 
 /*
 |--------------------------------------------------------------------------
@@ -58,14 +71,13 @@ Route::middleware(['auth'])->group(function () {
         ]);
     })->name('assinatura.status');
 
-    Route::get('/planos/upgrade', function () {
-        $planos = \App\Models\Plano::where('ativo', true)->get();
-        return view('planos.upgrade', compact('planos'));
-    })->name('planos.upgrade');
+    // Minha Assinatura (gestão da assinatura dentro do SaaS)
+    Route::get('/minha-assinatura', [SubscriptionController::class, 'index'])->name('assinatura.minha');
 
-    Route::get('/checkout/{plano:slug}', [CheckoutController::class, 'show'])->name('checkout.show');
+    Route::get('/checkout/{plano:slug?}', [CheckoutController::class, 'show'])->name('checkout.show');
     Route::post('/checkout/processar', [CheckoutController::class, 'processarPagamento'])->name('checkout.processar');
     Route::get('/planos/callback', [CheckoutController::class, 'callback'])->name('planos.callback');
+    Route::post('/assinatura/cancelar', [SubscriptionController::class, 'cancelar'])->name('assinatura.cancelar');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

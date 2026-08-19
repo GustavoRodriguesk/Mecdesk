@@ -8,5 +8,5 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Agendamento diário para geração de cobranças PIX recorrentes
-Schedule::command('mecdesk:renovar-assinaturas-pix')->dailyAt('06:00');
+// Agendamento diário para verificação de assinaturas vencidas e aplicação de carência
+Schedule::command('mecdesk:verificar-assinaturas-vencidas')->dailyAt('02:00');

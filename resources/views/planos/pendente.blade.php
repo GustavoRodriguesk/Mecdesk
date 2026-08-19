@@ -87,7 +87,7 @@
 
             {{-- Ações --}}
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <a href="{{ route('planos.upgrade') }}"
+                <a href="{{ route('checkout.show') }}"
                    class="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-sm transition-all text-center text-sm">
                     Realizar / Trocar Pagamento
                 </a>

@@ -15,6 +15,7 @@ class Pagamento extends Model
         'assinatura_id',
         'empresa_id',
         'mp_payment_id',
+        'mp_authorized_payment_id',
         'metodo_pagamento',
         'status',
         'status_detail',

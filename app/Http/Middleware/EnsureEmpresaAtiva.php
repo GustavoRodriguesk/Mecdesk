@@ -30,8 +30,17 @@ class EnsureEmpresaAtiva
 
         // Se a empresa não estiver ativa ou a assinatura expirou
         if (!$empresa->isAtiva()) {
-            // Permite acessar rotas de logout, suporte, pendência de assinatura e perfil
-            if ($request->routeIs(['logout', 'assinatura.pendente', 'assinatura.status', 'planos.*', 'checkout.*', 'profile.*'])) {
+            // Permite acessar apenas rotas de gestão de assinatura, checkout e perfil
+            if ($request->routeIs([
+                'logout',
+                'assinatura.pendente',
+                'assinatura.status',
+                'assinatura.minha',
+                'assinatura.cancelar',
+                'checkout.*',
+                'planos.callback',
+                'profile.*',
+            ])) {
                 return $next($request);
             }
 

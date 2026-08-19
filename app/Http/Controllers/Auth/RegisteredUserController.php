@@ -24,10 +24,10 @@ class RegisteredUserController extends Controller
      */
     public function create(Request $request): View
     {
-        $planoSelecionado = $request->query('plano', 'free');
+        $plano = Plano::where('slug', 'pro')->where('ativo', true)->first();
         $planos = Plano::where('ativo', true)->get();
 
-        return view('auth.register', compact('planoSelecionado', 'planos'));
+        return view('auth.register', compact('plano', 'planos'));
     }
 
     /**
@@ -42,7 +42,6 @@ class RegisteredUserController extends Controller
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'email', 'unique:users,email'],
             'telefone' => ['nullable', 'string', 'max:20'],
-            'plano'    => ['nullable', 'string', 'exists:planos,slug'],
             'password' => [
                 'required',
                 'confirmed',
@@ -50,18 +49,10 @@ class RegisteredUserController extends Controller
             ],
         ]);
 
-        $planoSlug = $request->input('plano', 'free');
-        $plano = Plano::where('slug', $planoSlug)->where('ativo', true)->first();
-
-        if (!$plano) {
-            $plano = Plano::where('slug', 'free')->firstOrFail();
-        }
-
+        $plano = Plano::where('slug', 'pro')->where('ativo', true)->firstOrFail();
         $user = null;
 
         DB::transaction(function () use ($request, $plano, &$user) {
-            $isFree = $plano->slug === 'free';
-
             $empresa = new Empresa([
                 'nome_fantasia' => $request->empresa,
                 'email'         => $request->email,
@@ -69,18 +60,15 @@ class RegisteredUserController extends Controller
                 'plano_id'      => $plano->id,
             ]);
 
-            // Regra de Segurança: Apenas plano 'free' começa ativo. Planos pagos exigem webhook do MP.
-            $empresa->ativo = $isFree;
+            $empresa->ativo = false;
             $empresa->save();
 
             Assinatura::create([
                 'empresa_id'       => $empresa->id,
                 'plano_id'         => $plano->id,
-                'metodo_pagamento' => $isFree ? 'free' : 'cartao',
-                'status'           => $isFree ? 'authorized' : 'pending',
+                'metodo_pagamento' => 'cartao',
+                'status'           => 'pending',
                 'preco_contratado' => $plano->preco_mensal,
-                'data_inicio'      => $isFree ? now() : null,
-                'valido_ate'       => $isFree ? null : null,
             ]);
 
             $user = User::create([
@@ -100,6 +88,6 @@ class RegisteredUserController extends Controller
             return redirect()->route('dashboard');
         }
 
-        return redirect()->route('assinatura.pendente');
+        return redirect()->route('checkout.show');
     }
 }

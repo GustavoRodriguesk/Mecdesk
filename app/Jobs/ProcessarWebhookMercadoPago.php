@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Events\AssinaturaAtivada;
 use App\Events\PagamentoRecebido;
+use App\Events\PagamentoRecusado;
 use App\Models\Assinatura;
 use App\Models\Pagamento;
 use App\Models\WebhookLog;
@@ -17,9 +18,6 @@ class ProcessarWebhookMercadoPago implements ShouldQueue
 {
     use Queueable;
 
-    /**
-     * O número de tentativas de execução do Job.
-     */
     public int $tries = 3;
 
     public function __construct(
@@ -28,107 +26,163 @@ class ProcessarWebhookMercadoPago implements ShouldQueue
 
     public function handle(MercadoPagoService $mpService): void
     {
-        $log = WebhookLog::find($this->webhookLogId);
+        // Trava real contra concorrência utilizando DB transaction + lockForUpdate
+        DB::transaction(function () use ($mpService) {
+            $log = WebhookLog::where('id', $this->webhookLogId)
+                ->lockForUpdate()
+                ->first();
 
-        if (!$log || $log->processed) {
+            if (!$log || $log->processed) {
+                return;
+            }
+
+            try {
+                $action     = $log->action;
+                $resourceId = $log->resource_id;
+
+                if (str_contains($action, 'preapproval') || $action === 'subscription_preapproval') {
+                    $this->processarPreapproval($mpService, $resourceId, $log);
+                } else {
+                    $this->processarPagamentoAutorizado($mpService, $resourceId, $log);
+                }
+
+                $log->update([
+                    'processed' => true,
+                    'error'     => null,
+                ]);
+            } catch (\Throwable $e) {
+                Log::error("Erro ao processar WebhookLog #{$this->webhookLogId}: " . $e->getMessage(), [
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
+                $log->update([
+                    'error' => $e->getMessage(),
+                ]);
+
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Processa atualizações no contrato de assinatura (subscription_preapproval).
+     */
+    protected function processarPreapproval(MercadoPagoService $mpService, string $preapprovalId, WebhookLog $log): void
+    {
+        if (empty($preapprovalId)) {
             return;
         }
 
-        try {
-            $action     = $log->action;
-            $resourceId = $log->resource_id;
+        // Dupla checagem Zero-Trust na API do Mercado Pago
+        $dados = $mpService->consultarAssinatura($preapprovalId);
+        $status = $dados['status'] ?? 'pending';
+        $externalReference = $dados['external_reference'] ?? null;
 
-            // Determinar o tipo de notificação e consultar na API do Mercado Pago (Zero-Trust)
-            if (str_contains($action, 'payment') || str_contains($action, 'pay') || empty($action) || $action === 'unknown') {
-                $this->processarPagamento($mpService, $resourceId, $log);
+        $assinatura = Assinatura::where('mp_preapproval_id', $preapprovalId)
+            ->orWhere('id', $externalReference)
+            ->first();
+
+        if (!$assinatura) {
+            Log::warning("Assinatura com preapproval_id {$preapprovalId} não encontrada para webhook.");
+            return;
+        }
+
+        $empresa = $assinatura->empresa;
+
+        if (in_array($status, ['paused', 'cancelled'], true)) {
+            $assinatura->update([
+                'status'            => $status,
+                'data_cancelamento' => $status === 'cancelled' ? now() : $assinatura->data_cancelamento,
+            ]);
+
+            if ($empresa) {
+                $empresa->ativo = false;
+                $empresa->save();
             }
+        } elseif ($status === 'authorized') {
+            // REGRA CRÍTICA DE NEGÓCIO: Se a assinatura local já estiver em 'overdue',
+            // a notificação de preapproval "authorized" NÃO deve reverter a inadimplência automaticamente.
+            // A reativação só ocorre mediante recebimento de um pagamento confirmado (subscription_authorized_payment).
+            if ($assinatura->status !== 'overdue') {
+                $assinatura->update(['status' => 'authorized']);
 
-            $log->update([
-                'processed' => true,
-                'error'     => null,
-            ]);
-        } catch (\Throwable $e) {
-            Log::error("Erro ao processar WebhookLog #{$this->webhookLogId}: " . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            $log->update([
-                'error' => $e->getMessage(),
-            ]);
-
-            throw $e;
+                if ($empresa) {
+                    $empresa->plano_id = $assinatura->plano_id;
+                    $empresa->ativo = true;
+                    $empresa->save();
+                }
+            }
         }
     }
 
-    protected function processarPagamento(MercadoPagoService $mpService, string $paymentId, WebhookLog $log): void
+    /**
+     * Processa cobranças recorrentes individuais (subscription_authorized_payment).
+     */
+    protected function processarPagamentoAutorizado(MercadoPagoService $mpService, string $resourceId, WebhookLog $log): void
     {
-        if (empty($paymentId)) {
-            Log::warning("Webhook #{$log->id} recebido sem ID de pagamento válido.");
+        if (empty($resourceId)) {
             return;
         }
 
-        // 1. DUPLA CHECAGEM OBRIGATÓRIA NA API DO MERCADO PAGO
-        $dadosPagamento = $mpService->consultarPagamento($paymentId);
+        // Dupla checagem Zero-Trust na API do Mercado Pago
+        $dados = $mpService->consultarPagamentoAutorizado($resourceId);
 
-        $status            = $dadosPagamento['status'] ?? 'pending';
-        $statusDetail      = $dadosPagamento['status_detail'] ?? null;
-        $valor             = $dadosPagamento['transaction_amount'] ?? 0;
-        $externalReference = $dadosPagamento['external_reference'] ?? null;
-        $metodoPagamento   = ($dadosPagamento['payment_method_id'] ?? '') === 'pix' ? 'pix' : 'cartao';
+        $status          = $dados['payment']['status'] ?? $dados['status'] ?? 'pending';
+        $statusDetail    = $dados['payment']['status_detail'] ?? $dados['status_detail'] ?? null;
+        $valor           = $dados['transaction_amount'] ?? $dados['payment']['transaction_amount'] ?? 99.90;
+        $preapprovalId   = $dados['preapproval_id'] ?? null;
+        $externalRef     = $dados['external_reference'] ?? null;
 
-        if (!$externalReference) {
-            Log::warning("Webhook de pagamento {$paymentId} recebido sem external_reference");
-            return;
+        $assinatura = null;
+        if ($preapprovalId) {
+            $assinatura = Assinatura::where('mp_preapproval_id', $preapprovalId)->first();
         }
-
-        $assinatura = Assinatura::find($externalReference);
+        if (!$assinatura && $externalRef) {
+            $assinatura = Assinatura::find($externalRef);
+        }
 
         if (!$assinatura) {
-            Log::warning("Assinatura #{$externalReference} não encontrada para o pagamento {$paymentId}");
+            Log::warning("Assinatura não localizada para o pagamento autorizado {$resourceId}.");
             return;
         }
 
-        DB::transaction(function () use ($assinatura, $paymentId, $status, $statusDetail, $valor, $metodoPagamento, $dadosPagamento) {
-            // Idempotência: Registrar ou Atualizar Pagamento
-            $pagamento = Pagamento::updateOrCreate(
-                ['mp_payment_id' => $paymentId],
-                [
-                    'assinatura_id'    => $assinatura->id,
-                    'empresa_id'       => $assinatura->empresa_id,
-                    'metodo_pagamento' => $metodoPagamento,
-                    'status'           => $status,
-                    'status_detail'    => $statusDetail,
-                    'valor'            => $valor,
-                    'data_pagamento'   => $status === 'approved' ? now() : null,
-                    'payload_resposta' => $dadosPagamento,
-                ]
-            );
+        $empresa = $assinatura->empresa;
 
-            // Regra de Ativação estrita: Apenas confirmação oficial de pagamento "approved" ativa o acesso
-            if ($status === 'approved') {
-                $assinatura->update([
-                    'status'             => 'authorized',
-                    'metodo_pagamento'   => $metodoPagamento,
-                    'data_inicio'        => $assinatura->data_inicio ?? now(),
-                    'proximo_vencimento' => now()->addMonth(),
-                    'valido_ate'         => now()->addMonth(),
-                ]);
+        // Idempotência: Cria ou atualiza o registro do pagamento individual
+        $pagamento = Pagamento::updateOrCreate(
+            ['mp_authorized_payment_id' => $resourceId],
+            [
+                'assinatura_id'    => $assinatura->id,
+                'empresa_id'       => $assinatura->empresa_id,
+                'metodo_pagamento' => 'cartao',
+                'status'           => $status,
+                'status_detail'    => $statusDetail,
+                'valor'            => $valor,
+                'data_pagamento'   => $status === 'approved' ? now() : null,
+                'payload_resposta' => $dados,
+            ]
+        );
 
-                // Ativa a empresa e atualiza seu plano para o plano da assinatura
-                $empresa = $assinatura->empresa;
+        if ($status === 'approved') {
+            $assinatura->update([
+                'status'             => 'authorized',
+                'data_inicio'        => $assinatura->data_inicio ?? now(),
+                'proximo_vencimento' => now()->addMonth(),
+                'valido_ate'         => now()->addMonth(),
+            ]);
+
+            if ($empresa) {
                 $empresa->plano_id = $assinatura->plano_id;
                 $empresa->ativo = true;
                 $empresa->save();
-
-                // Dispara eventos do sistema
-                AssinaturaAtivada::dispatch($assinatura);
-                PagamentoRecebido::dispatch($pagamento);
-            } elseif (in_array($status, ['rejected', 'cancelled', 'refunded', 'charged_back'], true)) {
-                // Se falhou o pagamento e a vigência atual já venceu, marca como overdue
-                if (!$assinatura->valido_ate || $assinatura->valido_ate->isPast()) {
-                    $assinatura->update(['status' => 'overdue']);
-                }
             }
-        });
+
+            AssinaturaAtivada::dispatch($assinatura);
+            PagamentoRecebido::dispatch($pagamento);
+
+        } elseif ($status === 'rejected') {
+            // Dispara evento de notificação para alertar o cliente durante os 3 dias de carência
+            PagamentoRecusado::dispatch($pagamento);
+        }
     }
 }

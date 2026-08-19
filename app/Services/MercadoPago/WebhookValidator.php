@@ -44,6 +44,11 @@ class WebhookValidator
             return false;
         }
 
+        // Validação da janela de tempo do timestamp (Mitigação de Replay Attacks - máximo 5 minutos)
+        if (abs(now()->timestamp - (int) $ts) > 300) {
+            return false;
+        }
+
         $dataId = $request->input('data.id') ?? $request->input('id');
 
         if (!$dataId) {
