@@ -193,7 +193,7 @@
                     Ativo
                 </span>
             </div>
-            <div class="px-6 py-6 grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="px-6 py-6 grid grid-cols-2 md:grid-cols-3 gap-6">
                 <div>
                     <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Funcionários</p>
                     <p class="text-3xl font-bold text-gray-900">{{ $funcionarios->count() }}<span class="text-base font-normal text-gray-400">/{{ $empresa->plano->max_usuarios ?? 1 }}</span></p>
@@ -206,10 +206,10 @@
                     <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Ordens</p>
                     <p class="text-3xl font-bold text-gray-900">{{ $totalOrdens ?? '—' }}</p>
                 </div>
-                <div>
+                <!--  <div>
                     <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Importações IA</p>
                     <p class="text-3xl font-bold text-gray-900">{{ $totalImportacoesIA ?? '—' }}</p>
-                </div>
+                </div> -->
             </div>
             <div class="px-6 pb-6">
                 <a href="{{ route('assinatura.minha') }}"
