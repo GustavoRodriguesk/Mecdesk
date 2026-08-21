@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Scopes\EmpresaScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Servico extends Model
 {
@@ -27,7 +27,7 @@ class Servico extends Model
 
             if (
                 auth()->check() &&
-                !$servico->empresa_id
+                ! $servico->empresa_id
             ) {
                 $servico->empresa_id =
                     auth()->user()->empresa_id;
@@ -39,5 +39,10 @@ class Servico extends Model
     public function empresa()
     {
         return $this->belongsTo(Empresa::class);
+    }
+
+    public function ordemServicoItens()
+    {
+        return $this->hasMany(OrdemServicoItem::class, 'servico_id');
     }
 }

@@ -6,7 +6,7 @@
         </h2>
     </x-slot>
 
-    <div class="py-8 px-8 max-w-3xl mx-auto">
+    <div class="w-full">
 
         <div class="flex items-center justify-between mb-6">
             <div>
@@ -17,8 +17,9 @@
                     Registre um novo atendimento para um cliente
                 </p>
             </div>
-            
-            <a href="{{ route('ordens.index') }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors">
+
+            <a href="{{ route('ordens.index') }}"
+                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors">
                 <i class="bi bi-arrow-left"></i>
                 Voltar
             </a>
@@ -34,10 +35,13 @@
                         <label class="block mb-1.5 text-sm font-medium text-gray-700">
                             Cliente
                         </label>
-                        <select id="cliente_id" name="cliente_id" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150" required>
+                        <select id="cliente_id" name="cliente_id"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150"
+                            required>
                             <option value="">Selecione um cliente...</option>
-                            @foreach($clientes as $cliente)
-                                <option value="{{ $cliente->id }}" {{ request('cliente') == $cliente->id ? 'selected' : '' }}>
+                            @foreach ($clientes as $cliente)
+                                <option value="{{ $cliente->id }}"
+                                    {{ request('cliente') == $cliente->id ? 'selected' : '' }}>
                                     {{ $cliente->nome }}
                                 </option>
                             @endforeach
@@ -48,10 +52,13 @@
                         <label class="block mb-1.5 text-sm font-medium text-gray-700">
                             Veículo
                         </label>
-                        <select id="veiculo_id" name="veiculo_id" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150" required>
+                        <select id="veiculo_id" name="veiculo_id"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150"
+                            required>
                             <option value="">Selecione um veículo...</option>
-                            @foreach($veiculos as $veiculo)
-                                <option value="{{ $veiculo->id }}" {{ request('veiculo') == $veiculo->id ? 'selected' : '' }}>
+                            @foreach ($veiculos as $veiculo)
+                                <option value="{{ $veiculo->id }}"
+                                    {{ request('veiculo') == $veiculo->id ? 'selected' : '' }}>
                                     {{ $veiculo->marca }} {{ $veiculo->modelo }} - {{ $veiculo->placa }}
                                 </option>
                             @endforeach
@@ -62,15 +69,19 @@
                         <label class="block mb-1.5 text-sm font-medium text-gray-700">
                             Problema Relatado
                         </label>
-                        <textarea name="descricao_problema" rows="4" placeholder="Descreva o problema relatado pelo cliente..." class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150" required></textarea>
+                        <textarea name="descricao_problema" rows="4" placeholder="Descreva o problema relatado pelo cliente..."
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150"
+                            required></textarea>
                     </div>
                 </div>
 
                 <div class="pt-4 flex items-center justify-end gap-3 border-t border-gray-100 mt-6">
-                    <a href="{{ route('ordens.index') }}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors">
+                    <a href="{{ route('ordens.index') }}"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors">
                         Cancelar
                     </a>
-                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
                         <i class="bi bi-check2"></i>
                         Salvar Ordem
                     </button>
@@ -83,20 +94,21 @@
     </div>
 
     <script>
-    document.getElementById('cliente_id').addEventListener('change', function () {
-        let clienteId = this.value;
-        if (!clienteId) return;
-        
-        fetch(`/clientes/${clienteId}/veiculos`)
-            .then(response => response.json())
-            .then(data => {
-                let select = document.getElementById('veiculo_id');
-                select.innerHTML = '<option value="">Selecione um veículo...</option>';
-                data.forEach(veiculo => {
-                    select.innerHTML += `<option value="${veiculo.id}">${veiculo.marca} ${veiculo.modelo} - ${veiculo.placa}</option>`;
+        document.getElementById('cliente_id').addEventListener('change', function() {
+            let clienteId = this.value;
+            if (!clienteId) return;
+
+            fetch(`/clientes/${clienteId}/veiculos`)
+                .then(response => response.json())
+                .then(data => {
+                    let select = document.getElementById('veiculo_id');
+                    select.innerHTML = '<option value="">Selecione um veículo...</option>';
+                    data.forEach(veiculo => {
+                        select.innerHTML +=
+                            `<option value="${veiculo.id}">${veiculo.marca} ${veiculo.modelo} - ${veiculo.placa}</option>`;
+                    });
                 });
-            });
-    });
+        });
     </script>
 
 </x-app-layout>

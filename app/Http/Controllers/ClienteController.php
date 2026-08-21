@@ -19,43 +19,37 @@ class ClienteController extends Controller
 
     public function create()
     {
-        abort_if(!auth()->user()->isAdmin(), 403);
-
         return view('clientes.create');
     }
 
     public function store(Request $request)
-{
-    abort_if(!auth()->user()->isAdmin(), 403);
+    {
+        $request->validate([
+            'nome' => 'required',
+            'telefone' => 'required',
+        ]);
 
-    $request->validate([
-        'nome' => 'required',
-        'telefone' => 'required',
-    ]);
+        Cliente::create($request->except('empresa_id'));
 
-    Cliente::create($request->except('empresa_id'));
+        return redirect()
+            ->route('clientes.index')
+            ->with('success', 'Cliente cadastrado com sucesso!');
+    }
 
-    return redirect()
-        ->route('clientes.index')
-        ->with('success', 'Cliente cadastrado com sucesso!');
-}
     public function edit(Cliente $cliente)
     {
-        abort_if(!auth()->user()->isAdmin(), 403);
+        $cliente->load('veiculos');
 
         return view('clientes.edit', compact('cliente'));
     }
 
     public function show(Cliente $cliente)
-{
-    $cliente->load('veiculos');
+    {
+        return redirect()->route('clientes.edit', $cliente->id);
+    }
 
-    return view('clientes.show', compact('cliente'));
-}
     public function update(Request $request, Cliente $cliente)
     {
-        abort_if(!auth()->user()->isAdmin(), 403);
-
         $request->validate([
             'nome' => 'required',
             'telefone' => 'required',
@@ -64,18 +58,16 @@ class ClienteController extends Controller
         $cliente->update($request->except('empresa_id'));
 
         return redirect()
-    ->route('clientes.index')
-    ->with('success', 'Cliente atualizado com sucesso!');
+            ->route('clientes.index')
+            ->with('success', 'Cliente atualizado com sucesso!');
     }
 
     public function destroy(Cliente $cliente)
     {
-        abort_if(!auth()->user()->isAdmin(), 403);
-
         $cliente->delete();
 
         return redirect()
-    ->route('clientes.index')
-    ->with('success', 'Cliente excluído com sucesso!');
+            ->route('clientes.index')
+            ->with('success', 'Cliente excluído com sucesso!');
     }
 }

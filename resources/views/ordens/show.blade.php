@@ -6,10 +6,13 @@
                 Ordem de Serviço #{{ $ordem->numero_os }}
             </h2>
             <div class="flex items-center gap-2">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ str_replace('bg-', 'bg-opacity-20 text-', $ordem->status_color) }} {{ $ordem->status_color }}">
+                <span
+                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ str_replace('bg-', 'bg-opacity-20 text-', $ordem->status_color) }} {{ $ordem->status_color }}">
                     {{ $ordem->status_formatado }}
                 </span>
-                <a href="{{ route('ordens.pdf', $ordem->id) }}" class="inline-flex items-center gap-1.5 px-3 py-1 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-colors" target="_blank">
+                <a href="{{ route('ordens.pdf', $ordem->id) }}"
+                    class="inline-flex items-center gap-1.5 px-3 py-1 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-colors"
+                    target="_blank">
                     <i class="bi bi-file-earmark-pdf"></i>
                     PDF
                 </a>
@@ -18,49 +21,111 @@
     </x-slot>
 
     <style>
-        .data-row { transition: background-color 0.12s ease; }
-        .data-row:hover { background-color: #F0F4FA; }
+        .data-row {
+            transition: background-color 0.12s ease;
+        }
+
+        .data-row:hover {
+            background-color: #F0F4FA;
+        }
     </style>
 
-    <div class="py-8 px-8 max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="w-full">
 
         {{-- Coluna Principal --}}
         <div class="lg:col-span-2 space-y-6">
 
-            {{-- Detalhes da OS --}}
+            {{-- Formulário de Edição Inline (Informações Gerais) --}}
             <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                     <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
                         <i class="bi bi-info-circle text-gray-500"></i>
                         Informações Gerais
                     </h3>
-                    @if(auth()->user()->isAdmin() || $ordem->status !== 'concluida')
-                    <a href="{{ route('ordens.edit', $ordem->id) }}" class="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline">
-                        Editar OS
-                    </a>
-                    @endif
                 </div>
                 <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Cliente</span>
-                            <span class="text-sm font-medium text-gray-900 flex items-center gap-2">
-                                <i class="bi bi-person text-gray-400"></i> {{ $ordem->cliente->nome }}
-                            </span>
+                    <form action="{{ route('ordens.update', $ordem->id) }}" method="POST" class="space-y-5">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block mb-1.5 text-sm font-medium text-gray-700">
+                                    Cliente
+                                </label>
+                                <select name="cliente_id" id="cliente_id"
+                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150"
+                                    required>
+                                    @foreach ($clientes as $cliente)
+                                        <option value="{{ $cliente->id }}"
+                                            {{ $ordem->cliente_id == $cliente->id ? 'selected' : '' }}>
+                                            {{ $cliente->nome }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block mb-1.5 text-sm font-medium text-gray-700">
+                                    Veículo
+                                </label>
+                                <select name="veiculo_id" id="veiculo_id"
+                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150"
+                                    required>
+                                    @foreach ($veiculos as $veiculo)
+                                        <option value="{{ $veiculo->id }}"
+                                            {{ $ordem->veiculo_id == $veiculo->id ? 'selected' : '' }}>
+                                            {{ $veiculo->marca }} {{ $veiculo->modelo }} - {{ $veiculo->placa }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block mb-1.5 text-sm font-medium text-gray-700">
+                                    Problema Relatado
+                                </label>
+                                <textarea name="descricao_problema" rows="3"
+                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150"
+                                    required>{{ old('descricao_problema', $ordem->descricao_problema) }}</textarea>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block mb-1.5 text-sm font-medium text-gray-700">
+                                    Status
+                                </label>
+                                <select name="status"
+                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150"
+                                    required>
+                                    <option value="aberta" {{ $ordem->status == 'aberta' ? 'selected' : '' }}>Aberta
+                                    </option>
+                                    <option value="em_andamento"
+                                        {{ $ordem->status == 'em_andamento' ? 'selected' : '' }}>Em andamento</option>
+                                    <option value="aguardando_aprovacao"
+                                        {{ $ordem->status == 'aguardando_aprovacao' ? 'selected' : '' }}>Aguardando
+                                        aprovação</option>
+                                    <option value="aprovada" {{ $ordem->status == 'aprovada' ? 'selected' : '' }}>
+                                        Aprovada</option>
+                                    <option value="reprovada" {{ $ordem->status == 'reprovada' ? 'selected' : '' }}>
+                                        Reprovada</option>
+                                    <option value="concluida" {{ $ordem->status == 'concluida' ? 'selected' : '' }}>
+                                        Concluída</option>
+                                    <option value="entregue" {{ $ordem->status == 'entregue' ? 'selected' : '' }}>
+                                        Entregue</option>
+                                    <option value="cancelada" {{ $ordem->status == 'cancelada' ? 'selected' : '' }}>
+                                        Cancelada</option>
+                                </select>
+                            </div>
                         </div>
-                        <div>
-                            <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Veículo</span>
-                            <span class="text-sm font-medium text-gray-900 flex items-center gap-2">
-                                <i class="bi bi-car-front text-gray-400"></i> {{ $ordem->veiculo->marca }} {{ $ordem->veiculo->modelo }} <span class="text-gray-500">({{ $ordem->veiculo->placa }})</span>
-                            </span>
+
+                        <div class="pt-4 flex items-center justify-end border-t border-gray-100 mt-2">
+                            <button type="submit"
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                                <i class="bi bi-check2"></i>
+                                Salvar Alterações
+                            </button>
                         </div>
-                    </div>
-                    <div>
-                        <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Problema Relatado</span>
-                        <div class="p-3 bg-gray-50 rounded-md text-sm text-gray-700 border border-gray-100">
-                            {{ $ordem->descricao_problema }}
-                        </div>
-                    </div>
+                    </form>
                 </div>
             </div>
 
@@ -72,23 +137,33 @@
                         Serviços e Peças Executados
                     </h3>
                 </div>
-                
+
                 <div class="overflow-x-auto">
-                    @if($ordem->itens->count())
+                    @if ($ordem->itens->count())
                         <table class="w-full text-sm">
                             <thead class="bg-white border-b border-gray-100">
                                 <tr>
-                                    <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3">Descrição</th>
-                                    <th class="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Qtd</th>
-                                    <th class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">V. Unitário</th>
-                                    <th class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Total</th>
-                                    @if($ordem->status !== 'concluida')
-                                    <th class="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3"></th>
+                                    <th
+                                        class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3">
+                                        Descrição</th>
+                                    <th
+                                        class="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">
+                                        Qtd</th>
+                                    <th
+                                        class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">
+                                        V. Unitário</th>
+                                    <th
+                                        class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">
+                                        Total</th>
+                                    @if ($ordem->status !== 'concluida')
+                                        <th
+                                            class="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">
+                                        </th>
                                     @endif
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
-                                @foreach($ordem->itens as $item)
+                                @foreach ($ordem->itens as $item)
                                     <tr class="data-row">
                                         <td class="px-6 py-3 text-gray-900 font-medium">
                                             {{ $item->descricao }}
@@ -102,26 +177,32 @@
                                         <td class="px-4 py-3 text-right font-medium text-gray-900">
                                             R$ {{ number_format($item->valor_total, 2, ',', '.') }}
                                         </td>
-                                        @if($ordem->status !== 'concluida')
-                                        <td class="px-4 py-3 text-center">
-                                            <form action="{{ route('ordens.itens.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja remover este item?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-500 hover:text-red-700 p-1 rounded-md hover:bg-red-50 transition-colors" title="Remover Item">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
-                                        </td>
+                                        @if ($ordem->status !== 'concluida')
+                                            <td class="px-4 py-3 text-center">
+                                                <form action="{{ route('ordens.itens.destroy', $item->id) }}"
+                                                    method="POST"
+                                                    onsubmit="return confirm('Tem certeza que deseja remover este item?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                        class="text-red-500 hover:text-red-700 p-1 rounded-md hover:bg-red-50 transition-colors"
+                                                        title="Remover Item">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
                                         @endif
                                     </tr>
                                 @endforeach
                             </tbody>
                             <tfoot class="bg-gray-50 border-t border-gray-100">
                                 <tr>
-                                    <td colspan="3" class="px-6 py-4 text-right font-bold text-gray-900 text-lg">Total da Ordem:</td>
-                                    <td class="px-4 py-4 text-right font-bold text-blue-700 text-lg whitespace-nowrap">R$ {{ number_format($ordem->valor_total, 2, ',', '.') }}</td>
-                                    @if($ordem->status !== 'concluida')
-                                    <td></td>
+                                    <td colspan="3" class="px-6 py-4 text-right font-bold text-gray-900 text-lg">
+                                        Total da Ordem:</td>
+                                    <td class="px-4 py-4 text-right font-bold text-blue-700 text-lg whitespace-nowrap">
+                                        R$ {{ number_format($ordem->valor_total, 2, ',', '.') }}</td>
+                                    @if ($ordem->status !== 'concluida')
+                                        <td></td>
                                     @endif
                                 </tr>
                             </tfoot>
@@ -136,72 +217,86 @@
             </div>
 
             {{-- Formulários de Adição (Apenas se não estiver concluída) --}}
-            @if($ordem->status !== 'concluida' && $ordem->status !== 'cancelada')
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                {{-- Adicionar Serviço --}}
-                <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-5">
-                    <h4 class="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="bi bi-wrench"></i>
-                        Adicionar Serviço
-                    </h4>
-                    <form action="{{ route('ordens.itens.store', $ordem->id) }}" method="POST" class="space-y-3">
-                        @csrf
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Serviço</label>
-                            <select name="servico_id" class="mb-4 w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required>
-                                <option value="">Selecione...</option>
-                                @foreach($servicos as $servico)
-                                    <option value="{{ $servico->id }}">{{ $servico->nome }} (R$ {{ number_format($servico->valor_base, 2, ',', '.') }})</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Quantidade</label>
-                            <input type="number" name="quantidade" min="1" value="1" class="mb-4 w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required>
-                        </div>
-                        <button type="submit" class="w-full bg-gray-800 hover:bg-gray-900 text-white text-sm font-medium py-2 rounded-md transition-colors">
+            @if ($ordem->status !== 'concluida' && $ordem->status !== 'cancelada')
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    {{-- Adicionar Serviço --}}
+                    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-5">
+                        <h4 class="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            <i class="bi bi-wrench"></i>
                             Adicionar Serviço
-                        </button>
-                    </form>
-                </div>
+                        </h4>
+                        <form action="{{ route('ordens.itens.store', $ordem->id) }}" method="POST" class="space-y-3">
+                            @csrf
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Serviço</label>
+                                <select name="servico_id"
+                                    class="mb-4 w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    required>
+                                    <option value="">Selecione...</option>
+                                    @foreach ($servicos as $servico)
+                                        <option value="{{ $servico->id }}">{{ $servico->nome }} (R$
+                                            {{ number_format($servico->valor_base, 2, ',', '.') }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Quantidade</label>
+                                <input type="number" name="quantidade" min="1" value="1"
+                                    class="mb-4 w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    required>
+                            </div>
+                            <button type="submit"
+                                class="w-full bg-gray-800 hover:bg-gray-900 text-white text-sm font-medium py-2 rounded-md transition-colors">
+                                Adicionar Serviço
+                            </button>
+                        </form>
+                    </div>
 
-                {{-- Adicionar Peça --}}
-                <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-5">
-                    <h4 class="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="bi bi-box-seam"></i>
-                        Adicionar Peça
-                    </h4>
-                    <form action="{{ route('ordens.itens.peca.store', $ordem->id) }}" method="POST" class="space-y-3">
-                        @csrf
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Peça</label>
-                            <select name="peca_id" class="mb-4 w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required>
-                                <option value="">Selecione...</option>
-                                @foreach($pecas as $peca)
-                                    <option value="{{ $peca->id }}">{{ $peca->nome }} (R$ {{ number_format($peca->valor_unitario, 2, ',', '.') }}) - Estq: {{ $peca->estoque }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Quantidade</label>
-                            <input type="number" name="quantidade" min="1" value="1" class="mb-4 w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" required>
-                        </div>
-                        <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium py-2 rounded-md transition-colors">
+                    {{-- Adicionar Peça --}}
+                    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-5">
+                        <h4 class="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            <i class="bi bi-box-seam"></i>
                             Adicionar Peça
-                        </button>
-                    </form>
-                </div>
+                        </h4>
+                        <form action="{{ route('ordens.itens.peca.store', $ordem->id) }}" method="POST"
+                            class="space-y-3">
+                            @csrf
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Peça</label>
+                                <select name="peca_id"
+                                    class="mb-4 w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    required>
+                                    <option value="">Selecione...</option>
+                                    @foreach ($pecas as $peca)
+                                        <option value="{{ $peca->id }}">{{ $peca->nome }} (R$
+                                            {{ number_format($peca->valor_unitario, 2, ',', '.') }}) - Estq:
+                                            {{ $peca->estoque }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Quantidade</label>
+                                <input type="number" name="quantidade" min="1" value="1"
+                                    class="mb-4 w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    required>
+                            </div>
+                            <button type="submit"
+                                class="w-full bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium py-2 rounded-md transition-colors">
+                                Adicionar Peça
+                            </button>
+                        </form>
+                    </div>
 
-            </div>
+                </div>
             @endif
 
         </div>
 
         {{-- Coluna Lateral (Timeline & Aprovação) --}}
-        <div class="lg:col-span-1 space-y-6">
+        <div class="lg:col-span-1 space-y-6 pt-5">
             {{-- Card de Aprovação --}}
-            @if($ordem->status !== 'concluida' && $ordem->status !== 'cancelada')
+            @if ($ordem->status !== 'concluida' && $ordem->status !== 'cancelada')
                 <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
                         <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
@@ -210,11 +305,13 @@
                         </h3>
                     </div>
                     <div class="p-6 space-y-4">
-                        @if(!$ordem->approval_token)
-                            <p class="text-xs text-gray-500">Gere um link seguro para enviar ao cliente para que ele possa aprovar ou reprovar esta OS sem precisar de login.</p>
+                        @if (!$ordem->approval_token)
+                            <p class="text-xs text-gray-500">Gere um link seguro para enviar ao cliente para que ele
+                                possa aprovar ou reprovar esta OS sem precisar de login.</p>
                             <form action="{{ route('ordens.solicitar-aprovacao', $ordem->id) }}" method="POST">
                                 @csrf
-                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2 shadow-sm">
+                                <button type="submit"
+                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2 shadow-sm">
                                     <i class="bi bi-send"></i>
                                     Solicitar aprovação
                                 </button>
@@ -223,36 +320,47 @@
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-semibold text-gray-500 uppercase">Situação</span>
                                 @php
-                                    $appStatusColor = match($ordem->approval_status) {
+                                    $appStatusColor = match ($ordem->approval_status) {
                                         'approved' => 'bg-green-100 text-green-800',
                                         'rejected' => 'bg-red-100 text-red-800',
                                         default => 'bg-yellow-100 text-yellow-800',
                                     };
                                 @endphp
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $appStatusColor }}">
+                                <span
+                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $appStatusColor }}">
                                     {{ $ordem->approval_status_formatado }}
                                 </span>
                             </div>
 
-                            @if($ordem->approval_status === 'pending')
+                            @if ($ordem->approval_status === 'pending')
                                 <div class="space-y-2">
-                                    <label class="block text-xs font-semibold text-gray-500 uppercase">Link de Aprovação</label>
+                                    <label class="block text-xs font-semibold text-gray-500 uppercase">Link de
+                                        Aprovação</label>
                                     <div class="flex gap-2">
-                                        <input type="text" readonly value="{{ route('aprovacao.show', $ordem->approval_token) }}" id="link-aprovacao" class="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50 text-gray-600 focus:outline-none">
-                                        <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('link-aprovacao').value); alert('Link copiado!');" class="px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-center" title="Copiar Link">
+                                        <input type="text" readonly
+                                            value="{{ route('aprovacao.show', $ordem->approval_token) }}"
+                                            id="link-aprovacao"
+                                            class="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50 text-gray-600 focus:outline-none">
+                                        <button type="button"
+                                            onclick="navigator.clipboard.writeText(document.getElementById('link-aprovacao').value); alert('Link copiado!');"
+                                            class="px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-center"
+                                            title="Copiar Link">
                                             <i class="bi bi-clipboard"></i>
                                         </button>
                                     </div>
                                 </div>
 
-                                <a href="{{ $ordem->whatsapp_link }}" target="_blank" class="w-full bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2 shadow-sm">
+                                <a href="{{ $ordem->whatsapp_link }}" target="_blank"
+                                    class="w-full bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2 shadow-sm">
                                     <i class="bi bi-whatsapp"></i>
                                     Enviar pelo WhatsApp
                                 </a>
 
-                                <form action="{{ route('ordens.solicitar-aprovacao', $ordem->id) }}" method="POST" class="pt-2 border-t border-gray-100">
+                                <form action="{{ route('ordens.solicitar-aprovacao', $ordem->id) }}" method="POST"
+                                    class="pt-2 border-t border-gray-100">
                                     @csrf
-                                    <button type="submit" class="w-full text-xs text-gray-500 hover:text-gray-700 text-center block bg-transparent border-0 cursor-pointer p-0">
+                                    <button type="submit"
+                                        class="w-full text-xs text-gray-500 hover:text-gray-700 text-center block bg-transparent border-0 cursor-pointer p-0">
                                         Gerar novo link / Resetar
                                     </button>
                                 </form>
@@ -263,7 +371,7 @@
             @endif
 
             {{-- Histórico de Aprovação (se existir token) --}}
-            @if($ordem->approval_token)
+            @if ($ordem->approval_token)
                 <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
                         <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
@@ -277,12 +385,16 @@
                             <span class="font-medium text-gray-900">{{ $ordem->approval_status_formatado }}</span>
                         </div>
                         <div>
-                            <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">Data do envio</span>
-                            <span class="font-medium text-gray-900">{{ $ordem->approval_requested_at ? $ordem->approval_requested_at->format('d/m/Y H:i') : '—' }}</span>
+                            <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">Data do
+                                envio</span>
+                            <span
+                                class="font-medium text-gray-900">{{ $ordem->approval_requested_at ? $ordem->approval_requested_at->format('d/m/Y H:i') : '—' }}</span>
                         </div>
                         <div>
-                            <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">Data da resposta</span>
-                            <span class="font-medium text-gray-900">{{ $ordem->approval_response_at ? $ordem->approval_response_at->format('d/m/Y H:i') : '—' }}</span>
+                            <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">Data da
+                                resposta</span>
+                            <span
+                                class="font-medium text-gray-900">{{ $ordem->approval_response_at ? $ordem->approval_response_at->format('d/m/Y H:i') : '—' }}</span>
                         </div>
                         <div>
                             <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">IP</span>
@@ -290,12 +402,15 @@
                         </div>
                         <div>
                             <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">Navegador</span>
-                            <span class="font-medium text-gray-900 text-xs block break-all text-gray-600">{{ $ordem->approval_user_agent ?? '—' }}</span>
+                            <span
+                                class="font-medium text-gray-900 text-xs block break-all text-gray-600">{{ $ordem->approval_user_agent ?? '—' }}</span>
                         </div>
-                        @if($ordem->approval_comment)
+                        @if ($ordem->approval_comment)
                             <div class="pt-2 border-t border-gray-100">
-                                <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Comentário do cliente</span>
-                                <div class="p-2 bg-gray-50 rounded text-xs text-gray-700 border border-gray-100 break-words">
+                                <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Comentário do
+                                    cliente</span>
+                                <div
+                                    class="p-2 bg-gray-50 rounded text-xs text-gray-700 border border-gray-100 break-words">
                                     {{ $ordem->approval_comment }}
                                 </div>
                             </div>
@@ -309,11 +424,11 @@
                     <i class="bi bi-clock-history text-gray-500"></i>
                     Histórico da Ordem
                 </h3>
-                
+
                 <div>
                     @forelse($ordem->historicos as $historico)
                         @php
-                            $statusText = match($historico->status) {
+                            $statusText = match ($historico->status) {
                                 'aberta' => 'Aberta',
                                 'em_andamento' => 'Em andamento',
                                 'aguardando_aprovacao' => 'Aguardando aprovação',
@@ -321,7 +436,7 @@
                                 'reprovada' => 'Reprovada pelo cliente',
                                 'concluida' => 'Concluída',
                                 'cancelada' => 'Cancelada',
-                                default => $historico->status
+                                default => $historico->status,
                             };
                         @endphp
                         <div class="relative pl-6">
@@ -340,5 +455,26 @@
         </div>
 
     </div>
+
+    @push('scripts')
+        <script>
+            document.getElementById('cliente_id').addEventListener('change', function() {
+                let clienteId = this.value;
+                if (!clienteId) return;
+
+                fetch(`/clientes/${clienteId}/veiculos`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let select = document.getElementById('veiculo_id');
+                        select.innerHTML = '<option value="">Selecione um veículo...</option>';
+                        data.forEach(veiculo => {
+                            select.innerHTML +=
+                                `<option value="${veiculo.id}">${veiculo.marca} ${veiculo.modelo} - ${veiculo.placa}</option>`;
+                        });
+                    });
+            });
+        </script>
+    @endpush
+
 
 </x-app-layout>

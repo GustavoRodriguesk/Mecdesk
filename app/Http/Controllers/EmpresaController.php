@@ -10,7 +10,7 @@ class EmpresaController extends Controller
 {
     public function edit()
     {
-        abort_if(!auth()->user()->isAdmin(), 403);
+        abort_if(! auth()->user()->isAdmin(), 403);
 
         $empresa = auth()->user()->empresa;
         // Carrega os funcionários (usuários) dessa empresa
@@ -22,32 +22,32 @@ class EmpresaController extends Controller
         $totalImportacoesIA = 0; // Se houver modelo de importação futuramente
 
         return view('empresa.edit', compact(
-            'empresa', 
-            'funcionarios', 
-            'totalClientes', 
-            'totalOrdens', 
+            'empresa',
+            'funcionarios',
+            'totalClientes',
+            'totalOrdens',
             'totalImportacoesIA'
         ));
     }
 
     public function update(Request $request)
     {
-        abort_if(!auth()->user()->isAdmin(), 403);
+        abort_if(! auth()->user()->isAdmin(), 403);
 
         $request->validate([
-            'nome_fantasia' => 'required|string|max:255',
-            'razao_social'  => 'nullable|string|max:255',
-            'cnpj'          => 'nullable|string|max:20',
-            'email'         => 'nullable|email|max:255',
-            'telefone'      => 'nullable|string|max:20',
-            'whatsapp'      => 'nullable|string|max:20',
-            'cep'           => 'nullable|string|max:9',
-            'logradouro'    => 'nullable|string|max:255',
-            'numero'        => 'nullable|string|max:50',
-            'bairro'        => 'nullable|string|max:255',
-            'cidade'        => 'nullable|string|max:255',
-            'estado'        => 'nullable|string|max:2',
-            'logo'          => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'nome_fantasia' => 'required|string|max:150',
+            'razao_social' => 'nullable|string|max:150',
+            'cnpj' => 'nullable|string|max:18',
+            'email' => 'nullable|email|max:100',
+            'telefone' => 'nullable|string|max:15',
+            'whatsapp' => 'nullable|string|max:15',
+            'cep' => 'nullable|string|max:9',
+            'logradouro' => 'nullable|string|max:100',
+            'numero' => 'nullable|string|max:8',
+            'bairro' => 'nullable|string|max:100',
+            'cidade' => 'nullable|string|max:50',
+            'estado' => 'nullable|string|max:2',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $empresa = auth()->user()->empresa;

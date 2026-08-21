@@ -16,7 +16,8 @@
 
     <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
 
-        <a href="/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('dashboard') ? 'bg-gray-800 text-white' : '' }}">
+        <a href="/dashboard"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('dashboard') ? 'bg-gray-800 text-white' : '' }}">
             <i class="bi bi-grid text-lg"></i>
             <span class="font-medium text-sm">Dashboard</span>
         </a>
@@ -27,12 +28,14 @@
             </p>
         </div>
 
-        <a href="/clientes" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('clientes*') ? 'bg-gray-800 text-white' : '' }}">
+        <a href="/clientes"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('clientes*') ? 'bg-gray-800 text-white' : '' }}">
             <i class="bi bi-people text-lg"></i>
             <span class="font-medium text-sm">Clientes</span>
         </a>
 
-        <a href="{{ route('veiculos.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('veiculos*') ? 'bg-gray-800 text-white' : '' }}">
+        <a href="{{ route('veiculos.index') }}"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('veiculos*') ? 'bg-gray-800 text-white' : '' }}">
             <i class="bi bi-car-front text-lg"></i>
             <span class="font-medium text-sm">Veículos</span>
         </a>
@@ -43,25 +46,29 @@
             </p>
         </div>
 
-        <a href="{{ route('ordens.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('ordens*') ? 'bg-gray-800 text-white' : '' }}">
+        <a href="{{ route('ordens.index') }}"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('ordens*') ? 'bg-gray-800 text-white' : '' }}">
             <i class="bi bi-card-checklist text-lg"></i>
             <span class="font-medium text-sm">Ordens de Serviço</span>
         </a>
 
-        <a href="{{ route('servicos.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('servicos*') ? 'bg-gray-800 text-white' : '' }}">
+        <a href="{{ route('servicos.index') }}"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('servicos*') ? 'bg-gray-800 text-white' : '' }}">
             <i class="bi bi-wrench text-lg"></i>
             <span class="font-medium text-sm">Serviços</span>
         </a>
 
-        <a href="{{ route('pecas.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('pecas*') ? 'bg-gray-800 text-white' : '' }}">
+        <a href="{{ route('pecas.index') }}"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('pecas*') ? 'bg-gray-800 text-white' : '' }}">
             <i class="bi bi-box-seam text-lg"></i>
             <span class="font-medium text-sm">Peças</span>
         </a>
 
     </nav>
-    
+
     <div class="p-4 border-t border-gray-800">
-        <a href="{{ route('empresa.edit') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('empresa*') ? 'bg-gray-800 text-white' : '' }}">
+        <a href="{{ route('empresa.edit') }}"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('empresa*') ? 'bg-gray-800 text-white' : '' }}">
             <i class="bi bi-gear text-lg"></i>
             <span class="font-medium text-sm">Minha Empresa</span>
         </a>

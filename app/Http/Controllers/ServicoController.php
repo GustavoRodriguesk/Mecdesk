@@ -7,111 +7,111 @@ use Illuminate\Http\Request;
 
 class ServicoController extends Controller
 {
-public function index(Request $request)
-{
-    $query = Servico::query();
+    public function index(Request $request)
+    {
+        $query = Servico::query();
 
-    if ($request->filled('search')) {
+        if ($request->filled('search')) {
 
-        $query->where(
-            'nome',
-            'like',
-            '%' . $request->search . '%'
+            $query->where(
+                'nome',
+                'like',
+                '%'.$request->search.'%'
+            );
+        }
+
+        if ($request->filled('nome')) {
+
+            $query->where(
+                'nome',
+                'like',
+                '%'.$request->nome.'%'
+            );
+        }
+
+        if ($request->filled('valor_min')) {
+
+            $query->where(
+                'valor_base',
+                '>=',
+                $request->valor_min
+            );
+        }
+
+        if ($request->filled('valor_max')) {
+
+            $query->where(
+                'valor_base',
+                '<=',
+                $request->valor_max
+            );
+        }
+
+        $servicos = $query
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view(
+            'servicos.index',
+            compact('servicos')
         );
     }
 
-    if ($request->filled('nome')) {
-
-        $query->where(
-            'nome',
-            'like',
-            '%' . $request->nome . '%'
-        );
+    public function create()
+    {
+        return view('servicos.create');
     }
 
-    if ($request->filled('valor_min')) {
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nome' => 'required',
+            'descricao' => 'required',
+            'valor_base' => 'required|numeric',
+        ]);
 
-        $query->where(
-            'valor_base',
-            '>=',
-            $request->valor_min
-        );
+        Servico::create($request->except('empresa_id'));
+
+        return redirect()->route('servicos.index')
+            ->with('success', 'Serviço criado com sucesso.');
     }
 
-    if ($request->filled('valor_max')) {
-
-        $query->where(
-            'valor_base',
-            '<=',
-            $request->valor_max
-        );
+    public function show(Servico $servico)
+    {
+        return redirect()->route('servicos.edit', $servico->id);
     }
 
-    $servicos = $query
-        ->latest()
-        ->paginate(10)
-        ->withQueryString();
+    public function edit(Servico $servico)
+    {
+        return view('servicos.edit', compact('servico'));
+    }
 
-    return view(
-        'servicos.index',
-        compact('servicos')
-    );
+    public function update(Request $request, Servico $servico)
+    {
+        $request->validate([
+            'nome' => 'required',
+            'descricao' => 'required',
+            'valor_base' => 'required|numeric',
+        ]);
+
+        $servico->update($request->except('empresa_id'));
+
+        return redirect()->route('servicos.index')
+            ->with('success', 'Serviço atualizado com sucesso.');
+    }
+
+    public function destroy(Servico $servico)
+    {
+        if ($servico->ordemServicoItens()->exists()) {
+            return redirect()
+                ->route('servicos.index')
+                ->with('error', 'Não é possível excluir este serviço pois ele já está vinculado a uma ou mais ordens de serviço.');
+        }
+
+        $servico->delete();
+
+        return redirect()->route('servicos.index')
+            ->with('success', 'Serviço deletado com sucesso.');
+    }
 }
-public function create()
-{
-    abort_if(!auth()->user()->isAdmin(), 403);
-
-    return view('servicos.create');
-
-}
-public function store(Request $request)
-{
-    abort_if(!auth()->user()->isAdmin(), 403);
-
-    $request->validate([
-        'nome' => 'required',
-        'descricao' => 'required',
-        'valor_base' => 'required|numeric',
-    ]);
-
-    Servico::create($request->except('empresa_id'));
-
-    return redirect()->route('servicos.index')
-                    ->with('success', 'Serviço criado com sucesso.');
-}
-public function show(Servico $servico)
-{
-    return view('servicos.show', compact('servico'));
-
-
-}
-public function edit(Servico $servico)
-{
-    abort_if(!auth()->user()->isAdmin(), 403);
-
-    return view('servicos.edit', compact('servico'));
-}
-public function update(Request $request, Servico $servico)
-{
-    abort_if(!auth()->user()->isAdmin(), 403);
-
-    $request->validate([
-        'nome' => 'required',
-        'descricao' => 'required',
-        'valor_base' => 'required|numeric',
-    ]);
-
-    $servico->update($request->except('empresa_id'));
-    return redirect()->route('servicos.index')
-                    ->with('success', 'Serviço atualizado com sucesso.');
-}
-public function destroy(Servico $servico)
-{
-    abort_if(!auth()->user()->isAdmin(), 403);
-
-    $servico->delete();
-    return redirect()->route('servicos.index')
-                    ->with('success', 'Serviço deletado com sucesso.');
-}
-}
-

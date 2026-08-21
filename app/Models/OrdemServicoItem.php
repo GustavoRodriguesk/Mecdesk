@@ -1,7 +1,9 @@
 <?php
+
 namespace App\Models;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 use Illuminate\Database\Eloquent\Model;
+
 class OrdemServicoItem extends Model
 {
     protected $table = 'ordem_servico_itens';
@@ -17,18 +19,18 @@ class OrdemServicoItem extends Model
         'valor_total',
     ];
 
-        public function peca()
-        {
-            return $this->belongsTo(Peca::class);
-        }
+    public function peca()
+    {
+        return $this->belongsTo(Peca::class);
+    }
 
-        public function servico()
+    public function servico()
     {
         return $this->belongsTo(Servico::class);
     }
 
     public function ordem()
     {
-        return $this->belongsTo(OrdemServico::class);
+        return $this->belongsTo(OrdemServico::class, 'ordem_servico_id');
     }
 }

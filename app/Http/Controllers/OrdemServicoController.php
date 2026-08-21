@@ -190,23 +190,20 @@ class OrdemServicoController extends Controller
 
     $servicos = Servico::orderBy('nome')->get();
     $pecas = Peca::orderBy('nome')->get();
+    $clientes = Cliente::orderBy('nome')->get();
+    $veiculos = Veiculo::orderBy('placa')->get();
 
     return view('ordens.show', compact(
         'ordem',
         'servicos',
-        'pecas'
+        'pecas',
+        'clientes',
+        'veiculos'
     ));
 }
     public function edit(OrdemServico $ordem)
     {
-        $clientes = Cliente::orderBy('nome')->get();
-        $veiculos = Veiculo::orderBy('placa')->get();
-
-        return view('ordens.edit', compact(
-            'ordem',
-            'clientes',
-            'veiculos'
-        ));
+        return redirect()->route('ordens.show', $ordem->id);
     }
 
     public function update(Request $request, OrdemServico $ordem)
@@ -238,14 +235,12 @@ if ($statusAnterior != $request->status) {
 
 
         return redirect()
-            ->route('ordens.index')
+            ->route('ordens.show', $ordem->id)
             ->with('success', 'Ordem atualizada com sucesso!');
     }
 
     public function destroy(OrdemServico $ordem)
     {
-        abort_if(!auth()->user()->isAdmin(), 403);
-
         $ordem->delete();
 
         return redirect()
