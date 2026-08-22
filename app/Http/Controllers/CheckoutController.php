@@ -63,7 +63,7 @@ class CheckoutController extends Controller
     {
         $request->validate([
             'card_token_id'   => 'required|string',
-            'idempotency_key' => 'nullable|uuid',
+            'idempotency_key' => 'nullable|string',
         ]);
 
         $user = auth()->user();
@@ -81,7 +81,11 @@ class CheckoutController extends Controller
         // Obtém o plano Pro ativo no servidor (Zero-Trust: valor indiscutível)
         $plano = Plano::where('slug', 'pro')->where('ativo', true)->firstOrFail();
         $cardTokenId = $request->input('card_token_id');
-        $idempotencyKey = $request->input('idempotency_key') ?? (string) Str::uuid();
+        
+        $rawIdempotencyKey = $request->input('idempotency_key');
+        $idempotencyKey = (!empty($rawIdempotencyKey) && Str::isUuid($rawIdempotencyKey))
+            ? $rawIdempotencyKey
+            : (string) Str::uuid();
 
         // Localiza a assinatura existente da empresa
         $assinatura = $empresa->assinaturas()->latest()->first();

@@ -45,7 +45,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($empresas as $dadosEmpresa) {
-            $plano = $dadosEmpresa['plano'];
+            $plano = $dadosEmpresa['plano'] ?? $planoPro;
 
             $empresa = new Empresa([
                 'nome_fantasia' => $dadosEmpresa['nome_fantasia'],

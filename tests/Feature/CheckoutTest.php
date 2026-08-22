@@ -85,6 +85,36 @@ test('checkout processar creates subscription via preapproval API with zero-trus
     ]);
 });
 
+test('checkout processar handles non-uuid idempotency key gracefully by generating valid UUID', function () {
+    Http::fake([
+        'https://api.mercadopago.com/preapproval' => function ($request) {
+            $headers = $request->headers();
+            $key = $headers['X-Idempotency-Key'][0] ?? '';
+            
+            if (\Illuminate\Support\Str::isUuid($key)) {
+                return Http::response([
+                    'id'     => 'preapp_fallback_uuid',
+                    'status' => 'authorized',
+                ], 201);
+            }
+            return Http::response(['message' => 'Invalid header'], 400);
+        },
+    ]);
+
+    $payload = [
+        'card_token_id'   => 'TOKEN_CARD_MOCK',
+        'idempotency_key' => 'legacy-non-uuid-key',
+    ];
+
+    $response = $this->actingAs($this->user)->postJson(route('checkout.processar'), $payload);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'id'     => 'preapp_fallback_uuid',
+            'status' => 'authorized',
+        ]);
+});
+
 test('checkout processar updates pending subscription via PUT /preapproval/{id} if pending mp_preapproval_id exists', function () {
     $assinaturaPendente = Assinatura::create([
         'empresa_id'        => $this->empresa->id,
