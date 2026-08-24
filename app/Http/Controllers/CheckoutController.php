@@ -173,10 +173,7 @@ class CheckoutController extends Controller
         $empresa->refresh();
 
         if ($empresa->isAtiva()) {
-            return redirect()->route('dashboard')->with(
-                'success',
-                '🎉 Assinatura aprovada! Seja bem-vindo ao MecDesk.'
-            );
+            return redirect()->route('assinatura.sucesso');
         }
 
         return redirect()->route('assinatura.pendente')->with(

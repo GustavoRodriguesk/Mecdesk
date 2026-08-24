@@ -34,6 +34,7 @@ class EnsureEmpresaAtiva
             if ($request->routeIs([
                 'logout',
                 'assinatura.pendente',
+                'assinatura.sucesso',
                 'assinatura.status',
                 'assinatura.minha',
                 'assinatura.cancelar',

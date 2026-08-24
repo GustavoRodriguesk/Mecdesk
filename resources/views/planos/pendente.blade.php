@@ -119,7 +119,7 @@
     @push('scripts')
     <script>
         const statusUrl = '{{ route('assinatura.status') }}';
-        const dashboardUrl = '{{ route('dashboard') }}';
+        const dashboardUrl = '{{ route('assinatura.sucesso') }}';
         let tentativas = 0;
         const MAX_TENTATIVAS = 60; // 10 min no máximo
 

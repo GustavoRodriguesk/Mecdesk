@@ -216,3 +216,21 @@ test('subscription cancellation endpoint cancels subscription without IDOR risk'
     expect($assinatura->status)->toBe('cancelled')
         ->and($assinatura->data_cancelamento)->not->toBeNull();
 });
+
+test('assinatura sucesso screen can be rendered for active company', function () {
+    $this->empresa->ativo = true;
+    $this->empresa->save();
+
+    Assinatura::create([
+        'empresa_id'       => $this->empresa->id,
+        'plano_id'         => $this->planoPro->id,
+        'status'           => 'authorized',
+        'preco_contratado' => 99.90,
+    ]);
+
+    $response = $this->actingAs($this->user)->get(route('assinatura.sucesso'));
+
+    $response->assertStatus(200)
+        ->assertSee('Parabéns! Sua compra foi concluída')
+        ->assertSee('MecDesk Pro');
+});

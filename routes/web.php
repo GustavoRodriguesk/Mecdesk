@@ -56,6 +56,15 @@ Route::middleware(['auth'])->group(function () {
         return view('planos.pendente');
     })->name('assinatura.pendente');
 
+    Route::get('/assinatura/sucesso', function () {
+        $empresa = auth()->user()->empresa;
+        if (!$empresa || !$empresa->isAtiva()) {
+            return redirect()->route('checkout.show');
+        }
+        $assinatura = $empresa->assinaturaAtiva()->first() ?? $empresa->assinaturas()->latest()->first();
+        return view('planos.sucesso', compact('empresa', 'assinatura'));
+    })->name('assinatura.sucesso');
+
     // Endpoint de polling para verificar se a assinatura foi ativada (usado pela página pendente)
     Route::get('/assinatura/status', function () {
         $empresa = auth()->user()->empresa;

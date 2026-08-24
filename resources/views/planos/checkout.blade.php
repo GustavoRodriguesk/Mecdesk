@@ -173,7 +173,7 @@
                                 } else {
                                     resolve();
                                     if (data.status === 'authorized') {
-                                        window.location.href = "{{ route('dashboard') }}";
+                                        window.location.href = "{{ route('assinatura.sucesso') }}";
                                     } else {
                                         window.location.href = "{{ route('assinatura.pendente') }}";
                                     }
