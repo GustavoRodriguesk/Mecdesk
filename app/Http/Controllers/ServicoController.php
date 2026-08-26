@@ -71,7 +71,15 @@ class ServicoController extends Controller
             'valor_base' => 'required|numeric',
         ]);
 
-        Servico::create($request->except('empresa_id'));
+        $servico = Servico::create($request->except('empresa_id'));
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Serviço criado com sucesso.',
+                'servico' => $servico,
+            ], 201);
+        }
 
         return redirect()->route('servicos.index')
             ->with('success', 'Serviço criado com sucesso.');

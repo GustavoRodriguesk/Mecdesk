@@ -1,39 +1,96 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('password.store') }}">
+@extends('layouts.auth')
+
+@section('title', 'Redefinir Senha — MecDesk')
+
+@section('content')
+
+    <div class="auth-card-head">
+        <h1 class="auth-card-title">Redefinir Senha</h1>
+        <p class="auth-card-desc">Crie uma nova senha segura para acessar sua conta</p>
+    </div>
+
+    {{-- Alerta de Erro Geral --}}
+    @if ($errors->any())
+        <div class="auth-alert auth-alert-error">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span>{{ $errors->first() }}</span>
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('password.store') }}" class="auth-form" novalidate>
         @csrf
 
-        <!-- Password Reset Token -->
+        {{-- Token de Redefinição --}}
         <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        {{-- E-mail --}}
+        <div class="auth-field">
+            <label for="email" class="auth-label">E-mail</label>
+            <div class="auth-input-wrapper">
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    class="auth-input {{ $errors->has('email') ? 'is-invalid' : '' }}"
+                    value="{{ old('email', $request->email) }}"
+                    placeholder="seu@email.com"
+                    autocomplete="username"
+                    required
+                    autofocus
+                >
+            </div>
+            @error('email')
+                <p class="auth-error-msg">{{ $message }}</p>
+            @enderror
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        {{-- Nova Senha --}}
+        <div class="auth-field">
+            <label for="password" class="auth-label">Nova Senha</label>
+            <div class="auth-input-wrapper">
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    class="auth-input {{ $errors->has('password') ? 'is-invalid' : '' }}"
+                    placeholder="Mínimo de 8 caracteres"
+                    autocomplete="new-password"
+                    required
+                >
+            </div>
+            @error('password')
+                <p class="auth-error-msg">{{ $message }}</p>
+            @enderror
         </div>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                                type="password"
-                                name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        {{-- Confirmação de Senha --}}
+        <div class="auth-field">
+            <label for="password_confirmation" class="auth-label">Confirmar Nova Senha</label>
+            <div class="auth-input-wrapper">
+                <input
+                    type="password"
+                    id="password_confirmation"
+                    name="password_confirmation"
+                    class="auth-input {{ $errors->has('password_confirmation') ? 'is-invalid' : '' }}"
+                    placeholder="Repita a nova senha"
+                    autocomplete="new-password"
+                    required
+                >
+            </div>
+            @error('password_confirmation')
+                <p class="auth-error-msg">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
-        </div>
+        {{-- Botão de Redefinir --}}
+        <button type="submit" class="auth-btn-primary">
+            <span>Redefinir senha</span>
+            <i class="bi bi-shield-check"></i>
+        </button>
     </form>
-</x-guest-layout>
+
+    <div class="auth-card-footer">
+        <a href="{{ route('login') }}" class="auth-link">Voltar para o login</a>
+    </div>
+
+@endsection

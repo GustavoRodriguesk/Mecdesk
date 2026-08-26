@@ -1,27 +1,52 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
+@extends('layouts.auth')
+
+@section('title', 'Confirmar Senha — MecDesk')
+
+@section('content')
+
+    <div class="auth-card-head">
+        <h1 class="auth-card-title">Confirmar Senha</h1>
+        <p class="auth-card-desc">
+            Esta é uma área segura da aplicação. Por favor, confirme sua senha antes de continuar.
+        </p>
     </div>
 
-    <form method="POST" action="{{ route('password.confirm') }}">
+    {{-- Alerta de Erro Geral --}}
+    @if ($errors->any())
+        <div class="auth-alert auth-alert-error">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span>{{ $errors->first() }}</span>
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('password.confirm') }}" class="auth-form" novalidate>
         @csrf
 
-        <!-- Password -->
-        <div>
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        {{-- Senha --}}
+        <div class="auth-field">
+            <label for="password" class="auth-label">Sua senha atual</label>
+            <div class="auth-input-wrapper">
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    class="auth-input {{ $errors->has('password') ? 'is-invalid' : '' }}"
+                    placeholder="••••••••"
+                    autocomplete="current-password"
+                    required
+                    autofocus
+                >
+            </div>
+            @error('password')
+                <p class="auth-error-msg">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="flex justify-end mt-4">
-            <x-primary-button>
-                {{ __('Confirm') }}
-            </x-primary-button>
-        </div>
+        {{-- Botão de Confirmação --}}
+        <button type="submit" class="auth-btn-primary">
+            <span>Confirmar acesso</span>
+            <i class="bi bi-shield-lock-fill"></i>
+        </button>
     </form>
-</x-guest-layout>
+
+@endsection

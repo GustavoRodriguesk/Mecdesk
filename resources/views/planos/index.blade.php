@@ -26,7 +26,7 @@
             </p>
 
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="{{ route('planos.assinar') }}"
+                <a href="{{ route('planos.contratar') }}"
                     class="w-full sm:w-auto px-8 py-4 text-base font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
                     <span>Começar agora</span>
                     <i class="bi bi-arrow-right"></i>
@@ -208,7 +208,7 @@
                         </div>
 
                         <div class="pt-4">
-                            <a href="{{ route('planos.assinar') }}"
+                            <a href="{{ route('planos.contratar') }}"
                                 class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35 transition-all text-center">
                                 <span>Começar agora</span>
                                 <i class="bi bi-arrow-right"></i>
@@ -334,7 +334,7 @@
                 Pro.
             </p>
             <div class="pt-2">
-                <a href="{{ route('planos.assinar') }}"
+                <a href="{{ route('planos.contratar') }}"
                     class="inline-flex items-center justify-center gap-2 px-9 py-4 text-base font-bold text-slate-950 bg-white hover:bg-slate-100 rounded-xl shadow-lg hover:shadow-xl transition-all">
                     <span>Começar agora por R$ 99,90/mês</span>
                     <i class="bi bi-arrow-right"></i>

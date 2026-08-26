@@ -36,10 +36,10 @@
         }
     </style>
 
-    <div class="w-full">
+    <div class="w-full mx-auto space-y-6">
 
         {{-- ── Cabeçalho da página ── --}}
-        <div class="flex items-start justify-between pb-6">
+        <div class="flex items-start justify-between">
             <div class="flex items-center gap-4">
                 @if (!empty($empresa->logo))
                     <div

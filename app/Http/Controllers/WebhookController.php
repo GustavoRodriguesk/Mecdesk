@@ -17,8 +17,8 @@ class WebhookController extends Controller
      */
     public function handle(Request $request): JsonResponse
     {
-        $payload    = $request->all();
-        $action     = $request->input('action') ?? $request->input('type') ?? 'unknown';
+        $payload = $request->all();
+        $action = $request->input('action') ?? $request->input('type') ?? 'unknown';
         $resourceId = (string) ($request->input('data.id') ?? $request->input('id') ?? '');
 
         if (empty($resourceId)) {
@@ -27,26 +27,26 @@ class WebhookController extends Controller
 
         // 1. Registra o Webhook bruto para auditoria antes de processar
         $webhookLog = WebhookLog::create([
-            'event_id'    => $request->input('id'),
-            'action'      => $action,
+            'event_id' => $request->input('id'),
+            'action' => $action,
             'resource_id' => $resourceId,
-            'payload'     => $payload,
-            'signature'   => $request->header('x-signature'),
-            'processed'   => false,
+            'payload' => $payload,
+            'signature' => $request->header('x-signature'),
+            'processed' => false,
         ]);
 
         // 2. Valida a autenticidade HMAC SHA-256 do webhook (Prevenção de Falsificação)
-        if (!WebhookValidator::validate($request)) {
+        if (! WebhookValidator::validate($request)) {
             Log::warning("Webhook retido por falha na assinatura HMAC (IP: {$request->ip()})", [
                 'webhook_log_id' => $webhookLog->id,
-                'resource_id'    => $resourceId,
+                'resource_id' => $resourceId,
             ]);
 
             $webhookLog->update([
                 'error' => 'Assinatura x-signature inválida ou não autorizada',
             ]);
 
-            if (!app()->environment(['local', 'testing'])) {
+            if (! app()->environment(['local', 'testing'])) {
                 return response()->json(['message' => 'Assinatura inválida'], 401);
             }
         }
@@ -56,7 +56,7 @@ class WebhookController extends Controller
 
         // 4. Retorna HTTP 200 OK imediatamente para o Mercado Pago não expirar a requisição
         return response()->json([
-            'status'  => 'received',
+            'status' => 'received',
             'log_id' => $webhookLog->id,
         ], 200);
     }

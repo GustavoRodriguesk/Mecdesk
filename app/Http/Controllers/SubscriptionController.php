@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Plano;
 use App\Services\MercadoPago\MercadoPagoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -21,13 +22,14 @@ class SubscriptionController extends Controller
         $empresa = $user->empresa;
         $empresa?->refresh();
 
-        $assinatura = $empresa?->assinaturaAtiva ?? $empresa?->assinaturas()->latest()->first();
-        $plano = $empresa?->plano ?? \App\Models\Plano::where('slug', 'pro')->where('ativo', true)->first();
+        // Prioridade: assinatura vigente (authorized ou pending); fallback para a última de qualquer status
+        $assinatura = $empresa?->assinaturaVigente ?? $empresa?->assinaturas()->latest()->first();
+        $plano = $empresa?->plano ?? Plano::where('slug', 'pro')->where('ativo', true)->first();
 
         return view('planos.minha-assinatura', [
-            'empresa'    => $empresa,
+            'empresa' => $empresa,
             'assinatura' => $assinatura,
-            'plano'      => $plano,
+            'plano' => $plano,
         ]);
     }
 
@@ -45,7 +47,7 @@ class SubscriptionController extends Controller
             ->latest()
             ->first();
 
-        if (!$assinatura || !$assinatura->mp_preapproval_id) {
+        if (! $assinatura || ! $assinatura->mp_preapproval_id) {
             return back()->with('error', 'Nenhuma assinatura ativa ou pendente foi encontrada para ser cancelada.');
         }
 
@@ -55,16 +57,16 @@ class SubscriptionController extends Controller
 
             // Atualiza status e data de cancelamento localmente
             $assinatura->update([
-                'status'            => 'cancelled',
+                'status' => 'cancelled',
                 'data_cancelamento' => now(),
             ]);
 
             return back()->with('success', 'Sua assinatura foi cancelada com sucesso.');
 
         } catch (\Throwable $e) {
-            Log::error("Erro ao cancelar assinatura da empresa #{$empresa->id}: " . $e->getMessage());
+            Log::error("Erro ao cancelar assinatura da empresa #{$empresa->id}: ".$e->getMessage());
 
-            return back()->with('error', 'Não foi possível cancelar a assinatura no momento: ' . $e->getMessage());
+            return back()->with('error', 'Não foi possível cancelar a assinatura no momento: '.$e->getMessage());
         }
     }
 }

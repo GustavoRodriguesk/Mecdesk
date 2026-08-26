@@ -2,171 +2,180 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Veiculo;
 use App\Models\Cliente;
+use App\Models\Veiculo;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class VeiculoController extends Controller
 {
- public function index(Request $request)
-{
-    $query = Veiculo::with('cliente');
+    public function index(Request $request)
+    {
+        $query = Veiculo::with('cliente');
 
-    // Busca global
-    if ($request->filled('search')) {
+        // Busca global
+        if ($request->filled('search')) {
 
-        $search = $request->search;
+            $search = $request->search;
 
-        $query->where(function ($q) use ($search) {
+            $query->where(function ($q) use ($search) {
 
-            $q->where('placa', 'like', "%{$search}%")
-              ->orWhere('marca', 'like', "%{$search}%")
-              ->orWhere('modelo', 'like', "%{$search}%")
+                $q->where('placa', 'like', "%{$search}%")
+                    ->orWhere('marca', 'like', "%{$search}%")
+                    ->orWhere('modelo', 'like', "%{$search}%")
+                    ->orWhereHas('cliente', function ($cliente) use ($search) {
 
-              ->orWhereHas('cliente', function ($cliente) use ($search) {
+                        $cliente->where(
+                            'nome',
+                            'like',
+                            "%{$search}%"
+                        );
 
-                    $cliente->where(
-                        'nome',
-                        'like',
-                        "%{$search}%"
-                    );
+                    });
 
-              });
+            });
+        }
 
-        });
-    }
+        // Filtro individual de placa
+        if ($request->filled('placa')) {
 
-    // Filtro individual de placa
-    if ($request->filled('placa')) {
+            $query->where(
+                'placa',
+                'like',
+                "%{$request->placa}%"
+            );
+        }
 
-        $query->where(
-            'placa',
-            'like',
-            "%{$request->placa}%"
+        // Filtro individual de marca
+        if ($request->filled('marca')) {
+
+            $query->where(
+                'marca',
+                'like',
+                "%{$request->marca}%"
+            );
+        }
+
+        // Filtro individual de modelo
+        if ($request->filled('modelo')) {
+
+            $query->where(
+                'modelo',
+                'like',
+                "%{$request->modelo}%"
+            );
+        }
+
+        // Cliente
+        if ($request->filled('cliente_id')) {
+
+            $query->where(
+                'cliente_id',
+                $request->cliente_id
+            );
+        }
+
+        $veiculos = $query
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        $clientes = Cliente::orderBy('nome')->get();
+
+        return view(
+            'veiculos.index',
+            compact(
+                'veiculos',
+                'clientes'
+            )
         );
     }
 
-    // Filtro individual de marca
-    if ($request->filled('marca')) {
+    public function create(Request $request)
+    {
+        $clientes = Cliente::orderBy('nome')->get();
 
-        $query->where(
-            'marca',
-            'like',
-            "%{$request->marca}%"
-        );
+        $clienteId = $request->cliente;
+
+        return view('veiculos.create', compact(
+            'clientes',
+            'clienteId'
+        ));
     }
 
-    // Filtro individual de modelo
-    if ($request->filled('modelo')) {
+    public function store(Request $request)
+    {
+        $request->validate([
+            'cliente_id' => [
+                'required',
+                Rule::exists('clientes', 'id')
+                    ->where('empresa_id', auth()->user()->empresa_id),
+            ],
+            'marca' => 'required',
+            'modelo' => 'required',
+            'placa' => [
+                'required',
+                Rule::unique('veiculos', 'placa')
+                    ->where('empresa_id', auth()->user()->empresa_id),
+            ],
+        ]);
 
-        $query->where(
-            'modelo',
-            'like',
-            "%{$request->modelo}%"
-        );
+        $dados = $request->except('empresa_id');
+        $dados['empresa_id'] = auth()->user()->empresa_id;
+
+        Veiculo::create($dados);
+
+        return redirect()
+            ->route('veiculos.index')
+            ->with('success', 'Veículo cadastrado com sucesso!');
     }
 
-    // Cliente
-    if ($request->filled('cliente_id')) {
+    public function edit(Veiculo $veiculo)
+    {
+        $clientes = Cliente::orderBy('nome')->get();
 
-        $query->where(
-            'cliente_id',
-            $request->cliente_id
-        );
+        return view('veiculos.edit', compact('veiculo', 'clientes'));
     }
 
-    $veiculos = $query
-        ->latest()
-        ->paginate(10)
-        ->withQueryString();
+    public function update(Request $request, Veiculo $veiculo)
+    {
+        $request->validate([
+            'cliente_id' => [
+                'required',
+                Rule::exists('clientes', 'id')
+                    ->where('empresa_id', auth()->user()->empresa_id),
+            ],
+            'marca' => 'required',
+            'modelo' => 'required',
+            'placa' => [
+                'required',
+                Rule::unique('veiculos', 'placa')
+                    ->ignore($veiculo->id)
+                    ->where('empresa_id', auth()->user()->empresa_id),
+            ],
+        ]);
 
-    $clientes = Cliente::orderBy('nome')->get();
+        $dados = $request->except('empresa_id');
+        $dados['empresa_id'] = auth()->user()->empresa_id;
 
-    return view(
-        'veiculos.index',
-        compact(
-            'veiculos',
-            'clientes'
-        )
-    );
-}
-public function create(Request $request)
-{
-    $clientes = Cliente::orderBy('nome')->get();
+        $veiculo->update($dados);
 
-    $clienteId = $request->cliente;
+        return redirect()
+            ->route('veiculos.index')
+            ->with('success', 'Veículo atualizado com sucesso!');
+    }
 
-    return view('veiculos.create', compact(
-        'clientes',
-        'clienteId'
-    ));
-}
-public function store(Request $request)
-{
-    $request->validate([
-        'cliente_id' => [
-            'required',
-            \Illuminate\Validation\Rule::exists('clientes', 'id')
-                ->where('empresa_id', auth()->user()->empresa_id)
-        ],
-        'marca' => 'required',
-        'modelo' => 'required',
-        'placa' => [
-            'required',
-            \Illuminate\Validation\Rule::unique('veiculos', 'placa')
-                ->where('empresa_id', auth()->user()->empresa_id)
-        ],
-    ]);
+    public function destroy(Veiculo $veiculo)
+    {
+        $veiculo->delete();
 
-    Veiculo::create($request->except('empresa_id'));
+        return redirect()
+            ->route('veiculos.index')
+            ->with('success', 'Veículo excluído com sucesso!');
+    }
 
-    return redirect()
-        ->route('veiculos.index')
-        ->with('success', 'Veículo cadastrado com sucesso!');
-}
-
-public function edit(Veiculo $veiculo)
-{
-    $clientes = Cliente::orderBy('nome')->get();
-
-    return view('veiculos.edit', compact('veiculo', 'clientes'));
-}
-
-public function update(Request $request, Veiculo $veiculo)
-{
-    $request->validate([
-        'cliente_id' => [
-            'required',
-            \Illuminate\Validation\Rule::exists('clientes', 'id')
-                ->where('empresa_id', auth()->user()->empresa_id)
-        ],
-        'marca' => 'required',
-        'modelo' => 'required',
-        'placa' => [
-            'required',
-            \Illuminate\Validation\Rule::unique('veiculos', 'placa')
-                ->ignore($veiculo->id)
-                ->where('empresa_id', auth()->user()->empresa_id)
-        ],
-    ]);
-
-    $veiculo->update($request->except('empresa_id'));
-
-    return redirect()
-        ->route('veiculos.index')
-        ->with('success', 'Veículo atualizado com sucesso!');
-}
-
-public function destroy(Veiculo $veiculo)
-{
-    $veiculo->delete();
-
-    return redirect()
-        ->route('veiculos.index')
-        ->with('success', 'Veículo excluído com sucesso!');
-}
-public function show(Veiculo $veiculo)
-{
-    return redirect()->route('veiculos.edit', $veiculo->id);
-}
+    public function show(Veiculo $veiculo)
+    {
+        return redirect()->route('veiculos.edit', $veiculo->id);
+    }
 }

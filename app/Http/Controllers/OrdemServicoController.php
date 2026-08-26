@@ -13,169 +13,151 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 
+use App\Services\OrdemServicoItemService;
+use Illuminate\Support\Facades\DB;
+
 class OrdemServicoController extends Controller
 {
-   public function index(Request $request)
-{
-    $query = OrdemServico::with(['cliente', 'veiculo']);
+    public function __construct(
+        protected OrdemServicoItemService $itemService
+    ) {}
 
-    // Busca geral
-    if ($request->filled('search')) {
+    public function index(Request $request)
+    {
+        $query = OrdemServico::with(['cliente', 'veiculo']);
 
-        $search = $request->search;
+        // Busca geral
+        if ($request->filled('search')) {
+            $search = $request->search;
 
-        $query->where(function ($q) use ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('numero_os', 'like', "%{$search}%")
+                  ->orWhere('status', 'like', "%{$search}%")
+                  ->orWhereHas('cliente', function ($cliente) use ($search) {
+                      $cliente->where('nome', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('veiculo', function ($veiculo) use ($search) {
+                      $veiculo->where('placa', 'like', "%{$search}%")
+                               ->orWhere('marca', 'like', "%{$search}%")
+                               ->orWhere('modelo', 'like', "%{$search}%");
+                  });
+            });
+        }
 
-            $q->where('numero_os', 'like', "%{$search}%")
+        // Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
 
-              ->orWhere('status', 'like', "%{$search}%")
+        // Cliente
+        if ($request->filled('cliente_id')) {
+            $query->where('cliente_id', $request->cliente_id);
+        }
 
-              ->orWhereHas('cliente', function ($cliente) use ($search) {
+        // Data inicial
+        if ($request->filled('inicio')) {
+            $query->whereDate('created_at', '>=', $request->inicio);
+        }
 
-                  $cliente->where('nome', 'like', "%{$search}%");
+        // Data final
+        if ($request->filled('fim')) {
+            $query->whereDate('created_at', '<=', $request->fim);
+        }
 
-              })
+        // Ordenação
+        match ($request->sort) {
+            'antigas' => $query->oldest(),
+            'valor_maior' => $query->orderByDesc('valor_total'),
+            'valor_menor' => $query->orderBy('valor_total'),
+            default => $query->latest(),
+        };
 
-              ->orWhereHas('veiculo', function ($veiculo) use ($search) {
+        $ordens = $query->paginate(10)->withQueryString();
+        $clientes = Cliente::orderBy('nome')->get();
 
-                  $veiculo->where('placa', 'like', "%{$search}%")
-                           ->orWhere('marca', 'like', "%{$search}%")
-                           ->orWhere('modelo', 'like', "%{$search}%");
-
-              });
-
-        });
+        return view('ordens.index', compact('ordens', 'clientes'));
     }
 
-    // Status
-    if ($request->filled('status')) {
-
-        $query->where('status', $request->status);
-
-    }
-
-    // Cliente
-    if ($request->filled('cliente_id')) {
-
-        $query->where('cliente_id', $request->cliente_id);
-
-    }
-
-    // Data inicial
-    if ($request->filled('inicio')) {
-
-        $query->whereDate(
-            'created_at',
-            '>=',
-            $request->inicio
-        );
-
-    }
-
-    // Data final
-    if ($request->filled('fim')) {
-
-        $query->whereDate(
-            'created_at',
-            '<=',
-            $request->fim
-        );
-
-    }
-
-    // Ordenação
-    match ($request->sort) {
-
-        'antigas' =>
-            $query->oldest(),
-
-        'valor_maior' =>
-            $query->orderByDesc('valor_total'),
-
-        'valor_menor' =>
-            $query->orderBy('valor_total'),
-
-        default =>
-            $query->latest(),
-    };
-
-    $ordens = $query
-        ->paginate(10)
-        ->withQueryString();
-
-    $clientes = Cliente::orderBy('nome')->get();
-
-    return view(
-        'ordens.index',
-        compact('ordens', 'clientes')
-    );
-}
-    
     public function create()
     {
         $clientes = Cliente::orderBy('nome')->get();
         $veiculos = Veiculo::orderBy('placa')->get();
-
+        $servicos = Servico::orderBy('nome')->get();
+        $pecas = Peca::orderBy('nome')->get();
 
         return view('ordens.create', compact(
             'clientes',
-            'veiculos'
+            'veiculos',
+            'servicos',
+            'pecas'
         ));
     }
 
-  public function store(Request $request)
-{
-    $request->validate([
-        'cliente_id' => [
-            'required',
-            \Illuminate\Validation\Rule::exists('clientes', 'id')
-                ->where('empresa_id', auth()->user()->empresa_id)
-        ],
-        'veiculo_id' => [
-            'required',
-            \Illuminate\Validation\Rule::exists('veiculos', 'id')
-                ->where('empresa_id', auth()->user()->empresa_id)
-        ],
-        'descricao_problema' => 'required',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'cliente_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('clientes', 'id')
+                    ->where('empresa_id', auth()->user()->empresa_id)
+            ],
+            'veiculo_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('veiculos', 'id')
+                    ->where('empresa_id', auth()->user()->empresa_id)
+            ],
+            'descricao_problema' => 'required|string',
+            'observacoes'        => 'nullable|string',
+            'itens'              => 'nullable|array',
+            'itens.*.tipo_item'  => 'nullable|in:servico,peca',
+            'itens.*.servico_id' => 'nullable|integer',
+            'itens.*.peca_id'    => 'nullable|integer',
+            'itens.*.descricao'  => 'nullable|string|max:255',
+            'itens.*.quantidade' => 'nullable|integer|min:1',
+            'itens.*.valor_unitario' => 'nullable|numeric|min:0',
+        ]);
 
-    $empresaId = auth()->user()->empresa_id;
+        $empresaId = auth()->user()->empresa_id;
 
-    // Buscar a última OS desta empresa para calcular o sequencial
-    $ultimoNumero = OrdemServico::where('empresa_id', $empresaId)
-        ->latest('id')
-        ->value('numero_os');
+        $ordem = DB::transaction(function () use ($request, $empresaId) {
+            // Buscar a última OS desta empresa para calcular o sequencial com lock
+            $ultimoNumero = OrdemServico::where('empresa_id', $empresaId)
+                ->lockForUpdate()
+                ->latest('id')
+                ->value('numero_os');
 
-    $proximoNumero = 1;
-    if ($ultimoNumero && preg_match('/OS-(\d+)/', $ultimoNumero, $matches)) {
-        $proximoNumero = ((int)$matches[1]) + 1;
+            $proximoNumero = 1;
+            if ($ultimoNumero && preg_match('/OS-(\d+)/', $ultimoNumero, $matches)) {
+                $proximoNumero = ((int)$matches[1]) + 1;
+            }
+            $numeroOs = 'OS-' . str_pad($proximoNumero, 4, '0', STR_PAD_LEFT);
+
+            $ordem = OrdemServico::create([
+                'empresa_id'         => $empresaId,
+                'numero_os'          => $numeroOs,
+                'cliente_id'         => $request->cliente_id,
+                'veiculo_id'         => $request->veiculo_id,
+                'user_id'            => Auth::id(),
+                'status'             => 'aberta',
+                'descricao_problema' => $request->descricao_problema,
+                'observacoes'        => $request->observacoes,
+                'valor_total'        => 0,
+                'aprovado_cliente'   => false,
+                'data_entrada'       => now(),
+            ]);
+
+            // Criação e sincronização dos itens via Service (com validação de estoque e snapshot de preço)
+            if ($request->filled('itens') && is_array($request->itens)) {
+                $this->itemService->sincronizarItensNaCriacao($ordem, $request->itens);
+            }
+
+            return $ordem;
+        });
+
+        return redirect()
+            ->route('ordens.show', $ordem->id)
+            ->with('success', 'Ordem de serviço criada com sucesso!');
     }
-    $numeroOs = 'OS-' . str_pad($proximoNumero, 4, '0', STR_PAD_LEFT);
-
-    $ordem = OrdemServico::create([
-        'numero_os' => $numeroOs,
-
-        'cliente_id' => $request->cliente_id,
-        'veiculo_id' => $request->veiculo_id,
-
-        'user_id' => Auth::id(),
-
-        'status' => 'aberta',
-
-        'descricao_problema' => $request->descricao_problema,
-
-        'valor_total' => 0,
-
-        'aprovado_cliente' => false,
-
-        'data_entrada' => now(),
-    ]);
-    
-
-    return redirect()
-        ->route('ordens.index')
-        ->with('success', 'Ordem de serviço criada com sucesso!');
-}
 
    public function show(OrdemServico $ordem)
 {
@@ -241,7 +223,13 @@ if ($statusAnterior != $request->status) {
 
     public function destroy(OrdemServico $ordem)
     {
-        $ordem->delete();
+        abort_if(
+            $ordem->empresa_id !== auth()->user()->empresa_id,
+            403,
+            'Acesso não autorizado para esta ordem de serviço.'
+        );
+
+        $this->itemService->excluirOrdemComEstoque($ordem);
 
         return redirect()
             ->route('ordens.index')

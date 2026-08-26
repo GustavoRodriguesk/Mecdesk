@@ -30,9 +30,11 @@
         .sidebar {
             background-color: #081A3A;
             width: 256px;
-            min-height: 100vh;
+            height: 100vh;
+            height: 100dvh;
             position: fixed;
             top: 0;
+            bottom: 0;
             left: 0;
             z-index: 40;
             display: flex;
@@ -43,6 +45,7 @@
         .sidebar-brand {
             padding: 24px 20px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
         }
 
         .sidebar-brand h1 {
@@ -62,7 +65,28 @@
 
         .sidebar-nav {
             padding: 16px 12px;
-            flex: 1;
+            flex: 1 1 auto;
+            overflow-y: auto;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        }
+
+        .sidebar-nav::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .sidebar-label {
@@ -124,6 +148,7 @@
         .sidebar-footer {
             padding: 16px 12px;
             border-top: 1px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
         }
 
         .sidebar-user {

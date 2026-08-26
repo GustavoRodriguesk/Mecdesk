@@ -30,6 +30,22 @@
             <form action="{{ route('veiculos.store') }}" method="POST" class="space-y-5">
                 @csrf
 
+                @if ($errors->any())
+                    <div class="bg-red-50 border border-red-200 rounded-md p-4 mb-5">
+                        <div class="flex items-start">
+                            <i class="bi bi-exclamation-circle text-red-600 mt-0.5 mr-3"></i>
+                            <div>
+                                <h3 class="font-medium text-red-800 mb-2">Erro ao salvar</h3>
+                                <ul class="text-sm text-red-700 list-disc list-inside">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div class="md:col-span-2">
                         <label class="block mb-1.5 text-sm font-medium text-gray-700">

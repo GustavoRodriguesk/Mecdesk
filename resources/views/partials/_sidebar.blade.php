@@ -1,6 +1,6 @@
-<aside class="w-64 bg-gray-900 text-white min-h-screen shadow-lg flex flex-col">
+<aside class="w-64 bg-gray-900 text-white h-screen shadow-lg flex flex-col">
 
-    <div class="p-6 border-b border-gray-800 flex items-center gap-3">
+    <div class="p-6 border-b border-gray-800 flex items-center gap-3 shrink-0">
         <div class="w-8 h-8 rounded bg-blue-600 flex items-center justify-center font-bold text-white shadow-sm">
             M
         </div>
@@ -66,7 +66,7 @@
 
     </nav>
 
-    <div class="p-4 border-t border-gray-800">
+    <div class="p-4 border-t border-gray-800 shrink-0">
         <a href="{{ route('empresa.edit') }}"
             class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('empresa*') ? 'bg-gray-800 text-white' : '' }}">
             <i class="bi bi-gear text-lg"></i>

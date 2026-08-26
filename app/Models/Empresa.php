@@ -65,7 +65,20 @@ class Empresa extends Model
 
     public function assinaturaAtiva()
     {
-        return $this->hasOne(Assinatura::class)->latestOfMany();
+        return $this->hasOne(Assinatura::class)
+            ->where('status', 'authorized')
+            ->latestOfMany();
+    }
+
+    /**
+     * Retorna a assinatura vigente (authorized ou pending) mais recente.
+     * Utilizada no SubscriptionController e na view de cancelamento.
+     */
+    public function assinaturaVigente()
+    {
+        return $this->hasOne(Assinatura::class)
+            ->whereIn('status', ['authorized', 'pending'])
+            ->latestOfMany();
     }
 
     public function users()

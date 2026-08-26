@@ -1,25 +1,66 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+@extends('layouts.auth')
+
+@section('title', 'Recuperar Senha — MecDesk')
+
+@section('content')
+
+    <div class="auth-card-head">
+        <h1 class="auth-card-title">Recuperar Senha</h1>
+        <p class="auth-card-desc">
+            Informe seu e-mail cadastrado e enviaremos um link seguro para você redefinir sua senha.
+        </p>
     </div>
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    {{-- Alerta de Erro Geral --}}
+    @if ($errors->any())
+        <div class="auth-alert auth-alert-error">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span>{{ $errors->first() }}</span>
+        </div>
+    @endif
 
-    <form method="POST" action="{{ route('password.email') }}">
+    {{-- Alerta de Mensagem de Sessão --}}
+    @if (session('status'))
+        <div class="auth-alert auth-alert-success">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>{{ session('status') }}</span>
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('password.email') }}" class="auth-form" novalidate>
         @csrf
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        {{-- E-mail --}}
+        <div class="auth-field">
+            <label for="email" class="auth-label">E-mail cadastrado</label>
+            <div class="auth-input-wrapper">
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    class="auth-input {{ $errors->has('email') ? 'is-invalid' : '' }}"
+                    value="{{ old('email') }}"
+                    placeholder="seu@email.com"
+                    autocomplete="username"
+                    required
+                    autofocus
+                >
+            </div>
+            @error('email')
+                <p class="auth-error-msg">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
-        </div>
+        {{-- Botão de Enviar Link --}}
+        <button type="submit" class="auth-btn-primary">
+            <span>Enviar link de recuperação</span>
+            <i class="bi bi-send-fill"></i>
+        </button>
     </form>
-</x-guest-layout>
+
+    <div class="auth-card-footer">
+        Lembrou da senha?
+        <a href="{{ route('login') }}" class="auth-link">Voltar para o login</a>
+    </div>
+
+@endsection

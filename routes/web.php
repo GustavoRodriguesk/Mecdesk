@@ -17,8 +17,11 @@ use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
-});
+    return auth()->check()
+        ? redirect()->route('dashboard')
+        : redirect()->route('planos.index');
+})->name('home');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -36,11 +39,11 @@ Route::get('/planos', function () {
     return view('planos.index');
 })->name('planos.index');
 
+Route::get('/contratar', [CheckoutController::class, 'contratar'])->name('planos.contratar');
+Route::post('/contratar/criar-conta', [CheckoutController::class, 'cadastrarConta'])->name('contratar.criar-conta');
+
 Route::get('/assinar', function () {
-    if (auth()->check()) {
-        return redirect()->route('checkout.show');
-    }
-    return redirect()->route('register');
+    return redirect()->route('planos.contratar');
 })->name('planos.assinar');
 
 /*
@@ -118,6 +121,7 @@ Route::middleware(['auth', 'empresa.ativa'])->group(function () {
 
     Route::post('/ordens/{ordem}/itens', [OrdemServicoItemController::class, 'store'])->name('ordens.itens.store');
     Route::post('/ordens/{ordem}/itens/peca', [OrdemServicoItemController::class, 'storePeca'])->name('ordens.itens.peca.store');
+    Route::put('/ordens/itens/{item}', [OrdemServicoItemController::class, 'update'])->name('ordens.itens.update');
     Route::delete('/ordens/itens/{item}', [OrdemServicoItemController::class, 'destroy'])->name('ordens.itens.destroy');
     Route::get('/ordens/{ordem}/pdf', [OrdemServicoController::class, 'pdf'])->name('ordens.pdf');
     Route::post('/ordens/{ordem}/solicitar-aprovacao', [OrdemServicoController::class, 'solicitarAprovacao'])->name('ordens.solicitar-aprovacao');

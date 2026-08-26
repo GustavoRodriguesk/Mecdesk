@@ -234,3 +234,96 @@ test('assinatura sucesso screen can be rendered for active company', function ()
         ->assertSee('Parabéns! Sua compra foi concluída')
         ->assertSee('MecDesk Pro');
 });
+
+test('contratar screen can be rendered for guest with step 1', function () {
+    $response = $this->get(route('planos.contratar'));
+
+    $response->assertStatus(200)
+        ->assertSee('Contrate o MecDesk')
+        ->assertSee('1. Seus dados')
+        ->assertSee('2. Pagamento')
+        ->assertSee('3. Confirmação')
+        ->assertSee('formCadastro');
+});
+
+test('contratar screen for authenticated pending user shows step 2', function () {
+    $response = $this->actingAs($this->user)->get(route('planos.contratar'));
+
+    $response->assertStatus(200)
+        ->assertSee('cardPaymentBrick_container')
+        ->assertSee('Oficina Checkout');
+});
+
+test('contratar screen redirects active subscriber to dashboard', function () {
+    $this->empresa->ativo = true;
+    $this->empresa->save();
+
+    Assinatura::create([
+        'empresa_id'       => $this->empresa->id,
+        'plano_id'         => $this->planoPro->id,
+        'status'           => 'authorized',
+        'preco_contratado' => 99.90,
+    ]);
+
+    $response = $this->actingAs($this->user)->get(route('planos.contratar'));
+
+    $response->assertRedirect(route('dashboard'));
+});
+
+test('contratar criar conta endpoint validates and creates account in step 1', function () {
+    $payload = [
+        'empresa'               => 'Oficina Top Auto',
+        'name'                  => 'Carlos Mecanico',
+        'email'                 => 'carlos@topauto.com.br',
+        'telefone'              => '11999998888',
+        'password'              => 'senhaSegura2026',
+        'password_confirmation' => 'senhaSegura2026',
+    ];
+
+    $response = $this->postJson(route('contratar.criar-conta'), $payload);
+
+    $response->assertStatus(201)
+        ->assertJson([
+            'success' => true,
+            'user'    => [
+                'name'  => 'Carlos Mecanico',
+                'email' => 'carlos@topauto.com.br',
+            ],
+            'empresa' => [
+                'nome_fantasia' => 'Oficina Top Auto',
+            ],
+        ]);
+
+    $this->assertAuthenticated();
+
+    $this->assertDatabaseHas('empresas', [
+        'nome_fantasia' => 'Oficina Top Auto',
+        'email'         => 'carlos@topauto.com.br',
+        'ativo'         => false,
+    ]);
+
+    $this->assertDatabaseHas('users', [
+        'name'  => 'Carlos Mecanico',
+        'email' => 'carlos@topauto.com.br',
+        'role'  => 'admin',
+    ]);
+
+    $this->assertDatabaseHas('assinaturas', [
+        'status'           => 'pending',
+        'preco_contratado' => 99.90,
+    ]);
+});
+
+test('contratar criar conta validates required fields', function () {
+    $response = $this->postJson(route('contratar.criar-conta'), []);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['empresa', 'name', 'email', 'password']);
+});
+
+test('assinar route redirects to contratar route', function () {
+    $response = $this->get(route('planos.assinar'));
+
+    $response->assertRedirect(route('planos.contratar'));
+});
+

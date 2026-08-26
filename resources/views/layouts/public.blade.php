@@ -59,7 +59,7 @@
                     <a href="{{ route('login') }}" class="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors">
                         Já possui uma conta? <span class="text-blue-600 underline underline-offset-4">Entrar</span>
                     </a>
-                    <a href="{{ route('planos.assinar') }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl shadow-sm shadow-blue-500/20 hover:shadow-md hover:shadow-blue-500/30 transition-all">
+                    <a href="{{ route('planos.contratar') }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl shadow-sm shadow-blue-500/20 hover:shadow-md hover:shadow-blue-500/30 transition-all">
                         Começar agora
                         <i class="bi bi-arrow-right text-xs"></i>
                     </a>
@@ -88,7 +88,7 @@
                     <a href="{{ route('login') }}" class="w-full text-center py-2 text-sm font-semibold text-slate-700 bg-slate-100 rounded-xl">
                         Entrar na conta
                     </a>
-                    <a href="{{ route('planos.assinar') }}" class="w-full text-center py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl shadow-sm">
+                    <a href="{{ route('planos.contratar') }}" class="w-full text-center py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl shadow-sm">
                         Começar agora
                     </a>
                 @endauth

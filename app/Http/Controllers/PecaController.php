@@ -107,7 +107,15 @@ class PecaController extends Controller
             'valor_unitario' => 'required|numeric|min:0',
         ]);
 
-        Peca::create($request->except('empresa_id'));
+        $peca = Peca::create($request->except('empresa_id'));
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Peça cadastrada com sucesso!',
+                'peca' => $peca,
+            ], 201);
+        }
 
         return redirect()
             ->route('pecas.index')
