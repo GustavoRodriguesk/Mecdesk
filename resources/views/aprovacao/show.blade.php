@@ -191,6 +191,37 @@
             </div>
         </div>
 
+        {{-- Vistoria & Fotos de Entrada do Veículo --}}
+        @if ($ordem->problemas_previos || $ordem->fotos->count())
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                    <i class="bi bi-camera text-blue-600"></i> Vistoria & Condição Prévia do Veículo
+                </h3>
+
+                @if ($ordem->problemas_previos)
+                    <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-900">
+                        <span class="font-bold block mb-1 text-xs uppercase tracking-wider text-amber-800">
+                            Avarias / Problemas Prévios Constatados na Entrada:
+                        </span>
+                        <p class="whitespace-pre-line font-medium">{{ $ordem->problemas_previos }}</p>
+                    </div>
+                @endif
+
+                @if ($ordem->fotos->count())
+                    <div>
+                        <span class="text-xs text-slate-400 block mb-2 font-medium">Fotos Registradas na Entrada</span>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            @foreach ($ordem->fotos as $foto)
+                                <a href="{{ $foto->url }}" target="_blank" class="block aspect-square rounded-lg overflow-hidden border border-slate-200 bg-slate-100 hover:opacity-90 transition-opacity">
+                                    <img src="{{ $foto->url }}" alt="Foto do Veículo" class="w-full h-full object-cover">
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            </div>
+        @endif
+
         {{-- Itens da Ordem de Serviço --}}
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100 bg-slate-50">

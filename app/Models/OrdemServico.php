@@ -21,6 +21,7 @@ class OrdemServico extends Model
         'user_id',
         'status',
         'descricao_problema',
+        'problemas_previos',
         'observacoes',
         'valor_total',
         'aprovado_cliente',
@@ -99,6 +100,14 @@ class OrdemServico extends Model
             OrdemServicoHistorico::class,
             'ordem_servico_id'
         )->latest();
+    }
+
+    public function fotos()
+    {
+        return $this->hasMany(
+            OrdemServicoFoto::class,
+            'ordem_servico_id'
+        );
     }
 
     /*

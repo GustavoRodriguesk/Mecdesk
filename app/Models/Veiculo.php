@@ -40,6 +40,29 @@ class Veiculo extends Model
         });
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mutators & Accessors
+    |--------------------------------------------------------------------------
+    */
+
+    public function setPlacaAttribute($value): void
+    {
+        $this->attributes['placa'] = $value ? strtoupper(trim(preg_replace('/[^A-Za-z0-9]/', '', $value))) : null;
+    }
+
+    public function getPlacaFormatadaAttribute(): string
+    {
+        $p = strtoupper(trim(preg_replace('/[^A-Za-z0-9]/', '', $this->placa ?? '')));
+        if (strlen($p) === 7) {
+            // Se for padrão antigo (3 letras + 4 números, ex: ABC1234)
+            if (preg_match('/^[A-Z]{3}\d{4}$/', $p)) {
+                return substr($p, 0, 3) . '-' . substr($p, 3);
+            }
+        }
+        return $p;
+    }
+
     public function cliente()
     {
         return $this->belongsTo(Cliente::class);

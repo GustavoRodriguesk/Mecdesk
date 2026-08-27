@@ -25,8 +25,10 @@ class ClienteController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nome' => 'required',
-            'telefone' => 'required',
+            'nome'     => 'required|string|max:100',
+            'telefone' => 'required|string',
+            'email'    => 'nullable|email|max:100',
+            'cpf_cnpj' => ['nullable', new \App\Rules\CpfCnpjRule],
         ]);
 
         Cliente::create($request->except('empresa_id'));
@@ -51,8 +53,10 @@ class ClienteController extends Controller
     public function update(Request $request, Cliente $cliente)
     {
         $request->validate([
-            'nome' => 'required',
-            'telefone' => 'required',
+            'nome'     => 'required|string|max:100',
+            'telefone' => 'required|string',
+            'email'    => 'nullable|email|max:100',
+            'cpf_cnpj' => ['nullable', new \App\Rules\CpfCnpjRule],
         ]);
 
         $cliente->update($request->except('empresa_id'));

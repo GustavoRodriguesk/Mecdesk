@@ -15,7 +15,7 @@ class AprovacaoController extends Controller
     {
         $ordem = $this->findByToken($token);
 
-        $ordem->load(['cliente', 'veiculo', 'itens', 'empresa']);
+        $ordem->load(['cliente', 'veiculo', 'itens', 'fotos', 'empresa']);
 
         return view('aprovacao.show', compact('ordem'));
     }

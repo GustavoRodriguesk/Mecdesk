@@ -124,7 +124,10 @@ Route::middleware(['auth', 'empresa.ativa'])->group(function () {
     Route::put('/ordens/itens/{item}', [OrdemServicoItemController::class, 'update'])->name('ordens.itens.update');
     Route::delete('/ordens/itens/{item}', [OrdemServicoItemController::class, 'destroy'])->name('ordens.itens.destroy');
     Route::get('/ordens/{ordem}/pdf', [OrdemServicoController::class, 'pdf'])->name('ordens.pdf');
+    Route::get('/ordens/{ordem}/pdf-vistoria', [OrdemServicoController::class, 'pdfVistoria'])->name('ordens.pdf-vistoria');
     Route::post('/ordens/{ordem}/solicitar-aprovacao', [OrdemServicoController::class, 'solicitarAprovacao'])->name('ordens.solicitar-aprovacao');
+    Route::post('/ordens/{ordem}/fotos', [OrdemServicoController::class, 'uploadFoto'])->name('ordens.fotos.store');
+    Route::delete('/ordens/fotos/{foto}', [OrdemServicoController::class, 'destroyFoto'])->name('ordens.fotos.destroy');
 
     Route::get('/clientes/{cliente}/veiculos', function (\App\Models\Cliente $cliente) {
         return $cliente->veiculos;

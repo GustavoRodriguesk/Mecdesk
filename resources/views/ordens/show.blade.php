@@ -12,9 +12,15 @@
                 </span>
                 <a href="{{ route('ordens.pdf', $ordem->id) }}"
                     class="inline-flex items-center gap-1.5 px-3 py-1 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-colors"
-                    target="_blank">
+                    target="_blank" title="PDF de Ordem de Serviço / Orçamento">
                     <i class="bi bi-file-earmark-pdf"></i>
-                    PDF
+                    PDF OS
+                </a>
+                <a href="{{ route('ordens.pdf-vistoria', $ordem->id) }}"
+                    class="inline-flex items-center gap-1.5 px-3 py-1 text-sm font-medium text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 transition-colors"
+                    target="_blank" title="Imprimir Termo de Vistoria de Entrada do Veículo">
+                    <i class="bi bi-camera"></i>
+                    PDF Vistoria
                 </a>
             </div>
         </div>
@@ -98,6 +104,15 @@
 
                                 <div class="md:col-span-2">
                                     <label class="block mb-1.5 text-sm font-medium text-gray-700">
+                                        Avarias / Problemas Prévios do Veículo (Vistoria Entrada)
+                                    </label>
+                                    <textarea name="problemas_previos" rows="2"
+                                        placeholder="Ex: Arranhão na porta traseira, para-choque trincado..."
+                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150">{{ old('problemas_previos', $ordem->problemas_previos) }}</textarea>
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label class="block mb-1.5 text-sm font-medium text-gray-700">
                                         Status
                                     </label>
                                     <select name="status"
@@ -123,6 +138,71 @@
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+
+                {{-- Card de Vistoria & Fotos do Veículo --}}
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden" x-data="{ fotoModalUrl: null }">
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+                        <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                            <i class="bi bi-camera text-blue-600"></i>
+                            Vistoria & Fotos do Veículo ({{ $ordem->fotos->count() }})
+                        </h3>
+                        @if ($ordem->status !== 'concluida' && $ordem->status !== 'cancelada')
+                            <form action="{{ route('ordens.fotos.store', $ordem->id) }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-2">
+                                @csrf
+                                <label class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md cursor-pointer transition-colors">
+                                    <i class="bi bi-plus-lg"></i>
+                                    + Adicionar Fotos
+                                    <input type="file" name="fotos[]" multiple accept="image/*" class="hidden" onchange="enviarFotosComCompressao(this)">
+                                </label>
+                            </form>
+                        @endif
+                    </div>
+                    <div class="p-6 space-y-4">
+                        @if ($ordem->problemas_previos)
+                            <div class="p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-lg">
+                                <span class="text-xs font-semibold text-amber-800 uppercase tracking-wider block mb-1">
+                                    <i class="bi bi-exclamation-triangle mr-1"></i> Avarias / Problemas Prévios Registrados:
+                                </span>
+                                <p class="text-sm text-amber-950 font-medium whitespace-pre-line">{{ $ordem->problemas_previos }}</p>
+                            </div>
+                        @endif
+
+                        @if ($ordem->fotos->count())
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                @foreach ($ordem->fotos as $foto)
+                                    <div class="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-100">
+                                        <img src="{{ $foto->url }}" alt="Foto do veículo" class="w-full h-full object-cover cursor-pointer transition-transform duration-200 group-hover:scale-105" @click="fotoModalUrl = '{{ $foto->url }}'">
+                                        
+                                        @if ($ordem->status !== 'concluida' && $ordem->status !== 'cancelada')
+                                            <form action="{{ route('ordens.fotos.destroy', $foto->id) }}" method="POST" class="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Deseja remover esta foto?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="p-1 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-md text-xs" title="Excluir foto">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="text-center py-6 text-gray-400">
+                                <i class="bi bi-camera text-3xl mb-1 block text-gray-300"></i>
+                                <p class="text-xs">Nenhuma foto registrada para este veículo nesta OS.</p>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Lightbox Modal para Zoom da Foto --}}
+                    <div x-show="fotoModalUrl" x-transition class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-80 flex items-center justify-center p-4" style="display: none;" @keydown.escape.window="fotoModalUrl = null">
+                        <div class="relative max-w-4xl w-full bg-black rounded-lg overflow-hidden flex flex-col items-center justify-center" @click.away="fotoModalUrl = null">
+                            <button type="button" @click="fotoModalUrl = null" class="absolute top-3 right-3 text-white text-xl bg-gray-800/80 hover:bg-gray-800 rounded-full w-8 h-8 flex items-center justify-center z-10">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                            <img :src="fotoModalUrl" class="max-h-[85vh] w-auto object-contain">
+                        </div>
                     </div>
                 </div>
 
@@ -667,6 +747,74 @@
                     return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 }
             };
+        }
+
+        async function enviarFotosComCompressao(input) {
+            if (!input.files || input.files.length === 0) return;
+
+            let form = input.form;
+            let dataTransfer = new DataTransfer();
+
+            // Desabilitar o botão e avisar usuário
+            let label = input.closest('label');
+            if (label) {
+                label.style.pointerEvents = 'none';
+                label.innerHTML = '<i class="bi bi-arrow-repeat animate-spin mr-1"></i> Compactando e enviando...';
+            }
+
+            for (let file of Array.from(input.files)) {
+                let compressed = await compressImage(file);
+                dataTransfer.items.add(compressed);
+            }
+
+            input.files = dataTransfer.files;
+            form.submit();
+        }
+
+        async function compressImage(file, maxWidth = 1280, maxHeight = 1280, quality = 0.8) {
+            if (!file.type.startsWith('image/')) return file;
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxWidth || height > maxHeight) {
+                            if (width > height) {
+                                height = Math.round((height * maxWidth) / width);
+                                width = maxWidth;
+                            } else {
+                                width = Math.round((width * maxHeight) / height);
+                                height = maxHeight;
+                            }
+                        }
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob((blob) => {
+                            if (!blob) {
+                                resolve(file);
+                                return;
+                            }
+                            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                                type: 'image/jpeg',
+                                lastModified: Date.now()
+                            });
+                            resolve(compressedFile);
+                        }, 'image/jpeg', quality);
+                    };
+                    img.onerror = () => resolve(file);
+                    img.src = e.target.result;
+                };
+                reader.onerror = () => resolve(file);
+                reader.readAsDataURL(file);
+            });
         }
     </script>
     @endpush

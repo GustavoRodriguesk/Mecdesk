@@ -36,7 +36,7 @@
         </div>
 
         {{-- Formulário Principal --}}
-        <form action="{{ route('ordens.store') }}" method="POST" @submit="prepararEnvio($event)" class="space-y-6">
+        <form action="{{ route('ordens.store') }}" method="POST" enctype="multipart/form-data" @submit="prepararEnvio($event)" class="space-y-6">
             @csrf
 
             {{-- Card: Informações do Cliente & Veículo --}}
@@ -118,6 +118,55 @@
                                    value="{{ old('observacoes') }}"
                                    placeholder="Observações complementares sobre prazos, detalhes ou garantias..."
                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Card: Vistoria & Estado Prévio do Veículo (Opcional) --}}
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                        <i class="bi bi-camera text-blue-600"></i>
+                        Vistoria / Condição Prévia do Veículo (Opcional)
+                    </h3>
+                    <span class="text-xs text-gray-500">Fotos & Avarias Existentes</span>
+                </div>
+
+                <div class="p-6 space-y-5">
+                    <div>
+                        <label class="block mb-1.5 text-sm font-medium text-gray-700">
+                            Descrição de Avarias / Problemas Prévios do Veículo
+                        </label>
+                        <textarea name="problemas_previos" 
+                                  rows="2" 
+                                  placeholder="Ex: Arranhão na porta direita, para-choque dianteiro trincado, farol esquerdo fosco..."
+                                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors">{{ old('problemas_previos') }}</textarea>
+                        @error('problemas_previos')
+                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block mb-1.5 text-sm font-medium text-gray-700">
+                            Fotos de Entrada do Veículo
+                        </label>
+                        <div class="flex items-center justify-center w-full">
+                            <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <i class="bi bi-cloud-arrow-up text-2xl text-gray-400 mb-1"></i>
+                                    <p class="mb-1 text-sm text-gray-500 font-medium">Clique para selecionar ou arraste fotos do veículo</p>
+                                    <p class="text-xs text-gray-400">PNG, JPG, WEBP (Máx. 10MB por imagem)</p>
+                                </div>
+                                <input type="file" name="fotos[]" multiple accept="image/*" class="hidden" id="fotos-input" @change="previewFotos($event)">
+                            </label>
+                        </div>
+                        @error('fotos')
+                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                        @enderror
+
+                        {{-- Previews --}}
+                        <div id="fotos-preview-container" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 mt-4 hidden">
                         </div>
                     </div>
                 </div>
@@ -612,11 +661,102 @@
                     }
                 },
 
+                async previewFotos(e) {
+                    let input = e.target;
+                    let files = input.files;
+                    let container = document.getElementById('fotos-preview-container');
+                    container.innerHTML = '';
+                    if (!files || files.length === 0) {
+                        container.classList.add('hidden');
+                        return;
+                    }
+
+                    container.classList.remove('hidden');
+                    let statusDiv = document.createElement('div');
+                    statusDiv.className = 'col-span-full text-xs text-blue-600 font-semibold mb-2';
+                    statusDiv.innerHTML = '<i class="bi bi-arrow-repeat animate-spin mr-1"></i> Otimizando imagens...';
+                    container.appendChild(statusDiv);
+
+                    let dataTransfer = new DataTransfer();
+
+                    for (let file of Array.from(files)) {
+                        let compressed = await compressImage(file);
+                        dataTransfer.items.add(compressed);
+
+                        let reader = new FileReader();
+                        reader.onload = (event) => {
+                            let div = document.createElement('div');
+                            div.className = 'relative group aspect-square rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-100';
+                            let origKb = (file.size / 1024).toFixed(0);
+                            let compKb = (compressed.size / 1024).toFixed(0);
+                            div.innerHTML = `
+                                <img src="${event.target.result}" class="w-full h-full object-cover">
+                                <div class="absolute bottom-0 inset-x-0 bg-slate-900/80 text-white text-[10px] p-1 text-center font-mono font-medium">
+                                    ${origKb}KB &rarr; ${compKb}KB
+                                </div>
+                            `;
+                            container.appendChild(div);
+                        };
+                        reader.readAsDataURL(compressed);
+                    }
+
+                    input.files = dataTransfer.files;
+                    if (statusDiv.parentNode) {
+                        statusDiv.remove();
+                    }
+                },
+
                 formatarDinheiro(val) {
                     let num = parseFloat(val) || 0;
                     return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 }
             };
+        }
+
+        async function compressImage(file, maxWidth = 1280, maxHeight = 1280, quality = 0.8) {
+            if (!file.type.startsWith('image/')) return file;
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxWidth || height > maxHeight) {
+                            if (width > height) {
+                                height = Math.round((height * maxWidth) / width);
+                                width = maxWidth;
+                            } else {
+                                width = Math.round((width * maxHeight) / height);
+                                height = maxHeight;
+                            }
+                        }
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob((blob) => {
+                            if (!blob) {
+                                resolve(file);
+                                return;
+                            }
+                            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                                type: 'image/jpeg',
+                                lastModified: Date.now()
+                            });
+                            resolve(compressedFile);
+                        }, 'image/jpeg', quality);
+                    };
+                    img.onerror = () => resolve(file);
+                    img.src = e.target.result;
+                };
+                reader.onerror = () => resolve(file);
+                reader.readAsDataURL(file);
+            });
         }
     </script>
     @endpush

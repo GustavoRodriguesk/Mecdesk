@@ -160,4 +160,14 @@
 
     </div>
 
+    <script>
+        document.querySelector('input[name="placa"]')?.addEventListener('input', function(e) {
+            let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            if (value.length > 7) {
+                value = value.substring(0, 7);
+            }
+            e.target.value = value;
+        });
+    </script>
+
 </x-app-layout>

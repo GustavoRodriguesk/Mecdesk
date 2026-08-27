@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\OrdemServico;
+use App\Models\OrdemServicoFoto;
 use App\Models\Peca;
 use App\Models\Servico;
 use App\Models\Cliente;
@@ -11,6 +12,7 @@ use App\Models\Empresa;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 
 use App\Services\OrdemServicoItemService;
@@ -107,7 +109,10 @@ class OrdemServicoController extends Controller
                     ->where('empresa_id', auth()->user()->empresa_id)
             ],
             'descricao_problema' => 'required|string',
+            'problemas_previos'  => 'nullable|string',
             'observacoes'        => 'nullable|string',
+            'fotos'              => 'nullable|array',
+            'fotos.*'            => 'image|mimes:jpeg,png,jpg,webp,gif|max:10240',
             'itens'              => 'nullable|array',
             'itens.*.tipo_item'  => 'nullable|in:servico,peca',
             'itens.*.servico_id' => 'nullable|integer',
@@ -140,13 +145,27 @@ class OrdemServicoController extends Controller
                 'user_id'            => Auth::id(),
                 'status'             => 'aberta',
                 'descricao_problema' => $request->descricao_problema,
+                'problemas_previos'  => $request->problemas_previos,
                 'observacoes'        => $request->observacoes,
                 'valor_total'        => 0,
                 'aprovado_cliente'   => false,
                 'data_entrada'       => now(),
             ]);
 
-            // Criação e sincronização dos itens via Service (com validação de estoque e snapshot de preço)
+            // Upload de fotos
+            if ($request->hasFile('fotos')) {
+                foreach ($request->file('fotos') as $fotoFile) {
+                    if ($fotoFile->isValid()) {
+                        $path = $fotoFile->store('os_fotos', 'public');
+                        $ordem->fotos()->create([
+                            'empresa_id'   => $empresaId,
+                            'caminho_foto' => $path,
+                        ]);
+                    }
+                }
+            }
+
+            // Criação e sincronização dos itens via Service
             if ($request->filled('itens') && is_array($request->itens)) {
                 $this->itemService->sincronizarItensNaCriacao($ordem, $request->itens);
             }
@@ -159,30 +178,32 @@ class OrdemServicoController extends Controller
             ->with('success', 'Ordem de serviço criada com sucesso!');
     }
 
-   public function show(OrdemServico $ordem)
-{
-    $ordem->load([
-        'cliente',
-        'veiculo',
-        'itens',
-        'historicos' => function ($query) {
-        $query->latest();
+    public function show(OrdemServico $ordem)
+    {
+        $ordem->load([
+            'cliente',
+            'veiculo',
+            'itens',
+            'fotos',
+            'historicos' => function ($query) {
+                $query->latest();
+            }
+        ]);
+
+        $servicos = Servico::orderBy('nome')->get();
+        $pecas = Peca::orderBy('nome')->get();
+        $clientes = Cliente::orderBy('nome')->get();
+        $veiculos = Veiculo::orderBy('placa')->get();
+
+        return view('ordens.show', compact(
+            'ordem',
+            'servicos',
+            'pecas',
+            'clientes',
+            'veiculos'
+        ));
     }
-    ]);
 
-    $servicos = Servico::orderBy('nome')->get();
-    $pecas = Peca::orderBy('nome')->get();
-    $clientes = Cliente::orderBy('nome')->get();
-    $veiculos = Veiculo::orderBy('placa')->get();
-
-    return view('ordens.show', compact(
-        'ordem',
-        'servicos',
-        'pecas',
-        'clientes',
-        'veiculos'
-    ));
-}
     public function edit(OrdemServico $ordem)
     {
         return redirect()->route('ordens.show', $ordem->id);
@@ -201,24 +222,91 @@ class OrdemServicoController extends Controller
                 \Illuminate\Validation\Rule::exists('veiculos', 'id')
                     ->where('empresa_id', auth()->user()->empresa_id)
             ],
-            'descricao_problema' => 'required',
-            'status' => 'required',
+            'descricao_problema' => 'required|string',
+            'problemas_previos'  => 'nullable|string',
+            'observacoes'        => 'nullable|string',
+            'status'             => 'required',
+            'fotos'              => 'nullable|array',
+            'fotos.*'            => 'image|mimes:jpeg,png,jpg,webp,gif|max:10240',
         ]);
-$statusAnterior = $ordem->status;
 
-$ordem->update($request->except('empresa_id'));
+        $statusAnterior = $ordem->status;
 
-if ($statusAnterior != $request->status) {
+        $ordem->update($request->only([
+            'cliente_id',
+            'veiculo_id',
+            'descricao_problema',
+            'problemas_previos',
+            'observacoes',
+            'status',
+        ]));
 
-    $ordem->historicos()->create([
-        'status' => $request->status
-    ]);
-}
+        if ($statusAnterior != $request->status) {
+            $ordem->historicos()->create([
+                'status' => $request->status
+            ]);
+        }
 
+        // Upload de novas fotos na edição se enviadas
+        if ($request->hasFile('fotos')) {
+            foreach ($request->file('fotos') as $fotoFile) {
+                if ($fotoFile->isValid()) {
+                    $path = $fotoFile->store('os_fotos', 'public');
+                    $ordem->fotos()->create([
+                        'empresa_id'   => auth()->user()->empresa_id,
+                        'caminho_foto' => $path,
+                    ]);
+                }
+            }
+        }
 
         return redirect()
             ->route('ordens.show', $ordem->id)
-            ->with('success', 'Ordem atualizada com sucesso!');
+            ->with('success', 'Ordem de Serviço atualizada com sucesso!');
+    }
+
+    public function uploadFoto(Request $request, OrdemServico $ordem)
+    {
+        $request->validate([
+            'fotos'   => 'required|array',
+            'fotos.*' => 'image|mimes:jpeg,png,jpg,webp,gif|max:10240',
+        ]);
+
+        if ($request->hasFile('fotos')) {
+            foreach ($request->file('fotos') as $fotoFile) {
+                if ($fotoFile->isValid()) {
+                    $path = $fotoFile->store('os_fotos', 'public');
+                    $ordem->fotos()->create([
+                        'empresa_id'   => auth()->user()->empresa_id,
+                        'caminho_foto' => $path,
+                    ]);
+                }
+            }
+        }
+
+        return redirect()
+            ->route('ordens.show', $ordem->id)
+            ->with('success', 'Foto(s) adicionada(s) à Ordem de Serviço com sucesso!');
+    }
+
+    public function destroyFoto(OrdemServicoFoto $foto)
+    {
+        abort_if(
+            $foto->empresa_id !== auth()->user()->empresa_id,
+            403,
+            'Acesso não autorizado para esta foto.'
+        );
+
+        if (Storage::disk('public')->exists($foto->caminho_foto)) {
+            Storage::disk('public')->delete($foto->caminho_foto);
+        }
+
+        $ordemId = $foto->ordem_servico_id;
+        $foto->delete();
+
+        return redirect()
+            ->route('ordens.show', $ordemId)
+            ->with('success', 'Foto removida com sucesso!');
     }
 
     public function destroy(OrdemServico $ordem)
@@ -229,15 +317,20 @@ if ($statusAnterior != $request->status) {
             'Acesso não autorizado para esta ordem de serviço.'
         );
 
+        // Deletar fotos salvas fisicamente
+        foreach ($ordem->fotos as $foto) {
+            if (Storage::disk('public')->exists($foto->caminho_foto)) {
+                Storage::disk('public')->delete($foto->caminho_foto);
+            }
+        }
+
         $this->itemService->excluirOrdemComEstoque($ordem);
 
         return redirect()
             ->route('ordens.index')
             ->with('success', 'Ordem excluída com sucesso!');
     }
-    /**
-     * Solicitar aprovação do cliente (gera token e altera status).
-     */
+
     public function solicitarAprovacao(OrdemServico $ordem)
     {
         $statusAnterior = $ordem->status;
@@ -281,6 +374,7 @@ if ($statusAnterior != $request->status) {
             'cliente',
             'veiculo',
             'itens',
+            'fotos',
             'empresa'
         ]);
 
@@ -295,6 +389,29 @@ if ($statusAnterior != $request->status) {
 
         return $pdf->download(
             $nomeArquivo . '-orcamento.pdf'
+        );
+    }
+
+    public function pdfVistoria(OrdemServico $ordem)
+    {
+        $ordem->load([
+            'cliente',
+            'veiculo',
+            'fotos',
+            'empresa'
+        ]);
+
+        $empresa = $ordem->empresa;
+
+        $pdf = Pdf::loadView(
+            'ordens.pdf_vistoria',
+            compact('ordem', 'empresa')
+        );
+
+        $nomeArquivo = str($ordem->cliente->nome)->slug('-') . '-vistoria';
+
+        return $pdf->download(
+            $nomeArquivo . '.pdf'
         );
     }
 }

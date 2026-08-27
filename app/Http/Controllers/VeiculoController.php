@@ -105,16 +105,23 @@ class VeiculoController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->filled('placa')) {
+            $request->merge([
+                'placa' => strtoupper(trim(preg_replace('/[^A-Za-z0-9]/', '', $request->placa)))
+            ]);
+        }
+
         $request->validate([
             'cliente_id' => [
                 'required',
                 Rule::exists('clientes', 'id')
                     ->where('empresa_id', auth()->user()->empresa_id),
             ],
-            'marca' => 'required',
+            'marca'  => 'required',
             'modelo' => 'required',
-            'placa' => [
+            'placa'  => [
                 'required',
+                new \App\Rules\PlacaVeiculoRule,
                 Rule::unique('veiculos', 'placa')
                     ->where('empresa_id', auth()->user()->empresa_id),
             ],
@@ -139,16 +146,23 @@ class VeiculoController extends Controller
 
     public function update(Request $request, Veiculo $veiculo)
     {
+        if ($request->filled('placa')) {
+            $request->merge([
+                'placa' => strtoupper(trim(preg_replace('/[^A-Za-z0-9]/', '', $request->placa)))
+            ]);
+        }
+
         $request->validate([
             'cliente_id' => [
                 'required',
                 Rule::exists('clientes', 'id')
                     ->where('empresa_id', auth()->user()->empresa_id),
             ],
-            'marca' => 'required',
+            'marca'  => 'required',
             'modelo' => 'required',
-            'placa' => [
+            'placa'  => [
                 'required',
+                new \App\Rules\PlacaVeiculoRule,
                 Rule::unique('veiculos', 'placa')
                     ->ignore($veiculo->id)
                     ->where('empresa_id', auth()->user()->empresa_id),
