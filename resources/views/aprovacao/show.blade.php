@@ -30,8 +30,8 @@
         {{-- Cabeçalho da Empresa --}}
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-4 text-center sm:text-left">
-                @if($ordem->empresa->logo)
-                    <img src="{{ asset('storage/' . $ordem->empresa->logo) }}" alt="Logo {{ $ordem->empresa->nome_fantasia }}" class="h-16 w-auto max-w-[180px] object-contain rounded-lg">
+                @if($ordem->empresa->logo_url)
+                    <img src="{{ $ordem->empresa->logo_url }}" alt="Logo {{ $ordem->empresa->nome_fantasia }}" class="h-16 w-auto max-w-[180px] object-contain rounded-lg">
                 @else
                     <div class="w-16 h-16 rounded-xl bg-slate-900 text-white flex items-center justify-center text-2xl font-bold shrink-0">
                         <i class="bi bi-gear-fill"></i>

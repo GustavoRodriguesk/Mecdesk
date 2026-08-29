@@ -314,9 +314,9 @@
     <table class="header" cellpadding="0" cellspacing="0">
         <tr>
             <td width="70">
-                @if ($empresa->logo && file_exists(storage_path('app/public/' . $empresa->logo)))
-                    <img src="{{ storage_path('app/public/' . $empresa->logo) }}" class="logo-img">
-                @else
+                @if ($empresa->logo_path)
+                    <img src="{{ $empresa->logo_path }}" class="logo-img">
+                @elseif (file_exists(public_path('img/logo.png')))
                     <img src="{{ public_path('img/logo.png') }}" class="logo-img">
                 @endif
             </td>

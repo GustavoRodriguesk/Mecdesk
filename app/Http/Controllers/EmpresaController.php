@@ -36,28 +36,47 @@ class EmpresaController extends Controller
 
         $request->validate([
             'nome_fantasia' => 'required|string|max:150',
-            'razao_social' => 'nullable|string|max:150',
-            'cnpj' => 'nullable|string|max:18',
-            'email' => 'nullable|email|max:100',
-            'telefone' => 'nullable|string|max:15',
-            'whatsapp' => 'nullable|string|max:15',
-            'cep' => 'nullable|string|max:9',
-            'logradouro' => 'nullable|string|max:100',
-            'numero' => 'nullable|string|max:8',
-            'bairro' => 'nullable|string|max:100',
-            'cidade' => 'nullable|string|max:50',
-            'estado' => 'nullable|string|max:2',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'razao_social'  => 'nullable|string|max:150',
+            'cnpj'          => 'nullable|string|max:18',
+            'email'         => 'nullable|email|max:100',
+            'telefone'      => 'nullable|string|max:15',
+            'whatsapp'      => 'nullable|string|max:15',
+            'cep'           => 'nullable|string|max:9',
+            'logradouro'    => 'nullable|string|max:100',
+            'numero'        => 'nullable|string|max:8',
+            'bairro'        => 'nullable|string|max:100',
+            'cidade'        => 'nullable|string|max:50',
+            'estado'        => 'nullable|string|max:2',
+            'logo'          => 'nullable|image|mimes:jpeg,png,jpg,webp,gif,svg|max:5120',
+        ], [
+            'logo.image' => 'O arquivo selecionado deve ser uma imagem válida.',
+            'logo.mimes' => 'O logotipo deve estar nos formatos: PNG, JPG, JPEG, WEBP, GIF ou SVG.',
+            'logo.max'   => 'O logotipo não pode ser maior que 5 MB.',
         ]);
 
         $empresa = auth()->user()->empresa;
-        $data = $request->except(['_token', '_method', 'logo', 'plano', 'ativo']);
+        if (! $empresa) {
+            return redirect()->back()->withErrors(['logo' => 'Empresa não encontrada para o usuário atual.']);
+        }
 
-        if ($request->hasFile('logo')) {
-            // Delete old logo if exists
-            if ($empresa->logo) {
+        $data = $request->except(['_token', '_method', 'logo', 'remover_logo', 'plano', 'ativo']);
+
+        // Trata remoção explícita da logo se o usuário marcou para remover
+        if ($request->boolean('remover_logo')) {
+            if ($empresa->logo && Storage::disk('public')->exists($empresa->logo)) {
                 Storage::disk('public')->delete($empresa->logo);
             }
+            $data['logo'] = null;
+        }
+
+        // Trata upload de novo logotipo
+        if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
+            // Apaga a logo anterior do disco público se existir
+            if ($empresa->logo && Storage::disk('public')->exists($empresa->logo)) {
+                Storage::disk('public')->delete($empresa->logo);
+            }
+
+            // Armazena no disk public
             $data['logo'] = $request->file('logo')->store('logos', 'public');
         }
 

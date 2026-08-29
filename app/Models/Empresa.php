@@ -33,6 +33,39 @@ class Empresa extends Model
         ];
     }
 
+    /**
+     * Retorna a URL pública do logotipo ou null.
+     */
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (empty($this->logo)) {
+            return null;
+        }
+
+        if (filter_var($this->logo, FILTER_VALIDATE_URL)) {
+            return $this->logo;
+        }
+
+        $cleanPath = ltrim(str_replace('storage/', '', $this->logo), '/');
+
+        return asset('storage/' . $cleanPath);
+    }
+
+    /**
+     * Retorna o caminho absoluto no sistema de arquivos para uso no Dompdf.
+     */
+    public function getLogoPathAttribute(): ?string
+    {
+        if (empty($this->logo)) {
+            return null;
+        }
+
+        $cleanPath = ltrim(str_replace('storage/', '', $this->logo), '/');
+        $path = \Illuminate\Support\Facades\Storage::disk('public')->path($cleanPath);
+
+        return file_exists($path) ? $path : null;
+    }
+
     public function plano()
     {
         return $this->belongsTo(Plano::class, 'plano_id');

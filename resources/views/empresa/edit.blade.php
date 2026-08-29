@@ -41,10 +41,10 @@
         {{-- ── Cabeçalho da página ── --}}
         <div class="flex items-start justify-between">
             <div class="flex items-center gap-4">
-                @if (!empty($empresa->logo))
+                @if (!empty($empresa->logo_url))
                     <div
                         class="flex items-center justify-center w-14 h-14 rounded-xl border border-gray-200 bg-white p-1 shadow-sm shrink-0 overflow-hidden">
-                        <img src="{{ asset('storage/' . $empresa->logo) }}" alt="Logo {{ $empresa->nome_fantasia }}"
+                        <img src="{{ $empresa->logo_url }}" alt="Logo {{ $empresa->nome_fantasia }}"
                             class="w-full h-full object-contain rounded-lg">
                     </div>
                 @else
@@ -192,32 +192,53 @@
                 {{-- ── 3. Identidade Visual (dentro do mesmo form) ── --}}
                 <div class="px-6 py-5 border-t border-gray-100">
                     <h3 class="text-base font-semibold text-gray-900 mb-1">Identidade Visual</h3>
-                    <p class="text-sm text-gray-500 mb-5">Logo exibida nos documentos gerados pelo sistema</p>
-                    <div class="flex items-center gap-6">
-                        @if (!empty($empresa->logo))
-                            <div
+                    <p class="text-sm text-gray-500 mb-5">Logo exibida nos documentos e relatórios gerados pelo sistema</p>
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                        {{-- Preview da Imagem Atual ou Nova --}}
+                        <div class="relative">
+                            <div id="logo-preview-container"
                                 class="w-24 h-24 rounded-xl border border-gray-200 bg-white p-1 shadow-sm shrink-0 flex items-center justify-center overflow-hidden">
-                                <img src="{{ asset('storage/' . $empresa->logo) }}"
-                                    alt="Logo {{ $empresa->nome_fantasia }}"
-                                    class="w-full h-full object-contain rounded-lg">
+                                @if (!empty($empresa->logo_url))
+                                    <img id="logo-preview-img" src="{{ $empresa->logo_url }}"
+                                        alt="Logo {{ $empresa->nome_fantasia }}"
+                                        class="w-full h-full object-contain rounded-lg">
+                                @else
+                                    <div id="logo-placeholder" class="flex flex-col items-center justify-center text-gray-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-1 text-gray-400"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                        </svg>
+                                        <span class="text-xs font-medium">Sem logo</span>
+                                    </div>
+                                    <img id="logo-preview-img" src="" class="w-full h-full object-contain rounded-lg hidden">
+                                @endif
                             </div>
-                        @else
-                            <div
-                                class="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 shrink-0 bg-gray-50">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-1 text-gray-400"
-                                    fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <span class="text-xs font-medium">Sem logo</span>
+                        </div>
+
+                        <div class="space-y-3 flex-1">
+                            <div>
+                                <input type="file" name="logo" id="logo-input" accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml,image/gif"
+                                    class="block text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border file:border-gray-300 file:text-sm file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50 transition-colors">
+                                <p class="text-xs text-gray-500 mt-2">PNG, JPG, WEBP, GIF ou SVG, até 5 MB. Recomendado: 512 × 512 px.</p>
+                                @error('logo')
+                                    <p class="text-red-500 text-xs font-medium mt-1.5 flex items-center gap-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                        </svg>
+                                        {{ $message }}
+                                    </p>
+                                @enderror
                             </div>
-                        @endif
-                        <div>
-                            <input type="file" name="logo" accept="image/png,image/jpeg"
-                                class="block text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border file:border-gray-300 file:text-sm file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50 transition-colors">
-                            <p class="text-xs text-gray-500 mt-2">PNG ou JPG, até 2 MB. Recomendado: 512 × 512 px.</p>
+
+                            @if (!empty($empresa->logo))
+                                <div class="flex items-center gap-2 pt-1">
+                                    <label class="inline-flex items-center text-xs font-medium text-red-600 hover:text-red-700 cursor-pointer gap-1.5 select-none">
+                                        <input type="checkbox" name="remover_logo" value="1" class="rounded border-gray-300 text-red-600 focus:ring-red-500 h-3.5 w-3.5">
+                                        Remover logotipo atual
+                                    </label>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -372,8 +393,27 @@
 
     </div>
 
-    {{-- ── ViaCEP auto-fill ── --}}
+    {{-- ── Script de Preview da Logo e ViaCEP auto-fill ── --}}
     <script>
+        document.getElementById('logo-input')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    let img = document.getElementById('logo-preview-img');
+                    let placeholder = document.getElementById('logo-placeholder');
+                    if (img) {
+                        img.src = evt.target.result;
+                        img.classList.remove('hidden');
+                    }
+                    if (placeholder) {
+                        placeholder.classList.add('hidden');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
         document.getElementById('cep')?.addEventListener('blur', async function() {
             const cep = this.value.replace(/\D/g, '');
             if (cep.length !== 8) return;
