@@ -148,25 +148,90 @@
                     </div>
 
                     <div>
-                        <label class="block mb-1.5 text-sm font-medium text-gray-700">
-                            Fotos de Entrada do Veículo
-                        </label>
-                        <div class="flex items-center justify-center w-full">
-                            <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
-                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <i class="bi bi-cloud-arrow-up text-2xl text-gray-400 mb-1"></i>
-                                    <p class="mb-1 text-sm text-gray-500 font-medium">Clique para selecionar ou arraste fotos do veículo</p>
-                                    <p class="text-xs text-gray-400">PNG, JPG, WEBP (Máx. 10MB por imagem)</p>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-sm font-medium text-gray-700">
+                                Fotos de Entrada do Veículo
+                            </label>
+                            <span x-show="fotos.length > 0" class="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full" x-text="fotos.length + (fotos.length === 1 ? ' foto adicionada' : ' fotos adicionadas')"></span>
+                        </div>
+
+                        {{-- Dropzone / File Picker --}}
+                        <div class="flex items-center justify-center w-full"
+                             @dragover.prevent="dragOver = true"
+                             @dragleave.prevent="dragOver = false"
+                             @drop.prevent="dragOver = false; handleDrop($event)">
+                            <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-all duration-200"
+                                   :class="dragOver ? 'border-blue-500 bg-blue-50/50 scale-[1.01]' : 'border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400'">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
+                                    <template x-if="processandoFotos">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <i class="bi bi-arrow-repeat animate-spin text-2xl text-blue-600 mb-1"></i>
+                                            <p class="text-sm font-medium text-blue-700" x-text="processandoTexto || 'Compactando fotos...'"></p>
+                                            <p class="text-xs text-gray-400">Por favor, aguarde...</p>
+                                        </div>
+                                    </template>
+                                    <template x-if="!processandoFotos">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <i class="bi bi-cloud-arrow-up text-2xl text-gray-400 mb-1" :class="{'text-blue-600': dragOver}"></i>
+                                            <p class="mb-1 text-sm text-gray-500 font-medium">
+                                                <span class="text-blue-600 font-semibold">Clique para selecionar</span> ou arraste fotos aqui
+                                            </p>
+                                            <p class="text-xs text-gray-400">PNG, JPG, WEBP (Adicione fotos individualmente ou em lote)</p>
+                                        </div>
+                                    </template>
                                 </div>
-                                <input type="file" name="fotos[]" multiple accept="image/*" class="hidden" id="fotos-input" @change="previewFotos($event)">
+                                <input type="file" 
+                                       multiple 
+                                       accept="image/*" 
+                                       class="hidden" 
+                                       id="fotos-input-picker" 
+                                       @change="handleFileInput($event)"
+                                       :disabled="processandoFotos">
                             </label>
                         </div>
+
+                        {{-- Input oculto que guarda todos os arquivos acumulados para o envio do form --}}
+                        <input type="file" name="fotos[]" multiple accept="image/*" class="hidden" id="fotos-input-final">
+
                         @error('fotos')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
+                        @error('fotos.*')
+                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                        @enderror
 
-                        {{-- Previews --}}
-                        <div id="fotos-preview-container" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 mt-4 hidden">
+                        {{-- Previews com Exclusão Individual --}}
+                        <div x-show="fotos.length > 0" class="mt-4" style="display: none;">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Fotos Adicionadas (<span x-text="fotos.length"></span>)
+                                </span>
+                                <button type="button" 
+                                        @click="limparTodasFotos()" 
+                                        class="text-xs text-red-600 hover:text-red-800 font-medium transition-colors">
+                                    <i class="bi bi-trash mr-0.5"></i> Remover todas
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                                <template x-for="(foto, index) in fotos" :key="foto.id">
+                                    <div class="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-100 transition-all hover:shadow-md">
+                                        <img :src="foto.previewUrl" class="w-full h-full object-cover">
+                                        
+                                        {{-- Botão de Excluir Foto na Criação --}}
+                                        <button type="button" 
+                                                @click="removerFoto(foto.id)" 
+                                                class="absolute top-1.5 right-1.5 p-1 bg-red-600 hover:bg-red-700 active:scale-95 text-white rounded-full shadow-md text-xs transition-all opacity-90 group-hover:opacity-100 hover:scale-110"
+                                                title="Remover esta foto">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+
+                                        {{-- Indicador de Compressão --}}
+                                        <div class="absolute bottom-0 inset-x-0 bg-slate-900/85 backdrop-blur-[2px] text-white text-[10px] py-0.5 px-1 text-center font-mono font-medium truncate">
+                                            <span x-text="foto.origKb + 'KB'"></span> &rarr; <span class="text-emerald-400 font-bold" x-text="foto.compKb + 'KB'"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -342,9 +407,12 @@
                             Cancelar
                         </a>
                         <button type="submit"
+                                :disabled="processandoFotos"
+                                :class="processandoFotos ? 'opacity-50 cursor-not-allowed' : ''"
                                 class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-md transition-all">
-                            <i class="bi bi-check2-circle text-base"></i>
-                            Salvar e Abrir OS
+                            <i class="bi bi-check2-circle text-base" x-show="!processandoFotos"></i>
+                            <i class="bi bi-arrow-repeat animate-spin text-base" x-show="processandoFotos" style="display: none;"></i>
+                            <span x-text="processandoFotos ? 'Otimizando Fotos...' : 'Salvar e Abrir OS'"></span>
                         </button>
                     </div>
                 </div>
@@ -383,6 +451,12 @@
                 carregandoVeiculos: false,
 
                 itens: [],
+
+                // Fotos do Veículo (Upload Progressivo & Exclusão)
+                fotos: [],
+                processandoFotos: false,
+                processandoTexto: '',
+                dragOver: false,
 
                 // Estado do Modal
                 modalOpen: false,
@@ -653,57 +727,95 @@
                     this.itens = this.itens.filter(i => i._tempId !== tempId);
                 },
 
+                async handleFileInput(e) {
+                    let files = e.target.files;
+                    if (!files || files.length === 0) return;
+                    await this.processarArquivos(Array.from(files));
+                    e.target.value = ''; // Permite selecionar mais fotos ou os mesmos arquivos novamente
+                },
+
+                async handleDrop(e) {
+                    this.dragOver = false;
+                    let files = e.dataTransfer.files;
+                    if (!files || files.length === 0) return;
+                    await this.processarArquivos(Array.from(files));
+                },
+
+                async processarArquivos(novosArquivos) {
+                    let imageFiles = novosArquivos.filter(f => f.type.startsWith('image/'));
+                    if (imageFiles.length === 0) return;
+
+                    this.processandoFotos = true;
+                    let total = imageFiles.length;
+
+                    for (let i = 0; i < total; i++) {
+                        let file = imageFiles[i];
+                        this.processandoTexto = `Otimizando foto ${i + 1} de ${total}...`;
+
+                        try {
+                            let origKb = (file.size / 1024).toFixed(0);
+                            let compressed = await compressImage(file);
+                            let compKb = (compressed.size / 1024).toFixed(0);
+                            let previewUrl = URL.createObjectURL(compressed);
+
+                            this.fotos.push({
+                                id: Date.now() + '_' + Math.random().toString(36).substr(2, 6) + '_' + i,
+                                file: compressed,
+                                previewUrl: previewUrl,
+                                origKb: origKb,
+                                compKb: compKb
+                            });
+                        } catch (err) {
+                            console.error('Erro ao processar imagem:', err);
+                        }
+                    }
+
+                    this.sincronizarInputFinal();
+                    this.processandoFotos = false;
+                    this.processandoTexto = '';
+                },
+
+                removerFoto(fotoId) {
+                    let index = this.fotos.findIndex(f => f.id === fotoId);
+                    if (index !== -1) {
+                        if (this.fotos[index].previewUrl) {
+                            URL.revokeObjectURL(this.fotos[index].previewUrl);
+                        }
+                        this.fotos.splice(index, 1);
+                        this.sincronizarInputFinal();
+                    }
+                },
+
+                limparTodasFotos() {
+                    this.fotos.forEach(f => {
+                        if (f.previewUrl) URL.revokeObjectURL(f.previewUrl);
+                    });
+                    this.fotos = [];
+                    this.sincronizarInputFinal();
+                },
+
+                sincronizarInputFinal() {
+                    let finalInput = document.getElementById('fotos-input-final');
+                    if (!finalInput) return;
+                    let dt = new DataTransfer();
+                    this.fotos.forEach(item => {
+                        dt.items.add(item.file);
+                    });
+                    finalInput.files = dt.files;
+                },
+
                 prepararEnvio(e) {
                     if (!this.clienteId || !this.veiculoId) {
                         alert('Por favor, selecione o cliente e o veículo.');
                         e.preventDefault();
                         return;
                     }
-                },
-
-                async previewFotos(e) {
-                    let input = e.target;
-                    let files = input.files;
-                    let container = document.getElementById('fotos-preview-container');
-                    container.innerHTML = '';
-                    if (!files || files.length === 0) {
-                        container.classList.add('hidden');
+                    if (this.processandoFotos) {
+                        alert('Aguarde a otimização das fotos ser concluída antes de salvar.');
+                        e.preventDefault();
                         return;
                     }
-
-                    container.classList.remove('hidden');
-                    let statusDiv = document.createElement('div');
-                    statusDiv.className = 'col-span-full text-xs text-blue-600 font-semibold mb-2';
-                    statusDiv.innerHTML = '<i class="bi bi-arrow-repeat animate-spin mr-1"></i> Otimizando imagens...';
-                    container.appendChild(statusDiv);
-
-                    let dataTransfer = new DataTransfer();
-
-                    for (let file of Array.from(files)) {
-                        let compressed = await compressImage(file);
-                        dataTransfer.items.add(compressed);
-
-                        let reader = new FileReader();
-                        reader.onload = (event) => {
-                            let div = document.createElement('div');
-                            div.className = 'relative group aspect-square rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-100';
-                            let origKb = (file.size / 1024).toFixed(0);
-                            let compKb = (compressed.size / 1024).toFixed(0);
-                            div.innerHTML = `
-                                <img src="${event.target.result}" class="w-full h-full object-cover">
-                                <div class="absolute bottom-0 inset-x-0 bg-slate-900/80 text-white text-[10px] p-1 text-center font-mono font-medium">
-                                    ${origKb}KB &rarr; ${compKb}KB
-                                </div>
-                            `;
-                            container.appendChild(div);
-                        };
-                        reader.readAsDataURL(compressed);
-                    }
-
-                    input.files = dataTransfer.files;
-                    if (statusDiv.parentNode) {
-                        statusDiv.remove();
-                    }
+                    this.sincronizarInputFinal();
                 },
 
                 formatarDinheiro(val) {

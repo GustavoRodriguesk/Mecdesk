@@ -284,6 +284,13 @@ class OrdemServicoController extends Controller
             }
         }
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Foto(s) adicionada(s) à Ordem de Serviço com sucesso!'
+            ]);
+        }
+
         return redirect()
             ->route('ordens.show', $ordem->id)
             ->with('success', 'Foto(s) adicionada(s) à Ordem de Serviço com sucesso!');
@@ -303,6 +310,13 @@ class OrdemServicoController extends Controller
 
         $ordemId = $foto->ordem_servico_id;
         $foto->delete();
+
+        if (request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Foto removida com sucesso!'
+            ]);
+        }
 
         return redirect()
             ->route('ordens.show', $ordemId)

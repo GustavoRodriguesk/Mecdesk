@@ -149,12 +149,12 @@
                             Vistoria & Fotos do Veículo ({{ $ordem->fotos->count() }})
                         </h3>
                         @if ($ordem->status !== 'concluida' && $ordem->status !== 'cancelada')
-                            <form action="{{ route('ordens.fotos.store', $ordem->id) }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-2">
+                            <form id="form-upload-fotos" action="{{ route('ordens.fotos.store', $ordem->id) }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-2">
                                 @csrf
-                                <label class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md cursor-pointer transition-colors">
-                                    <i class="bi bi-plus-lg"></i>
-                                    + Adicionar Fotos
-                                    <input type="file" name="fotos[]" multiple accept="image/*" class="hidden" onchange="enviarFotosComCompressao(this)">
+                                <label id="btn-adicionar-fotos-label" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md cursor-pointer transition-all shadow-sm">
+                                    <i id="btn-adicionar-fotos-icon" class="bi bi-plus-lg"></i>
+                                    <span id="btn-adicionar-fotos-text">+ Adicionar Fotos</span>
+                                    <input type="file" name="fotos[]" multiple accept="image/*" class="hidden" id="input-fotos-show" onchange="enviarFotosComCompressao(this)">
                                 </label>
                             </form>
                         @endif
@@ -753,22 +753,51 @@
             if (!input.files || input.files.length === 0) return;
 
             let form = input.form;
-            let dataTransfer = new DataTransfer();
+            let label = document.getElementById('btn-adicionar-fotos-label') || input.closest('label');
+            let icon = document.getElementById('btn-adicionar-fotos-icon');
+            let text = document.getElementById('btn-adicionar-fotos-text');
 
-            // Desabilitar o botão e avisar usuário
-            let label = input.closest('label');
             if (label) {
                 label.style.pointerEvents = 'none';
-                label.innerHTML = '<i class="bi bi-arrow-repeat animate-spin mr-1"></i> Compactando e enviando...';
+                label.classList.add('opacity-75', 'bg-blue-100');
+            }
+            if (icon) {
+                icon.className = 'bi bi-arrow-repeat animate-spin';
             }
 
-            for (let file of Array.from(input.files)) {
-                let compressed = await compressImage(file);
-                dataTransfer.items.add(compressed);
-            }
+            try {
+                let dataTransfer = new DataTransfer();
+                let filesArr = Array.from(input.files);
+                let total = filesArr.length;
 
-            input.files = dataTransfer.files;
-            form.submit();
+                for (let i = 0; i < total; i++) {
+                    if (text) {
+                        text.textContent = `Compactando ${i + 1}/${total}...`;
+                    }
+                    let compressed = await compressImage(filesArr[i]);
+                    dataTransfer.items.add(compressed);
+                }
+
+                if (text) {
+                    text.textContent = 'Enviando...';
+                }
+
+                input.files = dataTransfer.files;
+                form.submit();
+            } catch (err) {
+                console.error('Erro ao processar fotos para envio:', err);
+                alert('Ocorreu um erro ao processar as fotos selecionadas. Tente novamente.');
+                if (label) {
+                    label.style.pointerEvents = 'auto';
+                    label.classList.remove('opacity-75', 'bg-blue-100');
+                }
+                if (icon) {
+                    icon.className = 'bi bi-plus-lg';
+                }
+                if (text) {
+                    text.textContent = '+ Adicionar Fotos';
+                }
+            }
         }
 
         async function compressImage(file, maxWidth = 1280, maxHeight = 1280, quality = 0.8) {
