@@ -181,6 +181,8 @@ class VeiculoController extends Controller
 
     public function destroy(Veiculo $veiculo)
     {
+        abort_if(! auth()->user()->canDelete(), 403);
+
         $veiculo->delete();
 
         return redirect()

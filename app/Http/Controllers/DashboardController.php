@@ -50,15 +50,25 @@ class DashboardController extends Controller
             ->whereYear('created_at', now()->year)
             ->sum('valor_total'),
 
-            'faturamentoChart' => OrdemServico::selectRaw(
-                'MONTH(created_at) as mes_num,
-                 MONTHNAME(created_at) as mes,
-                 SUM(valor_total) as total'
-            )
-            ->where('status', 'concluida')
-            ->groupBy('mes_num', 'mes')
-            ->orderBy('mes_num')
-            ->get(),
+            'faturamentoChart' => DB::connection()->getDriverName() === 'sqlite'
+                ? OrdemServico::selectRaw(
+                    "strftime('%m', created_at) as mes_num,
+                     strftime('%m', created_at) as mes,
+                     SUM(valor_total) as total"
+                )
+                ->where('status', 'concluida')
+                ->groupBy('mes_num', 'mes')
+                ->orderBy('mes_num')
+                ->get()
+                : OrdemServico::selectRaw(
+                    'MONTH(created_at) as mes_num,
+                     MONTHNAME(created_at) as mes,
+                     SUM(valor_total) as total'
+                )
+                ->where('status', 'concluida')
+                ->groupBy('mes_num', 'mes')
+                ->orderBy('mes_num')
+                ->get(),
 
             'statusChart' => OrdemServico::selectRaw(
                 'status,

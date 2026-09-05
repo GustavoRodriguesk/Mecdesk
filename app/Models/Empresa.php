@@ -22,15 +22,29 @@ class Empresa extends Model
         'cidade',
         'estado',
         'logo',
+        'controle_estoque',
         'plano_id',
         // ATENÇÃO: 'ativo' foi removido intencionalmente do fillable por motivos de segurança.
+    ];
+
+    protected $attributes = [
+        'controle_estoque' => true,
     ];
 
     protected function casts(): array
     {
         return [
             'ativo' => 'boolean',
+            'controle_estoque' => 'boolean',
         ];
+    }
+
+    /**
+     * Verifica se o controle de estoque está ativado para a empresa.
+     */
+    public function hasControleEstoque(): bool
+    {
+        return (bool) ($this->controle_estoque ?? true);
     }
 
     /**

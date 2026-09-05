@@ -163,6 +163,19 @@ class OrdemServico extends Model
     */
 
     /**
+     * Verifica se a Ordem de Serviço pode sofrer alterações em itens e fotos (somente quando Aberta).
+     */
+    public function podeEditar(): bool
+    {
+        return $this->status === 'aberta';
+    }
+
+    public function isAberta(): bool
+    {
+        return $this->status === 'aberta';
+    }
+
+    /**
      * Verifica se a aprovação já foi respondida.
      */
     public function isApprovalResponded(): bool

@@ -707,7 +707,7 @@
                 Peças
             </a>
 
-            @if (auth()->check() && auth()->user()->isAdmin())
+            @if (auth()->check() && auth()->user()->canManageCompany())
                 <div class="sidebar-label" style="margin-top:16px">Configurações</div>
 
                 <a href="{{ route('empresa.edit') }}"
@@ -720,7 +720,7 @@
                 </a>
             @endif
 
-            @if (auth()->check() && auth()->user()->isAdmin())
+            @if (auth()->check() && auth()->user()->canManageSubscription())
                 <div class="sidebar-label" style="margin-top:16px">Assinatura</div>
                 <a href="{{ route('assinatura.minha') }}"
                     class="sidebar-link {{ request()->routeIs('assinatura.minha') ? 'active' : '' }}">

@@ -13,7 +13,8 @@
         pecasCatalogo: {{ Js::from($pecas) }},
         clienteIdInicial: '{{ old('cliente_id', request('cliente', '')) }}',
         veiculoIdInicial: '{{ old('veiculo_id', request('veiculo', '')) }}',
-        oldItens: {{ Js::from(old('itens', [])) }}
+        oldItens: {{ Js::from(old('itens', [])) }},
+        hasEstoqueControl: {{ (auth()->user()->empresa?->hasControleEstoque() ?? true) ? 'true' : 'false' }}
     })">
 
         {{-- Cabeçalho da Página --}}
@@ -444,6 +445,7 @@
                 veiculos: config.veiculos || [],
                 servicosCatalogo: config.servicosCatalogo || [],
                 pecasCatalogo: config.pecasCatalogo || [],
+                hasEstoqueControl: config.hasEstoqueControl ?? true,
                 
                 clienteId: config.clienteIdInicial || '',
                 veiculoId: config.veiculoIdInicial || '',
@@ -600,7 +602,7 @@
                     let qtd = Math.max(1, parseInt(this.itemForm.quantidade) || 1);
                     let vUnit = parseFloat(this.itemForm.valor_unitario) || 0;
 
-                    if (this.modalTipo === 'peca') {
+                    if (this.modalTipo === 'peca' && this.hasEstoqueControl) {
                         if (this.itemSelecionado.estoque !== null && qtd > this.itemSelecionado.estoque) {
                             alert(`Quantidade indisponível em estoque. Máximo disponível: ${this.itemSelecionado.estoque}`);
                             return;

@@ -53,7 +53,7 @@ class User extends Authenticatable
 
     /*
     |--------------------------------------------------------------------------
-    | Helpers
+    | Helpers & Permissões
     |--------------------------------------------------------------------------
     */
 
@@ -62,8 +62,28 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
+    public function isGerente(): bool
+    {
+        return $this->role === 'gerente';
+    }
+
     public function isFuncionario(): bool
     {
         return $this->role === 'funcionario';
+    }
+
+    public function canDelete(): bool
+    {
+        return in_array($this->role, ['admin', 'gerente']);
+    }
+
+    public function canManageCompany(): bool
+    {
+        return $this->isAdmin();
+    }
+
+    public function canManageSubscription(): bool
+    {
+        return $this->isAdmin();
     }
 }

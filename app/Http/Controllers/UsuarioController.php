@@ -12,32 +12,32 @@ class UsuarioController extends Controller
 {
     public function create()
     {
-        abort_if(!auth()->user()->isAdmin(), 403);
+        abort_if(!auth()->user()->canManageCompany(), 403);
 
         return view('usuarios.create');
     }
 
     public function store(Request $request)
-{
-    abort_if(!auth()->user()->isAdmin(), 403);
+    {
+        abort_if(!auth()->user()->canManageCompany(), 403);
 
-    $validated = $request->validate([
-        'name' => ['required', 'string', 'max:255'],
-        'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-        'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        'role' => ['required', 'in:admin,funcionario'],
-    ]);
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => ['required', 'in:admin,gerente,funcionario'],
+        ]);
 
-    User::create([
-        'empresa_id' => auth()->user()->empresa_id,
-        'name' => $validated['name'],
-        'email' => $validated['email'],
-        'password' => Hash::make($validated['password']),
-        'role' => $validated['role'],
-    ]);
+        User::create([
+            'empresa_id' => auth()->user()->empresa_id,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
+        ]);
 
-    return redirect()
-        ->route('empresa.edit')
-        ->with('success', 'Funcionário cadastrado com sucesso!');
-}
+        return redirect()
+            ->route('empresa.edit')
+            ->with('success', 'Funcionário cadastrado com sucesso!');
+    }
 }

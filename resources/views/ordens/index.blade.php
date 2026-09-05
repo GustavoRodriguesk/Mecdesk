@@ -245,7 +245,7 @@
                                             <i class="bi bi-eye"></i> Ver
                                         </a>
 
-                                        @if (auth()->user()->isAdmin())
+                                        @if (auth()->user()->canDelete())
                                             <form action="{{ route('ordens.destroy', $ordem->id) }}" method="POST"
                                                 onsubmit="return confirm('Tem certeza que deseja excluir a OS #{{ $ordem->numero_os }}?')">
                                                 @csrf

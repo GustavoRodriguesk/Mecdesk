@@ -18,6 +18,8 @@ class SubscriptionController extends Controller
      */
     public function index()
     {
+        abort_if(! auth()->user()->canManageSubscription(), 403);
+
         $user = auth()->user();
         $empresa = $user->empresa;
         $empresa?->refresh();
@@ -39,6 +41,8 @@ class SubscriptionController extends Controller
      */
     public function cancelar(Request $request)
     {
+        abort_if(! auth()->user()->canManageSubscription(), 403);
+
         $user = auth()->user();
         $empresa = $user->empresa;
 

@@ -53,7 +53,7 @@
                                 <div class="font-medium text-sm text-gray-900" x-text="item.nome"></div>
                                 <div class="text-xs text-gray-500 flex items-center gap-2 mt-0.5">
                                     <span x-show="item.codigo" class="bg-gray-200 text-gray-700 px-1.5 py-0.2 rounded text-[11px]" x-text="'Cód: ' + item.codigo"></span>
-                                    <span x-show="modalTipo === 'peca'" class="text-gray-500" x-text="'Estoque: ' + (item.estoque ?? 0) + ' un'"></span>
+                                    <span x-show="modalTipo === 'peca' && hasEstoqueControl" class="text-gray-500" x-text="'Estoque: ' + (item.estoque ?? 0) + ' un'"></span>
                                     <span x-show="item.descricao" class="truncate max-w-[200px]" x-text="item.descricao"></span>
                                 </div>
                             </div>
@@ -72,7 +72,7 @@
                 <div x-show="itemSelecionado" class="bg-blue-50/60 border border-blue-200 rounded-lg p-4 space-y-3">
                     <div class="flex items-center justify-between pb-2 border-b border-blue-200">
                         <span class="text-xs font-semibold text-blue-900 uppercase">Configurar Item para esta OS</span>
-                        <span x-show="modalTipo === 'peca'" class="text-xs font-medium text-blue-800" x-text="'Disponível: ' + (itemSelecionado?.estoque ?? 0) + ' un'"></span>
+                        <span x-show="modalTipo === 'peca' && hasEstoqueControl" class="text-xs font-medium text-blue-800" x-text="'Disponível: ' + (itemSelecionado?.estoque ?? 0) + ' un'"></span>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
@@ -81,7 +81,7 @@
                             <input type="number" 
                                    x-model.number="itemForm.quantidade" 
                                    min="1" 
-                                   :max="modalTipo === 'peca' ? itemSelecionado?.estoque : 999"
+                                   :max="(modalTipo === 'peca' && hasEstoqueControl) ? itemSelecionado?.estoque : 999"
                                    class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white focus:ring-1 focus:ring-blue-500">
                         </div>
                         <div>

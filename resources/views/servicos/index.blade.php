@@ -147,7 +147,7 @@
                                             <i class="bi bi-pencil"></i> Editar
                                         </a>
 
-                                        @if (auth()->user()->isAdmin())
+                                        @if (auth()->user()->canDelete())
                                             <form action="{{ route('servicos.destroy', $servico->id) }}" method="POST"
                                                 onsubmit="return confirm('Tem certeza que deseja excluir o serviço {{ addslashes($servico->nome) }}?')">
                                                 @csrf

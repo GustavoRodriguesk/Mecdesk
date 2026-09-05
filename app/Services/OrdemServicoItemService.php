@@ -65,18 +65,22 @@ class OrdemServicoItemService
         $empresaId = $ordem->empresa_id;
         $pecaId = !empty($dados['peca_id']) ? (int) $dados['peca_id'] : null;
         $quantidade = max(1, (int) ($dados['quantidade'] ?? 1));
+        $controlaEstoque = $ordem->empresa ? $ordem->empresa->hasControleEstoque() : true;
 
         if ($pecaId) {
-            // Lock for update para prevenir condição de corrida no estoque
-            $peca = Peca::where('id', $pecaId)
-                ->where('empresa_id', $empresaId)
-                ->lockForUpdate()
-                ->firstOrFail();
+            $query = Peca::where('id', $pecaId)->where('empresa_id', $empresaId);
 
-            if ($quantidade > $peca->estoque) {
-                throw ValidationException::withMessages([
-                    'quantidade' => "Estoque insuficiente para a peça \"{$peca->nome}\". Disponível: {$peca->estoque}."
-                ]);
+            if ($controlaEstoque) {
+                // Lock for update para prevenir condição de corrida no estoque
+                $peca = $query->lockForUpdate()->firstOrFail();
+
+                if ($quantidade > $peca->estoque) {
+                    throw ValidationException::withMessages([
+                        'quantidade' => "Estoque insuficiente para a peça \"{$peca->nome}\". Disponível: {$peca->estoque}."
+                    ]);
+                }
+            } else {
+                $peca = $query->firstOrFail();
             }
 
             $descricao = !empty($dados['descricao']) ? trim($dados['descricao']) : $peca->nome;
@@ -84,7 +88,9 @@ class OrdemServicoItemService
                 ? (float) $this->converterParaFloat($dados['valor_unitario'])
                 : (float) $peca->valor_unitario;
 
-            $peca->decrement('estoque', $quantidade);
+            if ($controlaEstoque) {
+                $peca->decrement('estoque', $quantidade);
+            }
         } else {
             if (empty($dados['descricao'])) {
                 throw ValidationException::withMessages([
@@ -115,20 +121,21 @@ class OrdemServicoItemService
 
     /**
      * Atualiza um item existente na OS (quantidade, valor unitário, descrição).
-     * Trata o estoque proporcionalmente (delta).
+     * Trata o estoque proporcionalmente (delta) se o controle de estoque estiver ativado.
      */
     public function atualizarItem(OrdemServicoItem $item, array $dados): OrdemServicoItem
     {
         return DB::transaction(function () use ($item, $dados) {
             $ordem = $item->ordem;
+            $controlaEstoque = $ordem->empresa ? $ordem->empresa->hasControleEstoque() : true;
             $novaQuantidade = max(1, (int) ($dados['quantidade'] ?? $item->quantidade));
             $novoValorUnitario = isset($dados['valor_unitario']) && $dados['valor_unitario'] !== ''
                 ? (float) $this->converterParaFloat($dados['valor_unitario'])
                 : (float) $item->valor_unitario;
             $novaDescricao = !empty($dados['descricao']) ? trim($dados['descricao']) : $item->descricao;
 
-            // Se for peça do catálogo, tratar movimentação proporcional de estoque
-            if ($item->tipo_item === 'peca' && $item->peca_id) {
+            // Se for peça do catálogo e controle de estoque estiver ativo, tratar movimentação proporcional
+            if ($item->tipo_item === 'peca' && $item->peca_id && $controlaEstoque) {
                 $peca = Peca::where('id', $item->peca_id)
                     ->where('empresa_id', $ordem->empresa_id)
                     ->lockForUpdate()
@@ -164,14 +171,15 @@ class OrdemServicoItemService
     }
 
     /**
-     * Remove um item da Ordem de Serviço e devolve o estoque se for peça do catálogo.
+     * Remove um item da Ordem de Serviço e devolve o estoque se for peça do catálogo e controle ativo.
      */
     public function removerItem(OrdemServicoItem $item): void
     {
         DB::transaction(function () use ($item) {
             $ordem = $item->ordem;
+            $controlaEstoque = $ordem->empresa ? $ordem->empresa->hasControleEstoque() : true;
 
-            if ($item->tipo_item === 'peca' && $item->peca_id) {
+            if ($item->tipo_item === 'peca' && $item->peca_id && $controlaEstoque) {
                 $peca = Peca::where('id', $item->peca_id)
                     ->where('empresa_id', $ordem->empresa_id)
                     ->lockForUpdate()
@@ -207,24 +215,28 @@ class OrdemServicoItemService
     }
 
     /**
-     * Exclui a OS de forma segura devolvendo o estoque de todas as peças de catálogo.
+     * Exclui a OS de forma segura devolvendo o estoque de todas as peças de catálogo quando controle ativo.
      */
     public function excluirOrdemComEstoque(OrdemServico $ordem): void
     {
         DB::transaction(function () use ($ordem) {
-            $itensPecas = $ordem->itens()
-                ->where('tipo_item', 'peca')
-                ->whereNotNull('peca_id')
-                ->get();
+            $controlaEstoque = $ordem->empresa ? $ordem->empresa->hasControleEstoque() : true;
 
-            foreach ($itensPecas as $item) {
-                $peca = Peca::where('id', $item->peca_id)
-                    ->where('empresa_id', $ordem->empresa_id)
-                    ->lockForUpdate()
-                    ->first();
+            if ($controlaEstoque) {
+                $itensPecas = $ordem->itens()
+                    ->where('tipo_item', 'peca')
+                    ->whereNotNull('peca_id')
+                    ->get();
 
-                if ($peca) {
-                    $peca->increment('estoque', $item->quantidade);
+                foreach ($itensPecas as $item) {
+                    $peca = Peca::where('id', $item->peca_id)
+                        ->where('empresa_id', $ordem->empresa_id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if ($peca) {
+                        $peca->increment('estoque', $item->quantidade);
+                    }
                 }
             }
 

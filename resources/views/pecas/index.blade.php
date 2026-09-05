@@ -48,7 +48,7 @@
                     <div class="space-y-4">
 
                         {{-- Busca Global --}}
-                        <div>
+                        <div class="{{ auth()->user()->empresa?->hasControleEstoque() ? '' : 'md:col-span-2' }}">
                             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
                                 Busca rápida
                             </label>
@@ -58,6 +58,7 @@
                         </div>
 
                         {{-- Estoque Min e Max --}}
+                        @if(auth()->user()->empresa?->hasControleEstoque())
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                             <div>
@@ -79,6 +80,7 @@
                             </div>
 
                         </div>
+                        @endif
 
                     </div>
                     <div class="flex items-center justify-between mt-2">
@@ -125,11 +127,18 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-sm table-fixed min-w-[700px]">
                     <colgroup>
-                        <col style="width: 35%">
-                        <col style="width: 15%">
-                        <col style="width: 15%">
-                        <col style="width: 10%">
-                        <col style="width: 25%">
+                        @if(auth()->user()->empresa?->hasControleEstoque())
+                            <col style="width: 35%">
+                            <col style="width: 15%">
+                            <col style="width: 15%">
+                            <col style="width: 10%">
+                            <col style="width: 25%">
+                        @else
+                            <col style="width: 45%">
+                            <col style="width: 15%">
+                            <col style="width: 15%">
+                            <col style="width: 25%">
+                        @endif
                     </colgroup>
                     <thead>
                         <tr class="bg-white border-b border-gray-100">
@@ -142,9 +151,11 @@
                             <th
                                 class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
                                 Valor</th>
-                            <th
-                                class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
-                                Estoque</th>
+                            @if(auth()->user()->empresa?->hasControleEstoque())
+                                <th
+                                    class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
+                                    Estoque</th>
+                            @endif
                             <th
                                 class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
                                 Ações</th>
@@ -166,12 +177,14 @@
                                 <td class="px-6 py-4 text-gray-500 tabular-nums">
                                     R$ {{ number_format($peca->valor_unitario, 2, ',', '.') }}
                                 </td>
-                                <td class="px-6 py-4 text-gray-500 tabular-nums">
-                                    <span
-                                        class="font-medium {{ $peca->estoque <= 0 ? 'text-red-600' : ($peca->estoque < 5 ? 'text-yellow-600' : 'text-green-600') }}">
-                                        {{ $peca->estoque }}
-                                    </span>
-                                </td>
+                                @if(auth()->user()->empresa?->hasControleEstoque())
+                                    <td class="px-6 py-4 text-gray-500 tabular-nums">
+                                        <span
+                                            class="font-medium {{ $peca->estoque <= 0 ? 'text-red-600' : ($peca->estoque < 5 ? 'text-yellow-600' : 'text-green-600') }}">
+                                            {{ $peca->estoque }}
+                                        </span>
+                                    </td>
+                                @endif
 
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-2">
@@ -180,7 +193,7 @@
                                             <i class="bi bi-pencil"></i> Editar
                                         </a>
 
-                                        @if (auth()->user()->isAdmin())
+                                        @if (auth()->user()->canDelete())
                                             <form action="{{ route('pecas.destroy', $peca->id) }}" method="POST"
                                                 onsubmit="return confirm('Tem certeza que deseja excluir {{ addslashes($peca->nome) }}?')">
                                                 @csrf
@@ -196,7 +209,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-16 text-center">
+                                <td colspan="{{ auth()->user()->empresa?->hasControleEstoque() ? 5 : 4 }}" class="px-6 py-16 text-center">
                                     <div class="flex flex-col items-center gap-3 text-gray-400">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-300"
                                             fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">

@@ -272,6 +272,16 @@ class OrdemServicoController extends Controller
             'fotos.*' => 'image|mimes:jpeg,png,jpg,webp,gif|max:10240',
         ]);
 
+        if (! $ordem->podeEditar()) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Para realizar alterações em imagens de avarias, a Ordem de Serviço deve estar em condição Aberta.',
+                ], 422);
+            }
+            return back()->with('error', 'Para realizar alterações em imagens de avarias, a Ordem de Serviço deve estar em condição Aberta.');
+        }
+
         if ($request->hasFile('fotos')) {
             foreach ($request->file('fotos') as $fotoFile) {
                 if ($fotoFile->isValid()) {
@@ -304,6 +314,17 @@ class OrdemServicoController extends Controller
             'Acesso não autorizado para esta foto.'
         );
 
+        $ordem = $foto->ordemServico;
+        if ($ordem && ! $ordem->podeEditar()) {
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Para realizar alterações em imagens de avarias, a Ordem de Serviço deve estar em condição Aberta.',
+                ], 422);
+            }
+            return back()->with('error', 'Para realizar alterações em imagens de avarias, a Ordem de Serviço deve estar em condição Aberta.');
+        }
+
         if (Storage::disk('public')->exists($foto->caminho_foto)) {
             Storage::disk('public')->delete($foto->caminho_foto);
         }
@@ -325,6 +346,8 @@ class OrdemServicoController extends Controller
 
     public function destroy(OrdemServico $ordem)
     {
+        abort_if(! auth()->user()->canDelete(), 403);
+
         abort_if(
             $ordem->empresa_id !== auth()->user()->empresa_id,
             403,

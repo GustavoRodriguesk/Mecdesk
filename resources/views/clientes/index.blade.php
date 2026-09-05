@@ -47,8 +47,11 @@
                 {{-- Formulário de busca --}}
                 <form method="GET" action="{{ route('clientes.index') }}" class="flex items-center gap-2 w-full sm:w-96">
                     <div class="relative flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                            <i class="bi bi-search"></i>
+                        </div>
                         <input type="text" name="search" value="{{ $search }}"
-                            placeholder="   Buscar por nome ou telefone…"
+                            placeholder="Buscar por nome ou CPF/CNPJ..."
                             class="search-input w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors duration-150">
                     </div>
                     <button type="submit"
@@ -84,15 +87,20 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-sm table-fixed">
                     <colgroup>
-                        <col style="width: 40%">
-                        <col style="width: 25%">
-                        <col style="width: 35%">
+                        <col style="width: 32%">
+                        <col style="width: 22%">
+                        <col style="width: 22%">
+                        <col style="width: 24%">
                     </colgroup>
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-100">
                             <th
                                 class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
                                 Nome
+                            </th>
+                            <th
+                                class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
+                                CPF/CNPJ
                             </th>
                             <th
                                 class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
@@ -122,9 +130,14 @@
                                     </div>
                                 </td>
 
+                                {{-- CPF/CNPJ --}}
+                                <td class="px-6 py-4 text-gray-500 tabular-nums">
+                                    {{ $cliente->cpf_cnpj_formatado ?: '-' }}
+                                </td>
+
                                 {{-- Telefone --}}
                                 <td class="px-6 py-4 text-gray-500 tabular-nums">
-                                    {{ $cliente->telefone }}
+                                    {{ $cliente->telefone_formatado ?: $cliente->telefone ?? '-' }}
                                 </td>
 
                                 {{-- Ações --}}
@@ -138,7 +151,7 @@
                                         </a>
 
                                         {{-- Excluir --}}
-                                        @if (auth()->user()->isAdmin())
+                                        @if (auth()->user()->canDelete())
                                             <form action="{{ route('clientes.destroy', $cliente->id) }}" method="POST"
                                                 onsubmit="return confirm('Tem certeza que deseja excluir {{ addslashes($cliente->nome) }}?')">
                                                 @csrf
@@ -156,7 +169,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="px-6 py-16 text-center">
+                                <td colspan="4" class="px-6 py-16 text-center">
                                     <div class="flex flex-col items-center gap-3 text-gray-400">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-300"
                                             fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">

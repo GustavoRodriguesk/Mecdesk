@@ -62,7 +62,7 @@
                             CPF/CNPJ
                         </label>
                         <input type="text" id="cpf_cnpj" name="cpf_cnpj" maxlength="18"
-                            value="{{ old('cpf_cnpj', $cliente->cpf_cnpj) }}" placeholder="Apenas números"
+                            value="{{ old('cpf_cnpj', $cliente->cpf_cnpj_formatado ?: $cliente->cpf_cnpj) }}" placeholder="Apenas números"
                             class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150">
                         @error('cpf_cnpj')
                             <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
@@ -74,7 +74,7 @@
                             Telefone
                         </label>
                         <input type="text" id="telefone" name="telefone" maxlength="15"
-                            value="{{ old('telefone', $cliente->telefone) }}" placeholder="(00) 00000-0000"
+                            value="{{ old('telefone', $cliente->telefone_formatado ?: $cliente->telefone) }}" placeholder="(00) 00000-0000"
                             class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150"
                             required>
                         @error('telefone')

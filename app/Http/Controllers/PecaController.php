@@ -155,6 +155,8 @@ class PecaController extends Controller
 
     public function destroy(Peca $peca)
     {
+        abort_if(! auth()->user()->canDelete(), 403);
+
         if ($peca->ordemServicoItens()->exists()) {
             return redirect()
                 ->route('pecas.index')

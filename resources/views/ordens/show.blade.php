@@ -39,7 +39,8 @@
     <div class="w-full" x-data="ordemServicoShow({
         ordemId: {{ $ordem->id }},
         servicosCatalogo: {{ Js::from($servicos) }},
-        pecasCatalogo: {{ Js::from($pecas) }}
+        pecasCatalogo: {{ Js::from($pecas) }},
+        hasEstoqueControl: {{ ($ordem->empresa?->hasControleEstoque() ?? true) ? 'true' : 'false' }}
     })">
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -141,6 +142,17 @@
                     </div>
                 </div>
 
+                {{-- Banner Informativo quando a OS não está Aberta --}}
+                @if (!$ordem->podeEditar())
+                    <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs flex items-center gap-3 shadow-sm">
+                        <i class="bi bi-lock-fill text-amber-600 text-xl shrink-0"></i>
+                        <div>
+                            <span class="font-semibold block text-sm text-amber-950 mb-0.5">Ordem de Serviço com status "{{ $ordem->status_formatado }}"</span>
+                            <span class="text-amber-800">Esta Ordem de Serviço não pode sofrer alterações nas peças, serviços ou fotos de avarias. Para realizar qualquer alteração, altere o status para <strong>Aberta</strong> nas Informações Gerais acima.</span>
+                        </div>
+                    </div>
+                @endif
+
                 {{-- Card de Vistoria & Fotos do Veículo --}}
                 <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden" x-data="{ fotoModalUrl: null }">
                     <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
@@ -148,7 +160,7 @@
                             <i class="bi bi-camera text-blue-600"></i>
                             Vistoria & Fotos do Veículo ({{ $ordem->fotos->count() }})
                         </h3>
-                        @if ($ordem->status !== 'concluida' && $ordem->status !== 'cancelada')
+                        @if ($ordem->podeEditar())
                             <form id="form-upload-fotos" action="{{ route('ordens.fotos.store', $ordem->id) }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-2">
                                 @csrf
                                 <label id="btn-adicionar-fotos-label" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md cursor-pointer transition-all shadow-sm">
@@ -175,7 +187,7 @@
                                     <div class="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-100">
                                         <img src="{{ $foto->url }}" alt="Foto do veículo" class="w-full h-full object-cover cursor-pointer transition-transform duration-200 group-hover:scale-105" @click="fotoModalUrl = '{{ $foto->url }}'">
                                         
-                                        @if ($ordem->status !== 'concluida' && $ordem->status !== 'cancelada')
+                                        @if ($ordem->podeEditar())
                                             <form action="{{ route('ordens.fotos.destroy', $foto->id) }}" method="POST" class="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Deseja remover esta foto?');">
                                                 @csrf
                                                 @method('DELETE')
@@ -214,7 +226,7 @@
                             Serviços e Peças Executados
                         </h3>
 
-                        @if ($ordem->status !== 'concluida' && $ordem->status !== 'cancelada')
+                        @if ($ordem->podeEditar())
                             <div class="flex items-center gap-2">
                                 <button type="button" 
                                         @click="abrirModal('servico')"
@@ -242,7 +254,7 @@
                                         <th class="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Qtd</th>
                                         <th class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">V. Unitário</th>
                                         <th class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Total</th>
-                                        @if ($ordem->status !== 'concluida' && $ordem->status !== 'cancelada')
+                                        @if ($ordem->podeEditar())
                                             <th class="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Ações</th>
                                         @endif
                                     </tr>
@@ -271,7 +283,7 @@
                                             <td class="px-4 py-3 text-right font-bold text-gray-900">
                                                 R$ {{ number_format($item->valor_total, 2, ',', '.') }}
                                             </td>
-                                            @if ($ordem->status !== 'concluida' && $ordem->status !== 'cancelada')
+                                            @if ($ordem->podeEditar())
                                                 <td class="px-4 py-3 text-center whitespace-nowrap">
                                                     <div class="flex items-center justify-center gap-1">
                                                         <button type="button" 
@@ -306,7 +318,7 @@
                                         <td class="px-4 py-4 text-right font-bold text-blue-700 text-lg whitespace-nowrap">
                                             R$ {{ number_format($ordem->valor_total, 2, ',', '.') }}
                                         </td>
-                                        @if ($ordem->status !== 'concluida' && $ordem->status !== 'cancelada')
+                                        @if ($ordem->podeEditar())
                                             <td></td>
                                         @endif
                                     </tr>
@@ -316,7 +328,7 @@
                             <div class="px-6 py-12 text-center text-gray-500">
                                 <i class="bi bi-box-seam text-3xl mb-2 block text-gray-300"></i>
                                 <p class="text-sm font-medium">Nenhum serviço ou peça adicionado ainda.</p>
-                                @if ($ordem->status !== 'concluida' && $ordem->status !== 'cancelada')
+                                @if ($ordem->podeEditar())
                                     <div class="mt-3 flex items-center justify-center gap-3">
                                         <button type="button" @click="abrirModal('servico')" class="text-xs font-semibold text-blue-700 hover:underline">
                                             + Adicionar Serviço
@@ -560,6 +572,7 @@
                 ordemId: config.ordemId,
                 servicosCatalogo: config.servicosCatalogo || [],
                 pecasCatalogo: config.pecasCatalogo || [],
+                hasEstoqueControl: config.hasEstoqueControl ?? true,
 
                 modalOpen: false,
                 modalTipo: 'servico',

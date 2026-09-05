@@ -66,12 +66,13 @@
 
     </nav>
 
-    <div class="p-4 border-t border-gray-800 shrink-0">
-        <a href="{{ route('empresa.edit') }}"
-            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('empresa*') ? 'bg-gray-800 text-white' : '' }}">
-            <i class="bi bi-gear text-lg"></i>
-            <span class="font-medium text-sm">Minha Empresa</span>
-        </a>
-    </div>
-
+    @if (auth()->check() && auth()->user()->canManageCompany())
+        <div class="p-4 border-t border-gray-800 shrink-0">
+            <a href="{{ route('empresa.edit') }}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-colors {{ request()->is('empresa*') ? 'bg-gray-800 text-white' : '' }}">
+                <i class="bi bi-gear text-lg"></i>
+                <span class="font-medium text-sm">Minha Empresa</span>
+            </a>
+        </div>
+    @endif
 </aside>

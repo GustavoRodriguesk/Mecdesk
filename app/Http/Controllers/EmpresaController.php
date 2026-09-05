@@ -10,7 +10,7 @@ class EmpresaController extends Controller
 {
     public function edit()
     {
-        abort_if(! auth()->user()->isAdmin(), 403);
+        abort_if(! auth()->user()->canManageCompany(), 403);
 
         $empresa = auth()->user()->empresa;
         // Carrega os funcionários (usuários) dessa empresa
@@ -32,7 +32,7 @@ class EmpresaController extends Controller
 
     public function update(Request $request)
     {
-        abort_if(! auth()->user()->isAdmin(), 403);
+        abort_if(! auth()->user()->canManageCompany(), 403);
 
         $request->validate([
             'nome_fantasia' => 'required|string|max:150',
@@ -45,9 +45,10 @@ class EmpresaController extends Controller
             'logradouro'    => 'nullable|string|max:100',
             'numero'        => 'nullable|string|max:8',
             'bairro'        => 'nullable|string|max:100',
-            'cidade'        => 'nullable|string|max:50',
-            'estado'        => 'nullable|string|max:2',
-            'logo'          => 'nullable|image|mimes:jpeg,png,jpg,webp,gif,svg|max:5120',
+            'cidade'           => 'nullable|string|max:50',
+            'estado'           => 'nullable|string|max:2',
+            'controle_estoque' => 'nullable|boolean',
+            'logo'             => 'nullable|image|mimes:jpeg,png,jpg,webp,gif,svg|max:5120',
         ], [
             'logo.image' => 'O arquivo selecionado deve ser uma imagem válida.',
             'logo.mimes' => 'O logotipo deve estar nos formatos: PNG, JPG, JPEG, WEBP, GIF ou SVG.',
@@ -60,6 +61,10 @@ class EmpresaController extends Controller
         }
 
         $data = $request->except(['_token', '_method', 'logo', 'remover_logo', 'plano', 'ativo']);
+
+        if ($request->has('controle_estoque')) {
+            $data['controle_estoque'] = $request->boolean('controle_estoque');
+        }
 
         // Trata remoção explícita da logo se o usuário marcou para remover
         if ($request->boolean('remover_logo')) {

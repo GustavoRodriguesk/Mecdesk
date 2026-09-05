@@ -40,7 +40,7 @@
                     </a>
                 @endif
             </div>
-            <div class="p-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div class="p-6 grid grid-cols-1 {{ auth()->user()->empresa?->hasControleEstoque() ? 'sm:grid-cols-3' : 'sm:grid-cols-2' }} gap-6">
                 <div class="bg-gray-50 rounded-md p-4 border border-gray-100">
                     <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Código</span>
                     <span
@@ -54,12 +54,14 @@
                     <span class="text-sm font-medium text-gray-900">R$
                         {{ number_format($peca->valor_unitario, 2, ',', '.') }}</span>
                 </div>
-                <div class="bg-gray-50 rounded-md p-4 border border-gray-100">
-                    <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Estoque</span>
-                    <span
-                        class="text-sm font-medium {{ $peca->estoque <= 0 ? 'text-red-600' : ($peca->estoque < 5 ? 'text-yellow-600' : 'text-green-600') }}">{{ $peca->estoque }}
-                        unidades</span>
-                </div>
+                @if(auth()->user()->empresa?->hasControleEstoque())
+                    <div class="bg-gray-50 rounded-md p-4 border border-gray-100">
+                        <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Estoque</span>
+                        <span
+                            class="text-sm font-medium {{ $peca->estoque <= 0 ? 'text-red-600' : ($peca->estoque < 5 ? 'text-yellow-600' : 'text-green-600') }}">{{ $peca->estoque }}
+                            unidades</span>
+                    </div>
+                @endif
             </div>
         </div>
 

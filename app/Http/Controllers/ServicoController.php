@@ -111,6 +111,8 @@ class ServicoController extends Controller
 
     public function destroy(Servico $servico)
     {
+        abort_if(! auth()->user()->canDelete(), 403);
+
         if ($servico->ordemServicoItens()->exists()) {
             return redirect()
                 ->route('servicos.index')

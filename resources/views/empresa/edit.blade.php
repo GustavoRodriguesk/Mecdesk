@@ -192,7 +192,8 @@
                 {{-- ── 3. Identidade Visual (dentro do mesmo form) ── --}}
                 <div class="px-6 py-5 border-t border-gray-100">
                     <h3 class="text-base font-semibold text-gray-900 mb-1">Identidade Visual</h3>
-                    <p class="text-sm text-gray-500 mb-5">Logo exibida nos documentos e relatórios gerados pelo sistema</p>
+                    <p class="text-sm text-gray-500 mb-5">Logo exibida nos documentos e relatórios gerados pelo sistema
+                    </p>
                     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6">
                         {{-- Preview da Imagem Atual ou Nova --}}
                         <div class="relative">
@@ -203,28 +204,35 @@
                                         alt="Logo {{ $empresa->nome_fantasia }}"
                                         class="w-full h-full object-contain rounded-lg">
                                 @else
-                                    <div id="logo-placeholder" class="flex flex-col items-center justify-center text-gray-400">
+                                    <div id="logo-placeholder"
+                                        class="flex flex-col items-center justify-center text-gray-400">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-1 text-gray-400"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                            stroke-width="1.5">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                                         </svg>
                                         <span class="text-xs font-medium">Sem logo</span>
                                     </div>
-                                    <img id="logo-preview-img" src="" class="w-full h-full object-contain rounded-lg hidden">
+                                    <img id="logo-preview-img" src=""
+                                        class="w-full h-full object-contain rounded-lg hidden">
                                 @endif
                             </div>
                         </div>
 
                         <div class="space-y-3 flex-1">
                             <div>
-                                <input type="file" name="logo" id="logo-input" accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml,image/gif"
+                                <input type="file" name="logo" id="logo-input"
+                                    accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml,image/gif"
                                     class="block text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border file:border-gray-300 file:text-sm file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50 transition-colors">
-                                <p class="text-xs text-gray-500 mt-2">PNG, JPG, WEBP, GIF ou SVG, até 5 MB. Recomendado: 512 × 512 px.</p>
+                                <p class="text-xs text-gray-500 mt-2">PNG, JPG, WEBP, GIF ou SVG, até 5 MB.
+                                    Recomendado: 512 × 512 px.</p>
                                 @error('logo')
                                     <p class="text-red-500 text-xs font-medium mt-1.5 flex items-center gap-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                                         </svg>
                                         {{ $message }}
                                     </p>
@@ -233,12 +241,73 @@
 
                             @if (!empty($empresa->logo))
                                 <div class="flex items-center gap-2 pt-1">
-                                    <label class="inline-flex items-center text-xs font-medium text-red-600 hover:text-red-700 cursor-pointer gap-1.5 select-none">
-                                        <input type="checkbox" name="remover_logo" value="1" class="rounded border-gray-300 text-red-600 focus:ring-red-500 h-3.5 w-3.5">
+                                    <label
+                                        class="inline-flex items-center text-xs font-medium text-red-600 hover:text-red-700 cursor-pointer gap-1.5 select-none">
+                                        <input type="checkbox" name="remover_logo" value="1"
+                                            class="rounded border-gray-300 text-red-600 focus:ring-red-500 h-3.5 w-3.5">
                                         Remover logotipo atual
                                     </label>
                                 </div>
                             @endif
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ── 4. Controle de Estoque (dentro do mesmo form) ── --}}
+                <div class="px-6 py-5 border-t border-gray-100" x-data="{ controleEstoque: '{{ old('controle_estoque', $empresa->hasControleEstoque() ? '1' : '0') }}' }">
+                    <div class="mb-4">
+                        <h3 class="text-base font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                            Controle de estoque
+                        </h3>
+                        <p class="text-sm text-gray-500">
+                            Controle automaticamente a quantidade de peças disponíveis no estoque ao adicionar, alterar
+                            ou remover peças das Ordens de Serviço.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+                        {{-- Opção: Ativado --}}
+                        <label class="relative flex items-center p-4 rounded-xl border cursor-pointer transition-all"
+                            :class="controleEstoque === '1' ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-500/20' :
+                                'border-gray-200 bg-white hover:bg-gray-50'">
+                            <input type="radio" name="controle_estoque" value="1" x-model="controleEstoque"
+                                class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                            <div class="pl-5">
+                                <span class="block text-sm font-semibold text-gray-900">Ativado</span>
+                                <span class="block text-xs text-gray-500">Movimenta e valida o saldo de peças</span>
+                            </div>
+                        </label>
+
+                        {{-- Opção: Desativado --}}
+                        <label class="relative flex items-center p-4 rounded-xl border cursor-pointer transition-all"
+                            :class="controleEstoque === '0' ?
+                                'border-amber-600 bg-amber-50/50 ring-2 ring-amber-500/20' :
+                                'border-gray-200 bg-white hover:bg-gray-50'">
+                            <input type="radio" name="controle_estoque" value="0" x-model="controleEstoque"
+                                class="h-4 w-4 text-amber-600 border-gray-300 focus:ring-amber-500">
+                            <div class="pl-5">
+                                <span class="block text-sm font-semibold text-gray-900">Desativado</span>
+                                <span class="block text-xs text-gray-500">Sem validação de saldo físico</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    {{-- Aviso explicativo quando desativado --}}
+                    <div x-show="controleEstoque === '0'" x-transition
+                        class="mt-4 p-3.5 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-2.5 text-xs text-amber-900">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-600 mt-0.5 shrink-0"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                            <strong>O controle de estoque está desativado.</strong> As peças adicionadas às Ordens de
+                            Serviço não irão gerar movimentações ou validações de estoque.
                         </div>
                     </div>
                 </div>
@@ -257,7 +326,7 @@
             </form>
         </div>
 
-        {{-- ── 4. Plano & Utilização ── --}}
+        {{-- ── 5. Plano & Utilização ── --}}
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
                 <div>
@@ -355,6 +424,11 @@
                                         <span
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
                                             Admin
+                                        </span>
+                                    @elseif ($funcionario->isGerente())
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                            Gerente
                                         </span>
                                     @else
                                         <span

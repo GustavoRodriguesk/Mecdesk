@@ -212,7 +212,7 @@
                                             class="btn-action inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 whitespace-nowrap">
                                             <i class="bi bi-pencil"></i> Editar
                                         </a>
-                                        @if (auth()->user()->isAdmin())
+                                        @if (auth()->user()->canDelete())
                                             <form action="{{ route('veiculos.destroy', $veiculo->id) }}" method="POST"
                                                 onsubmit="return confirm('Tem certeza que deseja excluir {{ addslashes($veiculo->placa) }}?')">
                                                 @csrf

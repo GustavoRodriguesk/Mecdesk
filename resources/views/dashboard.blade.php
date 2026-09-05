@@ -127,44 +127,45 @@
             <p class="text-3xl font-medium text-green-700 dark:text-green-300">{{ $osConcluidas }}</p>
         </div>
 
-    </div>
-    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mt-6">
+    @if(auth()->user()->empresa?->hasControleEstoque())
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mt-6">
 
-    <h3 class="text-lg font-bold text-red-600 mb-4">
-        ⚠️ Estoque Baixo
-    </h3>
+        <h3 class="text-lg font-bold text-red-600 mb-4">
+            ⚠️ Estoque Baixo
+        </h3>
 
-    @if($pecasBaixas->count())
+        @if($pecasBaixas->count())
 
-        <ul class="space-y-2">
+            <ul class="space-y-2">
 
-            @foreach($pecasBaixas as $peca)
+                @foreach($pecasBaixas as $peca)
 
-                <li class="flex justify-between border-b pb-2">
+                    <li class="flex justify-between border-b pb-2">
 
-                    <span>
-                        {{ $peca->nome }}
-                    </span>
+                        <span>
+                            {{ $peca->nome }}
+                        </span>
 
-                    <span class="font-bold text-red-500">
-                        {{ $peca->estoque }} un.
-                    </span>
+                        <span class="font-bold text-red-500">
+                            {{ $peca->estoque }} un.
+                        </span>
 
-                </li>
+                    </li>
 
-            @endforeach
+                @endforeach
 
-        </ul>
+            </ul>
 
-    @else
+        @else
 
-        <p class="text-green-600">
-            Nenhuma peça com estoque baixo.
-        </p>
+            <p class="text-green-600">
+                Nenhuma peça com estoque baixo.
+            </p>
 
+        @endif
+
+        </div>
     @endif
-
-</div>
 
     {{-- Ações rápidas --}}
     <p class="text-xs font-medium uppercase tracking-widest text-gray-400 mt-8 mb-3">Ações rápidas</p>

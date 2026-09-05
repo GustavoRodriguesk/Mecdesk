@@ -82,6 +82,9 @@ class MercadoPagoService
     {
         $token = $this->getAccessToken();
 
+        $planoPro = \App\Models\Plano::where('slug', 'pro')->where('ativo', true)->first();
+        $valorMensal = $planoPro ? (float) $planoPro->preco_mensal : 89.90;
+
         $payload = [
             'reason' => 'Assinatura MecDesk - Plano Pro',
             'external_reference' => (string) $empresa->id,
@@ -90,7 +93,7 @@ class MercadoPagoService
             'auto_recurring' => [
                 'frequency' => 1,
                 'frequency_type' => 'months',
-                'transaction_amount' => 99.90,
+                'transaction_amount' => $valorMensal,
                 'currency_id' => 'BRL',
             ],
             'back_url' => route('planos.callback'),

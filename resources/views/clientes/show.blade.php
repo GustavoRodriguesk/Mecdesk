@@ -40,7 +40,7 @@
                 <div class="bg-gray-50 rounded-md p-4 border border-gray-100">
                     <span
                         class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Telefone</span>
-                    <span class="text-sm font-medium text-gray-900">{{ $cliente->telefone ?: '-' }}</span>
+                    <span class="text-sm font-medium text-gray-900">{{ $cliente->telefone_formatado ?: ($cliente->telefone ?: '-') }}</span>
                 </div>
                 <div class="bg-gray-50 rounded-md p-4 border border-gray-100">
                     <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">E-mail</span>
@@ -49,7 +49,7 @@
                 <div class="bg-gray-50 rounded-md p-4 border border-gray-100">
                     <span
                         class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">CPF/CNPJ</span>
-                    <span class="text-sm font-medium text-gray-900">{{ $cliente->cpf_cnpj ?: '-' }}</span>
+                    <span class="text-sm font-medium text-gray-900">{{ $cliente->cpf_cnpj_formatado ?: ($cliente->cpf_cnpj ?: '-') }}</span>
                 </div>
                 <div class="bg-gray-50 rounded-md p-4 border border-gray-100 md:col-span-3">
                     <span

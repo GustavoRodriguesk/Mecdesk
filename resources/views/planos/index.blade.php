@@ -9,10 +9,6 @@
         </div>
 
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div
-                class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs font-bold uppercase tracking-wider mb-6">
-                <i class="bi bi-tools text-blue-600"></i> Gestão Completa para Oficinas Mecânicas
-            </div>
 
             <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-950 tracking-tight leading-[1.1] mb-6">
                 A gestão da sua oficina,<br>
@@ -29,7 +25,6 @@
                 <a href="{{ route('planos.contratar') }}"
                     class="w-full sm:w-auto px-8 py-4 text-base font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
                     <span>Começar agora</span>
-                    <i class="bi bi-arrow-right"></i>
                 </a>
                 <a href="#recursos"
                     class="w-full sm:w-auto px-7 py-4 text-base font-semibold text-slate-700 hover:text-slate-950 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl transition-all flex items-center justify-center gap-2">
@@ -59,9 +54,6 @@
     <section id="recursos" class="py-20 bg-white border-y border-slate-200/80">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
-                <span
-                    class="text-xs font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-md">O
-                    que o sistema oferece</span>
                 <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight mt-3 mb-4">
                     Tudo o que sua oficina precisa no dia a dia
                 </h2>
@@ -178,11 +170,6 @@
             <!-- Card Comercial do MecDesk Pro -->
             <div
                 class="bg-white rounded-3xl border-2 border-blue-600 shadow-xl shadow-blue-500/10 p-8 sm:p-12 relative overflow-hidden">
-                <!-- Badge de destaque -->
-                <div
-                    class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-extrabold uppercase tracking-wider py-1.5 px-6 rounded-bl-2xl shadow-sm">
-                    Acesso Completo
-                </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                     <!-- Informações e Preço -->
@@ -199,7 +186,7 @@
 
                         <div class="pt-2">
                             <div class="flex items-baseline gap-2">
-                                <span class="text-4xl sm:text-5xl font-black text-slate-950">R$ 99,90</span>
+                                <span class="text-4xl sm:text-5xl font-black text-slate-950">R$ 89,90</span>
                                 <span class="text-base font-semibold text-slate-500">/ mês</span>
                             </div>
                             <p class="text-xs font-medium text-slate-500 mt-1">
@@ -211,7 +198,6 @@
                             <a href="{{ route('planos.contratar') }}"
                                 class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35 transition-all text-center">
                                 <span>Começar agora</span>
-                                <i class="bi bi-arrow-right"></i>
                             </a>
                         </div>
                     </div>
@@ -260,9 +246,6 @@
     <section id="faq" class="py-20 bg-slate-100/70 border-t border-slate-200">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-2xl mx-auto mb-14">
-                <span
-                    class="text-xs font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-md">Tire
-                    suas dúvidas</span>
                 <h2 class="text-3xl font-extrabold text-slate-950 tracking-tight mt-3 mb-4">
                     Perguntas Frequentes
                 </h2>
@@ -336,8 +319,7 @@
             <div class="pt-2">
                 <a href="{{ route('planos.contratar') }}"
                     class="inline-flex items-center justify-center gap-2 px-9 py-4 text-base font-bold text-slate-950 bg-white hover:bg-slate-100 rounded-xl shadow-lg hover:shadow-xl transition-all">
-                    <span>Começar agora por R$ 99,90/mês</span>
-                    <i class="bi bi-arrow-right"></i>
+                    <span>Começar agora por R$ 89,90/mês</span>
                 </a>
             </div>
         </div>

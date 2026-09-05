@@ -21,6 +21,16 @@ class OrdemServicoItemController extends Controller
     {
         $this->autorizarOrdem($ordem);
 
+        if (! $ordem->podeEditar()) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Para realizar alterações em peças ou serviços, a Ordem de Serviço deve estar em condição Aberta.',
+                ], 422);
+            }
+            return back()->with('error', 'Para realizar alterações em peças ou serviços, a Ordem de Serviço deve estar em condição Aberta.');
+        }
+
         $request->validate([
             'servico_id'     => 'nullable|integer',
             'descricao'      => 'nullable|string|max:255',
@@ -58,6 +68,16 @@ class OrdemServicoItemController extends Controller
     public function storePeca(Request $request, OrdemServico $ordem)
     {
         $this->autorizarOrdem($ordem);
+
+        if (! $ordem->podeEditar()) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Para realizar alterações em peças ou serviços, a Ordem de Serviço deve estar em condição Aberta.',
+                ], 422);
+            }
+            return back()->with('error', 'Para realizar alterações em peças ou serviços, a Ordem de Serviço deve estar em condição Aberta.');
+        }
 
         $request->validate([
             'peca_id'        => 'nullable|integer',
@@ -97,6 +117,16 @@ class OrdemServicoItemController extends Controller
     {
         $this->autorizarItem($item);
 
+        if (! $item->ordem->podeEditar()) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Para realizar alterações em peças ou serviços, a Ordem de Serviço deve estar em condição Aberta.',
+                ], 422);
+            }
+            return back()->with('error', 'Para realizar alterações em peças ou serviços, a Ordem de Serviço deve estar em condição Aberta.');
+        }
+
         $request->validate([
             'descricao'      => 'nullable|string|max:255',
             'quantidade'     => 'required|integer|min:1',
@@ -133,6 +163,16 @@ class OrdemServicoItemController extends Controller
     public function destroy(Request $request, OrdemServicoItem $item)
     {
         $this->autorizarItem($item);
+
+        if (! $item->ordem->podeEditar()) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Para realizar alterações em peças ou serviços, a Ordem de Serviço deve estar em condição Aberta.',
+                ], 422);
+            }
+            return back()->with('error', 'Para realizar alterações em peças ou serviços, a Ordem de Serviço deve estar em condição Aberta.');
+        }
 
         $this->itemService->removerItem($item);
 

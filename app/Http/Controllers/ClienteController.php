@@ -8,14 +8,28 @@ use Illuminate\Http\Request;
 class ClienteController extends Controller
 {
     public function index(Request $request)
-{
-    $search = $request->search;
+    {
+        $search = $request->input('search');
+        $cleanSearch = preg_replace('/\D/', '', (string) $search);
 
-    $clientes = Cliente::where('nome', 'like', "%{$search}%")
-        ->paginate(10);
+        $clientes = Cliente::query()
+            ->when($search, function ($query) use ($search, $cleanSearch) {
+                $query->where(function ($q) use ($search, $cleanSearch) {
+                    $q->where('nome', 'like', "%{$search}%")
+                      ->orWhere('cpf_cnpj', 'like', "%{$search}%");
 
-    return view('clientes.index', compact('clientes', 'search'));
-}
+                    if (!empty($cleanSearch)) {
+                        $q->orWhere('cpf_cnpj', 'like', "%{$cleanSearch}%")
+                          ->orWhere('telefone', 'like', "%{$cleanSearch}%");
+                    }
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('clientes.index', compact('clientes', 'search'));
+    }
 
     public function create()
     {
@@ -68,6 +82,8 @@ class ClienteController extends Controller
 
     public function destroy(Cliente $cliente)
     {
+        abort_if(! auth()->user()->canDelete(), 403);
+
         $cliente->delete();
 
         return redirect()
