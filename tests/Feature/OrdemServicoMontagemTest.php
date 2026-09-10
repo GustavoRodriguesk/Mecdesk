@@ -360,8 +360,42 @@ test('exclusao da OS devolve o estoque de todas as pecas vinculadas', function (
     $response->assertRedirect(route('ordens.index'));
 
     expect(OrdemServico::count())->toBe(0)
-        ->and(OrdemServicoItem::count())->toBe(0);
+        ->and(OrdemServicoItem::count())->toBe(0)
+        ->and(OrdemServico::withTrashed()->count())->toBe(1)
+        ->and(OrdemServico::withTrashed()->first()->trashed())->toBeTrue();
 
     $this->peca->refresh();
     expect($this->peca->estoque)->toBe(10); // Restaurou os 3
+});
+
+test('geracao de proximo numero_os nao colide com OS soft-deletada', function () {
+    // Criar primeira OS (OS-0001)
+    $ordem1 = OrdemServico::create([
+        'empresa_id'         => $this->empresa->id,
+        'numero_os'          => 'OS-0001',
+        'cliente_id'         => $this->cliente->id,
+        'veiculo_id'         => $this->veiculo->id,
+        'user_id'            => $this->user->id,
+        'status'             => 'aberta',
+        'descricao_problema' => 'OS 1 que será deletada',
+        'valor_total'        => 0,
+        'data_entrada'       => now(),
+    ]);
+
+    // Soft delete na OS-0001
+    $ordem1->delete();
+    expect(OrdemServico::count())->toBe(0);
+
+    // Criar nova OS via formulário/controller
+    $payload = [
+        'cliente_id'         => $this->cliente->id,
+        'veiculo_id'         => $this->veiculo->id,
+        'descricao_problema' => 'Nova OS após deleção',
+    ];
+
+    $response = $this->actingAs($this->user)->post(route('ordens.store'), $payload);
+
+    $ordem2 = OrdemServico::first();
+    expect($ordem2)->not->toBeNull()
+        ->and($ordem2->numero_os)->toBe('OS-0002');
 });

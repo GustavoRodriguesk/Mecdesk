@@ -105,18 +105,31 @@ test('filtra clientes por cpf/cnpj formatado ou numerico', function () {
     $response2->assertDontSee('Transportes Veloz LTDA');
 });
 
-test('permite excluir cliente sem ordens de servico', function () {
+test('permite excluir cliente sem ordens de servico usando soft delete e cascata em veiculos', function () {
     $cliente = Cliente::create([
         'empresa_id' => $this->empresa->id,
         'nome'       => 'Cliente Sem OS',
         'telefone'   => '11999990000',
     ]);
 
+    $veiculo = Veiculo::create([
+        'empresa_id' => $this->empresa->id,
+        'cliente_id' => $cliente->id,
+        'marca'      => 'Fiat',
+        'modelo'     => 'Palio',
+        'ano'        => 2015,
+        'placa'      => 'PAL1010',
+    ]);
+
     $response = $this->actingAs($this->admin)->delete(route('clientes.destroy', $cliente->id));
     $response->assertRedirect(route('clientes.index'))
         ->assertSessionHas('success', 'Cliente excluído com sucesso!');
 
-    expect(Cliente::find($cliente->id))->toBeNull();
+    expect(Cliente::find($cliente->id))->toBeNull()
+        ->and(Cliente::withTrashed()->find($cliente->id))->not->toBeNull()
+        ->and(Cliente::withTrashed()->find($cliente->id)->trashed())->toBeTrue()
+        ->and(Veiculo::find($veiculo->id))->toBeNull()
+        ->and(Veiculo::withTrashed()->find($veiculo->id)->trashed())->toBeTrue();
 });
 
 test('impede exclusao de cliente que possui ordens de servico vinculadas', function () {

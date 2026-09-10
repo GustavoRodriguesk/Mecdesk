@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Empresa;
+use App\Http\Requests\UpdateEmpresaRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -30,31 +31,8 @@ class EmpresaController extends Controller
         ));
     }
 
-    public function update(Request $request)
+    public function update(UpdateEmpresaRequest $request)
     {
-        abort_if(! auth()->user()->canManageCompany(), 403);
-
-        $request->validate([
-            'nome_fantasia' => 'required|string|max:150',
-            'razao_social'  => 'nullable|string|max:150',
-            'cnpj'          => 'nullable|string|max:18',
-            'email'         => 'nullable|email|max:100',
-            'telefone'      => 'nullable|string|max:15',
-            'whatsapp'      => 'nullable|string|max:15',
-            'cep'           => 'nullable|string|max:9',
-            'logradouro'    => 'nullable|string|max:100',
-            'numero'        => 'nullable|string|max:8',
-            'bairro'        => 'nullable|string|max:100',
-            'cidade'           => 'nullable|string|max:50',
-            'estado'           => 'nullable|string|max:2',
-            'controle_estoque' => 'nullable|boolean',
-            'logo'             => 'nullable|image|mimes:jpeg,png,jpg,webp,gif,svg|max:5120',
-        ], [
-            'logo.image' => 'O arquivo selecionado deve ser uma imagem válida.',
-            'logo.mimes' => 'O logotipo deve estar nos formatos: PNG, JPG, JPEG, WEBP, GIF ou SVG.',
-            'logo.max'   => 'O logotipo não pode ser maior que 5 MB.',
-        ]);
-
         $empresa = auth()->user()->empresa;
         if (! $empresa) {
             return redirect()->back()->withErrors(['logo' => 'Empresa não encontrada para o usuário atual.']);

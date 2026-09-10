@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use App\Models\Veiculo;
+use App\Http\Requests\StoreVeiculoRequest;
+use App\Http\Requests\UpdateVeiculoRequest;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -103,30 +105,8 @@ class VeiculoController extends Controller
         ));
     }
 
-    public function store(Request $request)
+    public function store(StoreVeiculoRequest $request)
     {
-        if ($request->filled('placa')) {
-            $request->merge([
-                'placa' => strtoupper(trim(preg_replace('/[^A-Za-z0-9]/', '', $request->placa)))
-            ]);
-        }
-
-        $request->validate([
-            'cliente_id' => [
-                'required',
-                Rule::exists('clientes', 'id')
-                    ->where('empresa_id', auth()->user()->empresa_id),
-            ],
-            'marca'  => 'required',
-            'modelo' => 'required',
-            'placa'  => [
-                'required',
-                new \App\Rules\PlacaVeiculoRule,
-                Rule::unique('veiculos', 'placa')
-                    ->where('empresa_id', auth()->user()->empresa_id),
-            ],
-        ]);
-
         $dados = $request->except('empresa_id');
         $dados['empresa_id'] = auth()->user()->empresa_id;
 
@@ -134,7 +114,7 @@ class VeiculoController extends Controller
 
         return redirect()
             ->route('veiculos.index')
-            ->with('success', 'Veículo cadastrado com sucesso!');
+            ->with('success', 'Veculo cadastrado com sucesso!');
     }
 
     public function edit(Veiculo $veiculo)
@@ -144,31 +124,8 @@ class VeiculoController extends Controller
         return view('veiculos.edit', compact('veiculo', 'clientes'));
     }
 
-    public function update(Request $request, Veiculo $veiculo)
+    public function update(UpdateVeiculoRequest $request, Veiculo $veiculo)
     {
-        if ($request->filled('placa')) {
-            $request->merge([
-                'placa' => strtoupper(trim(preg_replace('/[^A-Za-z0-9]/', '', $request->placa)))
-            ]);
-        }
-
-        $request->validate([
-            'cliente_id' => [
-                'required',
-                Rule::exists('clientes', 'id')
-                    ->where('empresa_id', auth()->user()->empresa_id),
-            ],
-            'marca'  => 'required',
-            'modelo' => 'required',
-            'placa'  => [
-                'required',
-                new \App\Rules\PlacaVeiculoRule,
-                Rule::unique('veiculos', 'placa')
-                    ->ignore($veiculo->id)
-                    ->where('empresa_id', auth()->user()->empresa_id),
-            ],
-        ]);
-
         $dados = $request->except('empresa_id');
         $dados['empresa_id'] = auth()->user()->empresa_id;
 
@@ -176,7 +133,7 @@ class VeiculoController extends Controller
 
         return redirect()
             ->route('veiculos.index')
-            ->with('success', 'Veículo atualizado com sucesso!');
+            ->with('success', 'Veculo atualizado com sucesso!');
     }
 
     public function destroy(Veiculo $veiculo)

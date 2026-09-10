@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Http\Requests\StoreUsuarioRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -26,10 +27,8 @@ class UsuarioController extends Controller
         return view('usuarios.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreUsuarioRequest $request)
     {
-        abort_if(!auth()->user()->canManageCompany(), 403);
-
         $empresa = auth()->user()->empresa;
         $maxUsuarios = $empresa?->plano?->max_usuarios ?? 1;
 
@@ -37,12 +36,7 @@ class UsuarioController extends Controller
             return back()->with('error', 'Limite de usuários do seu plano foi atingido.');
         }
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'in:admin,gerente,funcionario'],
-        ]);
+        $validated = $request->validated();
 
         User::create([
             'empresa_id' => auth()->user()->empresa_id,

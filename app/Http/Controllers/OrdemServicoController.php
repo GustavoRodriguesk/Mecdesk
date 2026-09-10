@@ -10,6 +10,9 @@ use App\Models\Cliente;
 use App\Models\Veiculo;
 use App\Models\Empresa;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Requests\StoreOrdemServicoRequest;
+use App\Http\Requests\UpdateOrdemServicoRequest;
+use App\Http\Requests\UploadFotoOrdemServicoRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -95,38 +98,14 @@ class OrdemServicoController extends Controller
         ));
     }
 
-    public function store(Request $request)
+    public function store(StoreOrdemServicoRequest $request)
     {
-        $request->validate([
-            'cliente_id' => [
-                'required',
-                \Illuminate\Validation\Rule::exists('clientes', 'id')
-                    ->where('empresa_id', auth()->user()->empresa_id)
-            ],
-            'veiculo_id' => [
-                'required',
-                \Illuminate\Validation\Rule::exists('veiculos', 'id')
-                    ->where('empresa_id', auth()->user()->empresa_id)
-            ],
-            'descricao_problema' => 'required|string',
-            'problemas_previos'  => 'nullable|string',
-            'observacoes'        => 'nullable|string',
-            'fotos'              => 'nullable|array',
-            'fotos.*'            => 'image|mimes:jpeg,png,jpg,webp,gif|max:10240',
-            'itens'              => 'nullable|array',
-            'itens.*.tipo_item'  => 'nullable|in:servico,peca',
-            'itens.*.servico_id' => 'nullable|integer',
-            'itens.*.peca_id'    => 'nullable|integer',
-            'itens.*.descricao'  => 'nullable|string|max:255',
-            'itens.*.quantidade' => 'nullable|integer|min:1',
-            'itens.*.valor_unitario' => 'nullable|numeric|min:0',
-        ]);
-
         $empresaId = auth()->user()->empresa_id;
 
         $ordem = DB::transaction(function () use ($request, $empresaId) {
             // Buscar a última OS desta empresa para calcular o sequencial com lock
-            $ultimoNumero = OrdemServico::where('empresa_id', $empresaId)
+            $ultimoNumero = OrdemServico::withTrashed()
+                ->where('empresa_id', $empresaId)
                 ->lockForUpdate()
                 ->latest('id')
                 ->value('numero_os');
@@ -209,27 +188,8 @@ class OrdemServicoController extends Controller
         return redirect()->route('ordens.show', $ordem->id);
     }
 
-    public function update(Request $request, OrdemServico $ordem)
+    public function update(UpdateOrdemServicoRequest $request, OrdemServico $ordem)
     {
-        $request->validate([
-            'cliente_id' => [
-                'required',
-                \Illuminate\Validation\Rule::exists('clientes', 'id')
-                    ->where('empresa_id', auth()->user()->empresa_id)
-            ],
-            'veiculo_id' => [
-                'required',
-                \Illuminate\Validation\Rule::exists('veiculos', 'id')
-                    ->where('empresa_id', auth()->user()->empresa_id)
-            ],
-            'descricao_problema' => 'required|string',
-            'problemas_previos'  => 'nullable|string',
-            'observacoes'        => 'nullable|string',
-            'status'             => 'required',
-            'fotos'              => 'nullable|array',
-            'fotos.*'            => 'image|mimes:jpeg,png,jpg,webp,gif|max:10240',
-        ]);
-
         $statusAnterior = $ordem->status;
 
         $ordem->update($request->only([
@@ -265,13 +225,8 @@ class OrdemServicoController extends Controller
             ->with('success', 'Ordem de Serviço atualizada com sucesso!');
     }
 
-    public function uploadFoto(Request $request, OrdemServico $ordem)
+    public function uploadFoto(UploadFotoOrdemServicoRequest $request, OrdemServico $ordem)
     {
-        $request->validate([
-            'fotos'   => 'required|array',
-            'fotos.*' => 'image|mimes:jpeg,png,jpg,webp,gif|max:10240',
-        ]);
-
         if (! $ordem->podeEditar()) {
             if ($request->wantsJson()) {
                 return response()->json([

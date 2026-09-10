@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Servico;
+use App\Http\Requests\StoreServicoRequest;
+use App\Http\Requests\UpdateServicoRequest;
 use Illuminate\Http\Request;
 
 class ServicoController extends Controller
@@ -63,14 +65,8 @@ class ServicoController extends Controller
         return view('servicos.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreServicoRequest $request)
     {
-        $request->validate([
-            'nome' => 'required',
-            'descricao' => 'required',
-            'valor_base' => 'required|numeric',
-        ]);
-
         $servico = Servico::create($request->except('empresa_id'));
 
         if ($request->wantsJson()) {
@@ -95,14 +91,8 @@ class ServicoController extends Controller
         return view('servicos.edit', compact('servico'));
     }
 
-    public function update(Request $request, Servico $servico)
+    public function update(UpdateServicoRequest $request, Servico $servico)
     {
-        $request->validate([
-            'nome' => 'required',
-            'descricao' => 'required',
-            'valor_base' => 'required|numeric',
-        ]);
-
         $servico->update($request->except('empresa_id'));
 
         return redirect()->route('servicos.index')

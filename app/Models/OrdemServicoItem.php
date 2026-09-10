@@ -21,12 +21,12 @@ class OrdemServicoItem extends Model
 
     public function peca()
     {
-        return $this->belongsTo(Peca::class);
+        return $this->belongsTo(Peca::class)->withTrashed();
     }
 
     public function servico()
     {
-        return $this->belongsTo(Servico::class);
+        return $this->belongsTo(Servico::class)->withTrashed();
     }
 
     public function ordem()

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
+use App\Http\Requests\StoreClienteRequest;
+use App\Http\Requests\UpdateClienteRequest;
 use Illuminate\Http\Request;
 
 class ClienteController extends Controller
@@ -36,15 +38,8 @@ class ClienteController extends Controller
         return view('clientes.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreClienteRequest $request)
     {
-        $request->validate([
-            'nome'     => 'required|string|max:100',
-            'telefone' => 'required|string',
-            'email'    => 'nullable|email|max:100',
-            'cpf_cnpj' => ['nullable', new \App\Rules\CpfCnpjRule],
-        ]);
-
         Cliente::create($request->except('empresa_id'));
 
         return redirect()
@@ -64,15 +59,8 @@ class ClienteController extends Controller
         return redirect()->route('clientes.edit', $cliente->id);
     }
 
-    public function update(Request $request, Cliente $cliente)
+    public function update(UpdateClienteRequest $request, Cliente $cliente)
     {
-        $request->validate([
-            'nome'     => 'required|string|max:100',
-            'telefone' => 'required|string',
-            'email'    => 'nullable|email|max:100',
-            'cpf_cnpj' => ['nullable', new \App\Rules\CpfCnpjRule],
-        ]);
-
         $cliente->update($request->except('empresa_id'));
 
         return redirect()

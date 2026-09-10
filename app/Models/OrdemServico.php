@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use App\Models\Scopes\EmpresaScope;
 
 class OrdemServico extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'ordem_servicos';
 
@@ -78,12 +79,12 @@ class OrdemServico extends Model
 
     public function cliente()
     {
-        return $this->belongsTo(Cliente::class);
+        return $this->belongsTo(Cliente::class)->withTrashed();
     }
 
     public function veiculo()
     {
-        return $this->belongsTo(Veiculo::class);
+        return $this->belongsTo(Veiculo::class)->withTrashed();
     }
 
     public function itens()

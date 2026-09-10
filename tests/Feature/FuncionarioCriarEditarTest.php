@@ -181,7 +181,55 @@ test('admin pode excluir veiculo sem ordens de servico', function () {
     $response->assertRedirect(route('veiculos.index'))
         ->assertSessionHas('success', 'Veículo excluído com sucesso!');
 
-    expect(Veiculo::find($veiculo->id))->toBeNull();
+    expect(Veiculo::find($veiculo->id))->toBeNull()
+        ->and(Veiculo::withTrashed()->find($veiculo->id))->not->toBeNull()
+        ->and(Veiculo::withTrashed()->find($veiculo->id)->trashed())->toBeTrue();
+});
+
+test('servico pode ser cadastrado e editado com descricao nula', function () {
+    $responseCreate = $this->actingAs($this->funcionario)
+        ->post(route('servicos.store'), [
+            'nome'       => 'Alinhamento Simples',
+            'descricao'  => null,
+            'valor_base' => 80.00,
+        ]);
+
+    $responseCreate->assertRedirect(route('servicos.index'));
+
+    $servico = Servico::where('nome', 'Alinhamento Simples')->first();
+    expect($servico)->not->toBeNull()
+        ->and($servico->descricao)->toBeNull();
+
+    $responseUpdate = $this->actingAs($this->funcionario)
+        ->put(route('servicos.update', $servico->id), [
+            'nome'       => 'Alinhamento Simples Modificado',
+            'descricao'  => null,
+            'valor_base' => 85.00,
+        ]);
+
+    $responseUpdate->assertRedirect(route('servicos.index'));
+    expect($servico->fresh()->descricao)->toBeNull();
+});
+
+test('peca pode ser atualizada com codigo nulo', function () {
+    $peca = Peca::create([
+        'empresa_id'     => $this->empresa->id,
+        'nome'           => 'Lâmpada H4',
+        'codigo'         => 'LAMP-01',
+        'estoque'        => 10,
+        'valor_unitario' => 25.00,
+    ]);
+
+    $responseUpdate = $this->actingAs($this->funcionario)
+        ->put(route('pecas.update', $peca->id), [
+            'nome'           => 'Lâmpada H4 Super Branca',
+            'codigo'         => null,
+            'estoque'        => 12,
+            'valor_unitario' => 30.00,
+        ]);
+
+    $responseUpdate->assertRedirect(route('pecas.index'));
+    expect($peca->fresh()->codigo)->toBeNull();
 });
 
 test('impede exclusao de veiculo que possui ordens de servico vinculadas', function () {

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Peca;
+use App\Http\Requests\StorePecaRequest;
+use App\Http\Requests\UpdatePecaRequest;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -94,19 +96,8 @@ class PecaController extends Controller
         return view('pecas.create');
     }
 
-    public function store(Request $request)
+    public function store(StorePecaRequest $request)
     {
-        $request->validate([
-            'nome' => 'required',
-            'codigo' => [
-                'nullable',
-                Rule::unique('pecas', 'codigo')
-                    ->where('empresa_id', auth()->user()->empresa_id),
-            ],
-            'estoque' => 'required|integer|min:0',
-            'valor_unitario' => 'required|numeric|min:0',
-        ]);
-
         $peca = Peca::create($request->except('empresa_id'));
 
         if ($request->wantsJson()) {
@@ -132,20 +123,8 @@ class PecaController extends Controller
         return view('pecas.edit', compact('peca'));
     }
 
-    public function update(Request $request, Peca $peca)
+    public function update(UpdatePecaRequest $request, Peca $peca)
     {
-        $request->validate([
-            'nome' => 'required',
-            'codigo' => [
-                'required',
-                Rule::unique('pecas', 'codigo')
-                    ->ignore($peca->id)
-                    ->where('empresa_id', auth()->user()->empresa_id),
-            ],
-            'estoque' => 'required|integer|min:0',
-            'valor_unitario' => 'required|numeric|min:0',
-        ]);
-
         $peca->update($request->except('empresa_id'));
 
         return redirect()

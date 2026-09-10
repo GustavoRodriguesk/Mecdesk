@@ -10,6 +10,8 @@ use App\Models\User;
 use App\Services\MercadoPago\MercadoPagoService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\CadastrarContaRequest;
+use App\Http\Requests\ProcessarPagamentoRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -78,7 +80,7 @@ class CheckoutController extends Controller
     /**
      * Cria a conta do usuário e da oficina na Etapa 1 do fluxo de contratação.
      */
-    public function cadastrarConta(Request $request): JsonResponse
+    public function cadastrarConta(CadastrarContaRequest $request): JsonResponse
     {
         if (Auth::check()) {
             $user = Auth::user();
@@ -98,21 +100,7 @@ class CheckoutController extends Controller
             ]);
         }
 
-        $validated = $request->validate([
-            'empresa' => ['required', 'string', 'max:255'],
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'telefone' => ['nullable', 'string', 'max:50'],
-            'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
-        ], [
-            'empresa.required' => 'O nome da oficina é obrigatório.',
-            'name.required' => 'O seu nome completo é obrigatório.',
-            'email.required' => 'O e-mail é obrigatório.',
-            'email.email' => 'Informe um endereço de e-mail válido.',
-            'email.unique' => 'Este e-mail já está cadastrado em nosso sistema.',
-            'password.required' => 'A senha é obrigatória.',
-            'password.confirmed' => 'A confirmação de senha não confere.',
-        ]);
+        $validated = $request->validated();
 
         $plano = Plano::where('slug', 'pro')->where('ativo', true)->firstOrFail();
         $user = null;
@@ -174,13 +162,8 @@ class CheckoutController extends Controller
     /**
      * Processa a criação ou atualização da assinatura recorrente no Mercado Pago (/preapproval).
      */
-    public function processarPagamento(Request $request): JsonResponse
+    public function processarPagamento(ProcessarPagamentoRequest $request): JsonResponse
     {
-        $request->validate([
-            'card_token_id' => 'required|string',
-            'idempotency_key' => 'nullable|string',
-        ]);
-
         $user = auth()->user();
         $empresa = $user->empresa;
 
