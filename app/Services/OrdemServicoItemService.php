@@ -16,45 +16,47 @@ class OrdemServicoItemService
      */
     public function adicionarServico(OrdemServico $ordem, array $dados): OrdemServicoItem
     {
-        $empresaId = $ordem->empresa_id;
-        $servicoId = !empty($dados['servico_id']) ? (int) $dados['servico_id'] : null;
-        $quantidade = max(1, (int) ($dados['quantidade'] ?? 1));
+        return DB::transaction(function () use ($ordem, $dados) {
+            $empresaId = $ordem->empresa_id;
+            $servicoId = !empty($dados['servico_id']) ? (int) $dados['servico_id'] : null;
+            $quantidade = max(1, (int) ($dados['quantidade'] ?? 1));
 
-        if ($servicoId) {
-            $servico = Servico::where('id', $servicoId)
-                ->where('empresa_id', $empresaId)
-                ->firstOrFail();
+            if ($servicoId) {
+                $servico = Servico::where('id', $servicoId)
+                    ->where('empresa_id', $empresaId)
+                    ->firstOrFail();
 
-            $descricao = !empty($dados['descricao']) ? trim($dados['descricao']) : $servico->nome;
-            $valorUnitario = isset($dados['valor_unitario']) && $dados['valor_unitario'] !== ''
-                ? (float) $this->converterParaFloat($dados['valor_unitario'])
-                : (float) $servico->valor_base;
-        } else {
-            if (empty($dados['descricao'])) {
-                throw ValidationException::withMessages([
-                    'descricao' => 'A descrição do serviço personalizado é obrigatória.'
-                ]);
+                $descricao = !empty($dados['descricao']) ? trim($dados['descricao']) : $servico->nome;
+                $valorUnitario = isset($dados['valor_unitario']) && $dados['valor_unitario'] !== ''
+                    ? (float) $this->converterParaFloat($dados['valor_unitario'])
+                    : (float) $servico->valor_base;
+            } else {
+                if (empty($dados['descricao'])) {
+                    throw ValidationException::withMessages([
+                        'descricao' => 'A descrição do serviço personalizado é obrigatória.'
+                    ]);
+                }
+                $descricao = trim($dados['descricao']);
+                $valorUnitario = (float) $this->converterParaFloat($dados['valor_unitario'] ?? 0);
             }
-            $descricao = trim($dados['descricao']);
-            $valorUnitario = (float) $this->converterParaFloat($dados['valor_unitario'] ?? 0);
-        }
 
-        $valorTotal = round($quantidade * $valorUnitario, 2);
+            $valorTotal = round($quantidade * $valorUnitario, 2);
 
-        $item = OrdemServicoItem::create([
-            'ordem_servico_id' => $ordem->id,
-            'tipo_item'        => 'servico',
-            'servico_id'       => $servicoId,
-            'peca_id'          => null,
-            'descricao'        => $descricao,
-            'quantidade'       => $quantidade,
-            'valor_unitario'   => $valorUnitario,
-            'valor_total'      => $valorTotal,
-        ]);
+            $item = OrdemServicoItem::create([
+                'ordem_servico_id' => $ordem->id,
+                'tipo_item'        => 'servico',
+                'servico_id'       => $servicoId,
+                'peca_id'          => null,
+                'descricao'        => $descricao,
+                'quantidade'       => $quantidade,
+                'valor_unitario'   => $valorUnitario,
+                'valor_total'      => $valorTotal,
+            ]);
 
-        $this->recalcularTotalOrdem($ordem);
+            $this->recalcularTotalOrdem($ordem);
 
-        return $item;
+            return $item;
+        });
     }
 
     /**
@@ -62,61 +64,63 @@ class OrdemServicoItemService
      */
     public function adicionarPeca(OrdemServico $ordem, array $dados): OrdemServicoItem
     {
-        $empresaId = $ordem->empresa_id;
-        $pecaId = !empty($dados['peca_id']) ? (int) $dados['peca_id'] : null;
-        $quantidade = max(1, (int) ($dados['quantidade'] ?? 1));
-        $controlaEstoque = $ordem->empresa ? $ordem->empresa->hasControleEstoque() : true;
+        return DB::transaction(function () use ($ordem, $dados) {
+            $empresaId = $ordem->empresa_id;
+            $pecaId = !empty($dados['peca_id']) ? (int) $dados['peca_id'] : null;
+            $quantidade = max(1, (int) ($dados['quantidade'] ?? 1));
+            $controlaEstoque = $ordem->empresa ? $ordem->empresa->hasControleEstoque() : true;
 
-        if ($pecaId) {
-            $query = Peca::where('id', $pecaId)->where('empresa_id', $empresaId);
+            if ($pecaId) {
+                $query = Peca::where('id', $pecaId)->where('empresa_id', $empresaId);
 
-            if ($controlaEstoque) {
-                // Lock for update para prevenir condição de corrida no estoque
-                $peca = $query->lockForUpdate()->firstOrFail();
+                if ($controlaEstoque) {
+                    // Lock for update para prevenir condição de corrida no estoque
+                    $peca = $query->lockForUpdate()->firstOrFail();
 
-                if ($quantidade > $peca->estoque) {
-                    throw ValidationException::withMessages([
-                        'quantidade' => "Estoque insuficiente para a peça \"{$peca->nome}\". Disponível: {$peca->estoque}."
-                    ]);
+                    if ($quantidade > $peca->estoque) {
+                        throw ValidationException::withMessages([
+                            'quantidade' => "Estoque insuficiente para a peça \"{$peca->nome}\". Disponível: {$peca->estoque}."
+                        ]);
+                    }
+                } else {
+                    $peca = $query->firstOrFail();
+                }
+
+                $descricao = !empty($dados['descricao']) ? trim($dados['descricao']) : $peca->nome;
+                $valorUnitario = isset($dados['valor_unitario']) && $dados['valor_unitario'] !== ''
+                    ? (float) $this->converterParaFloat($dados['valor_unitario'])
+                    : (float) $peca->valor_unitario;
+
+                if ($controlaEstoque) {
+                    $peca->decrement('estoque', $quantidade);
                 }
             } else {
-                $peca = $query->firstOrFail();
+                if (empty($dados['descricao'])) {
+                    throw ValidationException::withMessages([
+                        'descricao' => 'A descrição da peça personalizada é obrigatória.'
+                    ]);
+                }
+                $descricao = trim($dados['descricao']);
+                $valorUnitario = (float) $this->converterParaFloat($dados['valor_unitario'] ?? 0);
             }
 
-            $descricao = !empty($dados['descricao']) ? trim($dados['descricao']) : $peca->nome;
-            $valorUnitario = isset($dados['valor_unitario']) && $dados['valor_unitario'] !== ''
-                ? (float) $this->converterParaFloat($dados['valor_unitario'])
-                : (float) $peca->valor_unitario;
+            $valorTotal = round($quantidade * $valorUnitario, 2);
 
-            if ($controlaEstoque) {
-                $peca->decrement('estoque', $quantidade);
-            }
-        } else {
-            if (empty($dados['descricao'])) {
-                throw ValidationException::withMessages([
-                    'descricao' => 'A descrição da peça personalizada é obrigatória.'
-                ]);
-            }
-            $descricao = trim($dados['descricao']);
-            $valorUnitario = (float) $this->converterParaFloat($dados['valor_unitario'] ?? 0);
-        }
+            $item = OrdemServicoItem::create([
+                'ordem_servico_id' => $ordem->id,
+                'tipo_item'        => 'peca',
+                'peca_id'          => $pecaId,
+                'servico_id'       => null,
+                'descricao'        => $descricao,
+                'quantidade'       => $quantidade,
+                'valor_unitario'   => $valorUnitario,
+                'valor_total'      => $valorTotal,
+            ]);
 
-        $valorTotal = round($quantidade * $valorUnitario, 2);
+            $this->recalcularTotalOrdem($ordem);
 
-        $item = OrdemServicoItem::create([
-            'ordem_servico_id' => $ordem->id,
-            'tipo_item'        => 'peca',
-            'peca_id'          => $pecaId,
-            'servico_id'       => null,
-            'descricao'        => $descricao,
-            'quantidade'       => $quantidade,
-            'valor_unitario'   => $valorUnitario,
-            'valor_total'      => $valorTotal,
-        ]);
-
-        $this->recalcularTotalOrdem($ordem);
-
-        return $item;
+            return $item;
+        });
     }
 
     /**
@@ -201,17 +205,19 @@ class OrdemServicoItemService
      */
     public function sincronizarItensNaCriacao(OrdemServico $ordem, array $itens): void
     {
-        foreach ($itens as $itemDado) {
-            $tipo = $itemDado['tipo_item'] ?? ($itemDado['tipo'] ?? null);
+        DB::transaction(function () use ($ordem, $itens) {
+            foreach ($itens as $itemDado) {
+                $tipo = $itemDado['tipo_item'] ?? ($itemDado['tipo'] ?? null);
 
-            if ($tipo === 'servico') {
-                $this->adicionarServico($ordem, $itemDado);
-            } elseif ($tipo === 'peca') {
-                $this->adicionarPeca($ordem, $itemDado);
+                if ($tipo === 'servico') {
+                    $this->adicionarServico($ordem, $itemDado);
+                } elseif ($tipo === 'peca') {
+                    $this->adicionarPeca($ordem, $itemDado);
+                }
             }
-        }
 
-        $this->recalcularTotalOrdem($ordem);
+            $this->recalcularTotalOrdem($ordem);
+        });
     }
 
     /**

@@ -84,7 +84,19 @@ class ClienteController extends Controller
     {
         abort_if(! auth()->user()->canDelete(), 403);
 
-        $cliente->delete();
+        if ($cliente->ordensServico()->exists()) {
+            return redirect()
+                ->route('clientes.index')
+                ->with('error', 'Não é possível excluir este cliente pois existem ordens de serviço vinculadas a ele.');
+        }
+
+        try {
+            $cliente->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()
+                ->route('clientes.index')
+                ->with('error', 'Não foi possível excluir o cliente devido a registros vinculados.');
+        }
 
         return redirect()
             ->route('clientes.index')

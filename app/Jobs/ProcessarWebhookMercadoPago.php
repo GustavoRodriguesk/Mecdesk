@@ -79,7 +79,9 @@ class ProcessarWebhookMercadoPago implements ShouldQueue
         $externalReference = $dados['external_reference'] ?? null;
 
         $assinatura = Assinatura::where('mp_preapproval_id', $preapprovalId)
-            ->orWhere('id', $externalReference)
+            ->when($externalReference, function ($query, $externalReference) {
+                return $query->orWhere('empresa_id', $externalReference);
+            })
             ->first();
 
         if (!$assinatura) {
@@ -138,7 +140,7 @@ class ProcessarWebhookMercadoPago implements ShouldQueue
             $assinatura = Assinatura::where('mp_preapproval_id', $preapprovalId)->first();
         }
         if (!$assinatura && $externalRef) {
-            $assinatura = Assinatura::find($externalRef);
+            $assinatura = Assinatura::where('empresa_id', $externalRef)->latest()->first();
         }
 
         if (!$assinatura) {

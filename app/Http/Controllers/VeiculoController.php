@@ -183,7 +183,19 @@ class VeiculoController extends Controller
     {
         abort_if(! auth()->user()->canDelete(), 403);
 
-        $veiculo->delete();
+        if ($veiculo->ordensServico()->exists()) {
+            return redirect()
+                ->route('veiculos.index')
+                ->with('error', 'Não é possível excluir este veículo pois existem ordens de serviço vinculadas a ele.');
+        }
+
+        try {
+            $veiculo->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()
+                ->route('veiculos.index')
+                ->with('error', 'Não foi possível excluir o veículo devido a registros vinculados.');
+        }
 
         return redirect()
             ->route('veiculos.index')

@@ -5,6 +5,8 @@ use App\Models\Empresa;
 use App\Models\User;
 use App\Models\Plano;
 use App\Models\Assinatura;
+use App\Models\OrdemServico;
+use App\Models\Veiculo;
 
 beforeEach(function () {
     $plano = Plano::create([
@@ -101,4 +103,53 @@ test('filtra clientes por cpf/cnpj formatado ou numerico', function () {
     $response2->assertStatus(200);
     $response2->assertSee('Carlos Silva');
     $response2->assertDontSee('Transportes Veloz LTDA');
+});
+
+test('permite excluir cliente sem ordens de servico', function () {
+    $cliente = Cliente::create([
+        'empresa_id' => $this->empresa->id,
+        'nome'       => 'Cliente Sem OS',
+        'telefone'   => '11999990000',
+    ]);
+
+    $response = $this->actingAs($this->admin)->delete(route('clientes.destroy', $cliente->id));
+    $response->assertRedirect(route('clientes.index'))
+        ->assertSessionHas('success', 'Cliente excluído com sucesso!');
+
+    expect(Cliente::find($cliente->id))->toBeNull();
+});
+
+test('impede exclusao de cliente que possui ordens de servico vinculadas', function () {
+    $cliente = Cliente::create([
+        'empresa_id' => $this->empresa->id,
+        'nome'       => 'Cliente Com OS',
+        'telefone'   => '11999991111',
+    ]);
+
+    $veiculo = Veiculo::create([
+        'empresa_id' => $this->empresa->id,
+        'cliente_id' => $cliente->id,
+        'marca'      => 'Toyota',
+        'modelo'     => 'Corolla',
+        'ano'        => 2022,
+        'placa'      => 'ABC1234',
+    ]);
+
+    OrdemServico::create([
+        'empresa_id'         => $this->empresa->id,
+        'numero_os'          => 'OS-0001',
+        'cliente_id'         => $cliente->id,
+        'veiculo_id'         => $veiculo->id,
+        'user_id'            => $this->admin->id,
+        'status'             => 'aberta',
+        'descricao_problema' => 'Barulho no motor',
+        'valor_total'        => 100.00,
+        'data_entrada'       => now(),
+    ]);
+
+    $response = $this->actingAs($this->admin)->delete(route('clientes.destroy', $cliente->id));
+    $response->assertRedirect(route('clientes.index'))
+        ->assertSessionHas('error', 'Não é possível excluir este cliente pois existem ordens de serviço vinculadas a ele.');
+
+    expect(Cliente::find($cliente->id))->not->toBeNull();
 });

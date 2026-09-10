@@ -160,3 +160,61 @@ test('funcionario consegue cadastrar e editar veiculo', function () {
 
     expect($veiculo->fresh()->modelo)->toBe('Civic Touring');
 });
+
+test('admin pode excluir veiculo sem ordens de servico', function () {
+    $cliente = Cliente::create([
+        'empresa_id' => $this->empresa->id,
+        'nome'       => 'Cliente Veiculo Delete',
+        'telefone'   => '11999998888',
+    ]);
+
+    $veiculo = Veiculo::create([
+        'empresa_id' => $this->empresa->id,
+        'cliente_id' => $cliente->id,
+        'marca'      => 'Fiat',
+        'modelo'     => 'Uno',
+        'ano'        => 2018,
+        'placa'      => 'UNO1234',
+    ]);
+
+    $response = $this->actingAs($this->admin)->delete(route('veiculos.destroy', $veiculo->id));
+    $response->assertRedirect(route('veiculos.index'))
+        ->assertSessionHas('success', 'Veículo excluído com sucesso!');
+
+    expect(Veiculo::find($veiculo->id))->toBeNull();
+});
+
+test('impede exclusao de veiculo que possui ordens de servico vinculadas', function () {
+    $cliente = Cliente::create([
+        'empresa_id' => $this->empresa->id,
+        'nome'       => 'Cliente Veiculo Com OS',
+        'telefone'   => '11999997777',
+    ]);
+
+    $veiculo = Veiculo::create([
+        'empresa_id' => $this->empresa->id,
+        'cliente_id' => $cliente->id,
+        'marca'      => 'VW',
+        'modelo'     => 'Gol',
+        'ano'        => 2019,
+        'placa'      => 'GOL9999',
+    ]);
+
+    OrdemServico::create([
+        'empresa_id'         => $this->empresa->id,
+        'numero_os'          => 'OS-0002',
+        'cliente_id'         => $cliente->id,
+        'veiculo_id'         => $veiculo->id,
+        'user_id'            => $this->admin->id,
+        'status'             => 'aberta',
+        'descricao_problema' => 'Revisão geral',
+        'valor_total'        => 250.00,
+        'data_entrada'       => now(),
+    ]);
+
+    $response = $this->actingAs($this->admin)->delete(route('veiculos.destroy', $veiculo->id));
+    $response->assertRedirect(route('veiculos.index'))
+        ->assertSessionHas('error', 'Não é possível excluir este veículo pois existem ordens de serviço vinculadas a ele.');
+
+    expect(Veiculo::find($veiculo->id))->not->toBeNull();
+});

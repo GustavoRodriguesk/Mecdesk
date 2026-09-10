@@ -116,3 +116,28 @@ test('admin pode cadastrar novo usuario com papel de gerente', function () {
     expect($user->canDelete())->toBeTrue();
     expect($user->canManageCompany())->toBeFalse();
 });
+
+test('bloqueia criacao de novos usuarios quando limite do plano for atingido', function () {
+    // Empresa já possui 3 usuários (admin, gerente, funcionario) e o plano Pro tem max_usuarios = 5.
+    // Vamos alterar o plano para max_usuarios = 3 para atingir o limite
+    $this->empresa->plano->update(['max_usuarios' => 3]);
+
+    // Tentativa de acessar a tela de criação
+    $responseCreate = $this->actingAs($this->admin)->get(route('usuarios.create'));
+    $responseCreate->assertRedirect(route('empresa.edit'))
+        ->assertSessionHas('error', 'Limite de usuários do seu plano foi atingido.');
+
+    // Tentativa de envio do formulário de criação
+    $email = 'excedente_' . uniqid() . '@oficina.com';
+    $responseStore = $this->actingAs($this->admin)->post(route('usuarios.store'), [
+        'name'                  => 'Usuario Excedente',
+        'email'                 => $email,
+        'password'              => 'P@ssw0rdOficina#9',
+        'password_confirmation' => 'P@ssw0rdOficina#9',
+        'role'                  => 'funcionario',
+    ]);
+
+    $responseStore->assertSessionHas('error', 'Limite de usuários do seu plano foi atingido.');
+    expect(User::where('email', $email)->exists())->toBeFalse();
+});
+
