@@ -83,7 +83,7 @@ class MercadoPagoService
         $token = $this->getAccessToken();
 
         $planoPro = \App\Models\Plano::where('slug', 'pro')->where('ativo', true)->first();
-        $valorMensal = $planoPro ? (float) $planoPro->preco_mensal : 89.90;
+        $valorMensal = $planoPro ? (float) $planoPro->preco_mensal : 99.90;
 
         $payload = [
             'reason' => 'Assinatura MecDesk - Plano Pro',

@@ -327,3 +327,39 @@ test('assinar route redirects to contratar route', function () {
     $response->assertRedirect(route('planos.contratar'));
 });
 
+test('empresa com assinatura cancelada mas valido_ate futuro continua ativa', function () {
+    $this->empresa->ativo = true;
+    $this->empresa->save();
+
+    Assinatura::create([
+        'empresa_id'        => $this->empresa->id,
+        'plano_id'          => $this->planoPro->id,
+        'status'            => 'cancelled',
+        'preco_contratado'  => 99.90,
+        'data_cancelamento' => now(),
+        'valido_ate'        => now()->addDays(15),
+    ]);
+
+    $this->empresa->refresh();
+
+    expect($this->empresa->isAtiva())->toBeTrue();
+});
+
+test('empresa com assinatura cancelada e valido_ate expirado perde acesso', function () {
+    $this->empresa->ativo = true;
+    $this->empresa->save();
+
+    Assinatura::create([
+        'empresa_id'        => $this->empresa->id,
+        'plano_id'          => $this->planoPro->id,
+        'status'            => 'cancelled',
+        'preco_contratado'  => 99.90,
+        'data_cancelamento' => now()->subDays(10),
+        'valido_ate'        => now()->subDays(5),
+    ]);
+
+    $this->empresa->refresh();
+
+    expect($this->empresa->isAtiva())->toBeFalse();
+});
+

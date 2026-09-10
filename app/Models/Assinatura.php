@@ -53,11 +53,18 @@ class Assinatura extends Model
 
     /**
      * Verifica se a assinatura está válida e ativa no momento.
+     * Assinaturas canceladas permanecem válidas até valido_ate expirar,
+     * garantindo que o cliente use os dias pagos restantes.
      */
     public function isValida(): bool
     {
-        if (in_array($this->status, ['cancelled', 'expired'], true)) {
+        if ($this->status === 'expired') {
             return false;
+        }
+
+        // Cancelada: válida apenas enquanto valido_ate estiver no futuro
+        if ($this->status === 'cancelled') {
+            return $this->valido_ate && $this->valido_ate->isFuture();
         }
 
         if ($this->valido_ate && $this->valido_ate->isPast()) {

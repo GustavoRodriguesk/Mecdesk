@@ -160,6 +160,7 @@ class Empresa extends Model
 
     /**
      * Verifica se a empresa está ativa e com assinatura válida.
+     * Considera assinaturas canceladas que ainda estejam dentro do período pago (valido_ate).
      */
     public function isAtiva(): bool
     {
@@ -169,6 +170,18 @@ class Empresa extends Model
 
         $assinatura = $this->assinaturaAtiva;
 
-        return $assinatura ? $assinatura->isValida() : false;
+        if ($assinatura && $assinatura->isValida()) {
+            return true;
+        }
+
+        // Fallback: assinatura cancelada mas ainda dentro do período pago
+        $assinaturaCancelada = $this->assinaturas()
+            ->where('status', 'cancelled')
+            ->whereNotNull('valido_ate')
+            ->where('valido_ate', '>', now())
+            ->latest()
+            ->first();
+
+        return $assinaturaCancelada ? $assinaturaCancelada->isValida() : false;
     }
 }

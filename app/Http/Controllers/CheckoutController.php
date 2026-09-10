@@ -283,7 +283,16 @@ class CheckoutController extends Controller
     public function callback(Request $request)
     {
         $user = auth()->user();
+
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Sua sessão expirou. Faça login novamente.');
+        }
+
         $empresa = $user->empresa;
+
+        if (!$empresa) {
+            return redirect()->route('login')->with('error', 'Nenhuma empresa associada a esta conta.');
+        }
 
         $empresa->refresh();
 
