@@ -45,14 +45,13 @@
                 class="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 
                 {{-- Formulário de busca --}}
-                <form method="GET" action="{{ route('clientes.index') }}" class="flex items-center gap-2 w-full sm:w-96">
+                <form method="GET" action="{{ route('clientes.index') }}" class="flex items-end gap-2 w-full sm:w-96">
                     <div class="relative flex-1">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
-                            <i class="bi bi-search"></i>
-                        </div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Busca
+                            rápida</label>
                         <input type="text" name="search" value="{{ $search }}"
                             placeholder="Buscar por nome ou CPF/CNPJ..."
-                            class="search-input w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors duration-150">
+                            class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors duration-150">
                     </div>
                     <button type="submit"
                         class="shrink-0 px-4 py-2 text-sm font-medium text-white bg-gray-800 hover:bg-gray-900 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2">

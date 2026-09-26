@@ -48,8 +48,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                         {{-- Busca Global --}}
                         <div class="xl:col-span-2">
-                            <label
-                                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Buscar</label>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Busca
+                                rápida</label>
                             <input type="text" name="search" value="{{ request('search') }}"
                                 placeholder="OS, cliente, placa..."
                                 class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors duration-150">
@@ -87,6 +87,20 @@
                             </select>
                         </div>
 
+                        {{-- Funcionário --}}
+                        <div class="xl:col-span-1">
+                            <label
+                                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Mecânico / Resp.</label>
+                            <select name="funcionario_id"
+                                class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors duration-150">
+                                <option value="">Todos</option>
+                                @foreach ($funcionarios as $func)
+                                    <option value="{{ $func->id }}" @selected(request('funcionario_id') == $func->id)>
+                                        {{ $func->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         {{-- Data Inicial --}}
                         <div class="xl:col-span-1">
                             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Data
@@ -120,7 +134,7 @@
 
                     <div class="flex items-center justify-between mt-2">
                         <div class="flex items-center gap-2 text-sm text-gray-400">
-                            @if (request('search') || request('status') || request('cliente_id') || request('inicio') || request('fim'))
+                            @if (request('search') || request('status') || request('cliente_id') || request('funcionario_id') || request('inicio') || request('fim'))
                                 <span
                                     class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
@@ -190,10 +204,18 @@
                         @forelse($ordens as $ordem)
                             <tr class="data-row">
                                 <td class="px-6 py-4">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-gray-100 text-gray-800 border border-gray-200">
-                                        #{{ $ordem->numero_os }}
-                                    </span>
+                                    <div class="flex flex-col gap-1 items-start">
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-gray-100 text-gray-800 border border-gray-200">
+                                            #{{ $ordem->numero_os }}
+                                        </span>
+                                        @if ($ordem->funcionario)
+                                            <span class="inline-flex items-center gap-1 text-[11px] text-gray-600 font-medium truncate max-w-[130px]" title="Responsável: {{ $ordem->funcionario->name }}">
+                                                <i class="bi bi-person text-gray-400"></i>
+                                                {{ Str::limit($ordem->funcionario->name, 14) }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 font-medium text-gray-900 truncate">
                                     {{ $ordem->cliente->nome }}

@@ -186,7 +186,7 @@
 
                         <div class="pt-2">
                             <div class="flex items-baseline gap-2">
-                                <span class="text-4xl sm:text-5xl font-black text-slate-950">R$ 89,90</span>
+                                <span class="text-4xl sm:text-5xl font-black text-slate-950">R$ {{ number_format($plano?->preco_mensal ?? 99.90, 2, ',', '.') }}</span>
                                 <span class="text-base font-semibold text-slate-500">/ mês</span>
                             </div>
                             <p class="text-xs font-medium text-slate-500 mt-1">
@@ -205,7 +205,7 @@
                     <!-- Lista de Benefícios Reais -->
                     <div class="lg:col-span-6 bg-slate-50 rounded-2xl p-6 sm:p-8 border border-slate-200/80">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 mb-4">O que está incluído
-                            no Pro:</h4>
+                            no {{ $plano?->nome ?? 'Pro' }}:</h4>
                         <ul class="space-y-3.5 text-sm text-slate-700">
                             <li class="flex items-start gap-3">
                                 <i class="bi bi-check-circle-fill text-emerald-600 text-base shrink-0 mt-0.5"></i>
@@ -262,7 +262,7 @@
                         Como funciona a assinatura e o pagamento?
                     </h3>
                     <p class="text-sm text-slate-600 leading-relaxed">
-                        A assinatura do MecDesk Pro custa R$ 99,90 por mês com cobrança recorrente no cartão de crédito,
+                        A assinatura do MecDesk {{ $plano?->nome ?? 'Pro' }} custa R$ {{ number_format($plano?->preco_mensal ?? 99.90, 2, ',', '.') }} por mês com cobrança recorrente no cartão de crédito,
                         processada com total segurança diretamente pelo Mercado Pago.
                     </p>
                 </div>
@@ -314,12 +314,12 @@
             </h2>
             <p class="text-slate-400 text-base max-w-xl mx-auto">
                 Crie sua conta agora e comece a organizar suas ordens de serviço e clientes hoje mesmo com o MecDesk
-                Pro.
+                {{ $plano?->nome ?? 'Pro' }}.
             </p>
             <div class="pt-2">
                 <a href="{{ route('planos.contratar') }}"
                     class="inline-flex items-center justify-center gap-2 px-9 py-4 text-base font-bold text-slate-950 bg-white hover:bg-slate-100 rounded-xl shadow-lg hover:shadow-xl transition-all">
-                    <span>Começar agora por R$ 89,90/mês</span>
+                    <span>Começar agora por R$ {{ number_format($plano?->preco_mensal ?? 99.90, 2, ',', '.') }}/mês</span>
                 </a>
             </div>
         </div>

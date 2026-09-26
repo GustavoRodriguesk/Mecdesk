@@ -38,11 +38,8 @@
         }
 
         .logo-img {
-            max-width: 110px;
-            max-height: 40px;
-            width: auto;
+            width: 120px;
             height: auto;
-            display: block;
         }
 
         .empresa {
@@ -66,7 +63,6 @@
         .os-banner {
             width: 100%;
             background: #111827;
-            border-radius: 5px;
             padding: 5px 12px;
             margin-bottom: 2px;
         }
@@ -103,7 +99,6 @@
         .card-wrapper {
             width: 100%;
             border: 1px solid #e5e7eb;
-            border-radius: 5px;
             margin-bottom: 5px;
         }
 
@@ -116,7 +111,6 @@
             color: #374151;
             letter-spacing: 0.5px;
             text-transform: uppercase;
-            border-radius: 5px;
         }
 
         .card-body {
@@ -191,13 +185,10 @@
 
         .itens-table tbody tr {
             border-bottom: 1px solid #f3f4f6;
-            border-radius: 5px;
         }
 
         .itens-table tbody tr:nth-child(even) {
             background: #f9fafb;
-            border-radius: 5px;
-
         }
 
         .itens-table tbody tr.last {
@@ -233,7 +224,6 @@
             font-size: 6.5pt;
             font-style: italic;
             padding: 2.5px 7px;
-            border-radius: 0 0 5px 5px;
         }
 
         /* ── FOTOS ── */
@@ -242,14 +232,12 @@
             border: 1px solid #d1d5db;
             background: #f9fafb;
             padding: 3px;
-            border-radius: 4px;
             text-align: center;
         }
 
         .foto-img {
             display: block;
             margin: 0 auto;
-            border-radius: 2px;
             width: auto;
             height: auto;
         }
@@ -263,7 +251,6 @@
 
         .sem-fotos-box {
             border: 1px dashed #d1d5db;
-            border-radius: 4px;
             padding: 4px;
             text-align: center;
             background: #f9fafb;
@@ -346,15 +333,13 @@
     {{-- HEADER --}}
     <table class="header" cellpadding="0" cellspacing="0">
         <tr>
-            @if ($empresa->logo_path)
-                <td style="width: 110px; vertical-align: middle;">
+            <td width="70">
+                @if ($empresa->logo_path)
                     <img src="{{ $empresa->logo_path }}" class="logo-img">
-                </td>
-            @elseif (file_exists(public_path('img/logo.png')))
-                <td style="width: 110px; vertical-align: middle;">
+                @elseif (file_exists(public_path('img/logo.png')))
                     <img src="{{ public_path('img/logo.png') }}" class="logo-img">
-                </td>
-            @endif
+                @endif
+            </td>
             <td class="empresa">
                 <h1>{{ $empresa->nome_fantasia }}</h1>
                 <p>
@@ -398,6 +383,9 @@
     <div class="os-meta">
         <strong>Data da Vistoria:</strong>
         {{ optional($ordem->data_entrada ?? $ordem->created_at)->format('d/m/Y H:i') }}
+        @if ($ordem->funcionario)
+            &nbsp;&nbsp;&bull;&nbsp;&nbsp;<strong>Mecânico / Responsável:</strong> {{ $ordem->funcionario->name }}
+        @endif
     </div>
 
     {{-- CLIENTE E VEÍCULO --}}
@@ -416,7 +404,7 @@
                                 <div class="field-group">
                                     <div class="field-label">Telefone</div>
                                     <div class="field-value-light">
-                                        {{ $ordem->cliente->telefone_formatado ?? ($ordem->cliente->telefone ?: '-') }}
+                                         {{ $ordem->cliente->telefone_formatado ?? ($ordem->cliente->telefone ?: '-') }}
                                     </div>
                                 </div>
                                 <div class="field-group" style="margin-bottom: 0;">
@@ -425,6 +413,12 @@
                                         {{ $ordem->cliente->cpf_cnpj_formatado ?? ($ordem->cliente->cpf_cnpj ?: '-') }}
                                     </div>
                                 </div>
+                                @if ($ordem->funcionario)
+                                    <div class="field-group" style="margin-top: 2.5px; margin-bottom: 0;">
+                                        <div class="field-label">Mecânico / Responsável</div>
+                                        <div class="field-value-light">{{ $ordem->funcionario->name }}</div>
+                                    </div>
+                                @endif
                             </td>
                             <td>
                                 <div class="field-group">
@@ -453,8 +447,8 @@
     </table>
 
     {{-- INSPEÇÃO DE ENTRADA --}}
-    <table class="card-wrapper" style="border-radius: 5px; margin-top: 12px">
-        <tr style="border-radius: 5px;">
+    <table class="card-wrapper" style="margin-top: 12px">
+        <tr>
             <td>
                 <table class="itens-table">
                     <thead>
@@ -501,7 +495,7 @@
         $fotos = $ordem->fotos ?? collect();
         $qtdFotos = count($fotos);
     @endphp
-    <table class="card-wrapper" style="border-radius: 5px; margin-top: 12px">
+    <table class="card-wrapper" style="margin-top: 12px">
         <tr>
             <td>
                 <div class="card-header">
@@ -637,7 +631,7 @@
     </table>
 
     {{-- OBSERVAÇÕES DE AVARIAS / PROBLEMAS PRÉVIOS --}}
-    <table class="card-wrapper" style="border-radius: 5px; margin-top: 12px">
+    <table class="card-wrapper" style="margin-top: 12px">
         <tr>
             <td>
                 <div class="card-header">Observações de Avarias / Problemas Prévios</div>
@@ -665,7 +659,7 @@
             <td class="assinatura-col">
                 <div class="assinatura-linha"></div>
                 <div class="assinatura-label">Responsável pela Vistoria</div>
-                <div class="assinatura-sub">{{ $empresa->nome_fantasia }}</div>
+                <div class="assinatura-sub">{{ $ordem->funcionario ? $ordem->funcionario->name . ' — ' : '' }}{{ $empresa->nome_fantasia }}</div>
             </td>
         </tr>
     </table>

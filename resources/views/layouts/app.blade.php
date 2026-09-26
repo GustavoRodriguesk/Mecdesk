@@ -642,8 +642,9 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <h1><i class="bi bi-gear-fill"></i> MecDesk</h1>
-            <p>Gestão de Oficina</p>
+            <a href="{{ route('dashboard') }}" class="flex items-center" title="MecDesk">
+                <x-logo variant="white" class="h-7 w-auto max-w-[190px]" />
+            </a>
         </div>
 
         <nav class="sidebar-nav">

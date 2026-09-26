@@ -1,17 +1,9 @@
 <aside class="w-64 bg-gray-900 text-white h-screen shadow-lg flex flex-col">
 
-    <div class="p-6 border-b border-gray-800 flex items-center gap-3 shrink-0">
-        <div class="w-8 h-8 rounded bg-blue-600 flex items-center justify-center font-bold text-white shadow-sm">
-            M
-        </div>
-        <div>
-            <h1 class="text-lg font-bold tracking-wider text-white">
-                MECDESK
-            </h1>
-            <p class="text-xs text-gray-400 font-medium tracking-wide">
-                Gestão de Oficina
-            </p>
-        </div>
+    <div class="p-6 border-b border-gray-800 flex items-center shrink-0">
+        <a href="{{ route('dashboard') }}" class="flex items-center" title="MecDesk">
+            <x-logo variant="white" class="h-7 w-auto max-w-[190px]" />
+        </a>
     </div>
 
     <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">

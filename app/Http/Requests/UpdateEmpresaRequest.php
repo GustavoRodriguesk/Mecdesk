@@ -27,16 +27,16 @@ class UpdateEmpresaRequest extends FormRequest
             'cidade'           => 'nullable|string|max:50',
             'estado'           => 'nullable|string|max:2',
             'controle_estoque' => 'nullable|boolean',
-            'logo'             => 'nullable|image|mimes:jpeg,png,jpg,webp,gif,svg|max:5120',
+            'logo'             => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:5120',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'logo.image' => 'O arquivo selecionado deve ser uma imagem vǭlida.',
-            'logo.mimes' => 'O logotipo deve estar nos formatos: PNG, JPG, JPEG, WEBP, GIF ou SVG.',
-            'logo.max'   => 'O logotipo nǜo pode ser maior que 5 MB.',
+            'logo.image' => 'O arquivo selecionado deve ser uma imagem válida.',
+            'logo.mimes' => 'O logotipo deve estar nos formatos: PNG, JPG, JPEG, WEBP ou GIF.',
+            'logo.max'   => 'O logotipo não pode ser maior que 5 MB.',
         ];
     }
 }

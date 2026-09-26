@@ -21,6 +21,13 @@ class EnsureEmpresaAtiva
             return redirect()->route('login');
         }
 
+        if (! $user->isAtivo()) {
+            auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect()->route('login')->with('error', 'Sua conta de usuário foi desativada pelo administrador da oficina.');
+        }
+
         $empresa = $user->empresa;
 
         if (!$empresa) {

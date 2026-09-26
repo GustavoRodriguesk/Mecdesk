@@ -37,6 +37,7 @@ body.auth-body {
 .auth-brand {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 12px;
     text-decoration: none;
     transition: opacity 0.15s ease;
@@ -44,6 +45,16 @@ body.auth-body {
 
 .auth-brand:hover {
     opacity: 0.9;
+}
+
+.auth-brand img,
+.auth-logo {
+    height: 32px;
+    max-height: 32px;
+    width: auto;
+    max-width: 200px;
+    display: block;
+    object-fit: contain;
 }
 
 .auth-brand-logo {

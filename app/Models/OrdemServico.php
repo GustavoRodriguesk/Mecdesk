@@ -20,6 +20,7 @@ class OrdemServico extends Model
         'cliente_id',
         'veiculo_id',
         'user_id',
+        'funcionario_id',
         'status',
         'descricao_problema',
         'problemas_previos',
@@ -80,6 +81,16 @@ class OrdemServico extends Model
     public function cliente()
     {
         return $this->belongsTo(Cliente::class)->withTrashed();
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function funcionario()
+    {
+        return $this->belongsTo(User::class, 'funcionario_id');
     }
 
     public function veiculo()

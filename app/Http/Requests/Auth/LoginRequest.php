@@ -50,6 +50,14 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if (! Auth::user()->isAtivo()) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Sua conta de usuário foi desativada pelo administrador da oficina.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

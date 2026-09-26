@@ -20,13 +20,7 @@
     <div class="auth-wrapper">
         <header class="auth-header">
             <a href="{{ route('planos.index') }}" class="auth-brand" title="MecDesk — Ir para a página inicial">
-                <div class="auth-brand-logo">
-                    <i class="bi bi-gear-fill"></i>
-                </div>
-                <div class="auth-brand-info">
-                    <span class="auth-brand-title">MecDesk</span>
-                    <span class="auth-brand-subtitle">Gestão de Oficina</span>
-                </div>
+                <x-logo variant="color" class="auth-logo" style="height: 32px; width: auto;" />
             </a>
         </header>
 

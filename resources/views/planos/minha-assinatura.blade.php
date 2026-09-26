@@ -50,7 +50,7 @@
                     <div>
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Valor</p>
                         <p class="text-2xl font-black text-slate-900">
-                            R$ {{ number_format($assinatura->preco_contratado ?? 99.9, 2, ',', '.') }}
+                            R$ {{ number_format($assinatura->preco_contratado ?? $plano?->preco_mensal ?? 99.90, 2, ',', '.') }}
                             <span class="text-xs font-medium text-slate-500">/mês</span>
                         </p>
                     </div>
@@ -110,7 +110,7 @@
                     </div>
                     <h3 class="text-lg font-bold text-slate-900 text-center mb-2">Deseja realmente cancelar?</h3>
                     <p class="text-xs text-slate-600 text-center leading-relaxed mb-6">
-                        Ao cancelar a assinatura do MecDesk Pro, sua cobrança automática será interrompida e o acesso
+                        Ao cancelar a assinatura do MecDesk {{ $plano->nome ?? 'Pro' }}, sua cobrança automática será interrompida e o acesso
                         aos recursos do sistema será desativado ao fim do período pago.
                     </p>
                     <div class="flex items-center justify-end gap-3">
@@ -159,13 +159,13 @@
                 </div>
                 <h2 class="text-2xl font-bold text-slate-900">Você ainda não possui uma assinatura ativa</h2>
                 <p class="text-slate-600 text-sm max-w-md mx-auto leading-relaxed">
-                    Assine o MecDesk Pro e tenha acesso completo à gestão de ordens de serviço, clientes, veículos e
+                    Assine o MecDesk {{ $plano->nome ?? 'Pro' }} e tenha acesso completo à gestão de ordens de serviço, clientes, veículos e
                     catálogo da sua oficina mecânica.
                 </p>
                 <div class="pt-4">
                     <a href="{{ route('checkout.show') }}"
                         class="inline-flex items-center gap-2 px-8 py-3.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35 transition-all">
-                        <span>Assinar MecDesk Pro — R$ 99,90/mês</span>
+                        <span>Assinar MecDesk {{ $plano->nome ?? 'Pro' }} — R$ {{ number_format($plano?->preco_mensal ?? 99.90, 2, ',', '.') }}/mês</span>
                         <i class="bi bi-arrow-right"></i>
                     </a>
                 </div>

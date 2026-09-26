@@ -73,7 +73,21 @@
         @endif
 
         {{-- Status da Aprovação / Ações --}}
-        @if($ordem->isApprovalResponded())
+        @if($expirado && !$ordem->isApprovalResponded())
+            <div class="bg-white rounded-xl border border-amber-200 shadow-sm p-6 border-t-4 border-t-amber-500">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 text-xl">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <div class="space-y-1">
+                        <h2 class="text-lg font-bold text-slate-900">Link de aprovação expirado</h2>
+                        <p class="text-sm text-slate-600">
+                            O prazo de validade deste orçamento (15 dias) expirou. Por favor, entre em contato diretamente com a oficina para obter um link ou orçamento atualizado.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        @elseif($ordem->isApprovalResponded())
             @if($ordem->approval_status === 'approved')
                 <div class="bg-white rounded-xl border border-green-200 shadow-sm p-6 glow-green border-t-4 border-t-green-500">
                     <div class="flex items-start gap-4">
@@ -147,15 +161,29 @@
                         <span class="text-sm font-semibold text-slate-900">{{ $ordem->cliente->nome }}</span>
                     </div>
                     @if($ordem->cliente->cpf_cnpj)
+                        @php
+                            $doc = preg_replace('/\D/', '', $ordem->cliente->cpf_cnpj);
+                            if (strlen($doc) === 11) {
+                                $docFormatado = substr($doc, 0, 3) . '.***.***-' . substr($doc, -2);
+                            } elseif (strlen($doc) === 14) {
+                                $docFormatado = substr($doc, 0, 2) . '.***.***/****-' . substr($doc, -2);
+                            } else {
+                                $docFormatado = '***';
+                            }
+                        @endphp
                         <div>
                             <span class="text-xs text-slate-400 block">CPF/CNPJ</span>
-                            <span class="text-sm font-medium text-slate-700">{{ $ordem->cliente->cpf_cnpj }}</span>
+                            <span class="text-sm font-medium text-slate-700">{{ $docFormatado }}</span>
                         </div>
                     @endif
                     @if($ordem->cliente->email)
+                        @php
+                            $emailPartes = explode('@', $ordem->cliente->email);
+                            $emailMascarado = substr($emailPartes[0], 0, 2) . '***@' . ($emailPartes[1] ?? '');
+                        @endphp
                         <div>
                             <span class="text-xs text-slate-400 block">E-mail</span>
-                            <span class="text-sm font-medium text-slate-700">{{ $ordem->cliente->email }}</span>
+                            <span class="text-sm font-medium text-slate-700">{{ $emailMascarado }}</span>
                         </div>
                     @endif
                 </div>

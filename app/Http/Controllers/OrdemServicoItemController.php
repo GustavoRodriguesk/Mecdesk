@@ -162,6 +162,7 @@ class OrdemServicoItemController extends Controller
      */
     public function destroy(Request $request, OrdemServicoItem $item)
     {
+        abort_if(! auth()->user()->canDelete(), 403, 'Apenas administradores e gerentes podem remover itens.');
         $this->autorizarItem($item);
 
         if (! $item->ordem->podeEditar()) {

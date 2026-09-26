@@ -35,6 +35,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'ativo' => 'boolean',
         ];
     }
 
@@ -56,6 +57,11 @@ class User extends Authenticatable
     | Helpers & Permissões
     |--------------------------------------------------------------------------
     */
+
+    public function isAtivo(): bool
+    {
+        return (bool) ($this->ativo ?? true);
+    }
 
     public function isAdmin(): bool
     {

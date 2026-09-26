@@ -50,4 +50,34 @@ class UsuarioController extends Controller
             ->route('empresa.edit')
             ->with('success', 'Funcionário cadastrado com sucesso!');
     }
+
+    public function toggleStatus(User $usuario)
+    {
+        abort_if(! auth()->user()->canManageCompany(), 403, 'Ação restrita a administradores.');
+        abort_if($usuario->empresa_id !== auth()->user()->empresa_id, 403, 'Usuário não pertence a esta empresa.');
+        abort_if($usuario->id === auth()->id(), 422, 'Você não pode alterar o status da sua própria conta.');
+
+        $usuario->ativo = ! $usuario->isAtivo();
+        $usuario->save();
+
+        $statusMsg = $usuario->isAtivo() ? 'ativado' : 'desativado';
+
+        return redirect()
+            ->route('empresa.edit')
+            ->with('success', "Usuário {$usuario->name} foi {$statusMsg} com sucesso!");
+    }
+
+    public function destroy(User $usuario)
+    {
+        abort_if(! auth()->user()->canManageCompany(), 403, 'Ação restrita a administradores.');
+        abort_if($usuario->empresa_id !== auth()->user()->empresa_id, 403, 'Usuário não pertence a esta empresa.');
+        abort_if($usuario->id === auth()->id(), 422, 'Você não pode excluir sua própria conta.');
+
+        $nome = $usuario->name;
+        $usuario->delete();
+
+        return redirect()
+            ->route('empresa.edit')
+            ->with('success', "Usuário {$nome} foi removido com sucesso!");
+    }
 }

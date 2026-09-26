@@ -108,10 +108,13 @@ class MercadoPagoService
             ->post("{$this->baseUrl}/preapproval", $payload);
 
         if ($response->failed()) {
+            $safePayload = $payload;
+            unset($safePayload['card_token_id']);
+
             Log::error('Erro ao criar assinatura no Mercado Pago via /preapproval', [
                 'status' => $response->status(),
                 'body' => $response->json(),
-                'payload' => $payload,
+                'payload' => $safePayload,
             ]);
 
             // Extrai o código de erro específico

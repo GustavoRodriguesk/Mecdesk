@@ -59,16 +59,8 @@
         class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 transition-all duration-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <!-- Brand Logo -->
-            <a href="{{ route('planos.index') }}" class="flex items-center gap-3 group focus:outline-none">
-                <div
-                    class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform">
-                    <i class="bi bi-gear-fill text-xl"></i>
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-xl font-black tracking-tight text-slate-950">MecDesk</span>
-                    <span class="text-[10px] font-bold uppercase tracking-widest text-blue-600 -mt-1">Gestão de
-                        Oficina</span>
-                </div>
+            <a href="{{ route('planos.index') }}" class="flex items-center group focus:outline-none">
+                <x-logo variant="color" class="h-9 sm:h-10 w-auto transition-transform group-hover:scale-[1.02]" />
             </a>
 
             <!-- Desktop Nav Links -->
@@ -149,11 +141,8 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
                 <!-- Col 1: Brand -->
                 <div class="md:col-span-2 space-y-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white">
-                            <i class="bi bi-gear-fill text-lg"></i>
-                        </div>
-                        <span class="text-xl font-black text-white tracking-tight">MecDesk</span>
+                    <div class="flex items-center">
+                        <x-logo variant="white" class="h-8 sm:h-9 w-auto" />
                     </div>
                     <p class="text-slate-400 text-sm max-w-md leading-relaxed">
                         A plataforma completa para oficinas mecânicas que buscam organizar o fluxo de ordens de serviço,

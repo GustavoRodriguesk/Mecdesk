@@ -22,7 +22,7 @@
                 Parabéns! Sua compra foi concluída.
             </h1>
             <p class="relative z-10 text-base text-slate-600 max-w-xl mx-auto leading-relaxed mb-8">
-                Sua assinatura do <strong class="text-slate-900">MecDesk Pro</strong> já está ativa. Seja muito
+                Sua assinatura do <strong class="text-slate-900">MecDesk {{ $empresa->plano?->nome ?? 'Pro' }}</strong> já está ativa. Seja muito
                 bem-vindo! Agora sua oficina conta com a gestão mais moderna e intuitiva.
             </p>
 
@@ -49,12 +49,12 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-1">
                     <div>
                         <span class="text-slate-500 block mb-0.5 font-medium">Plano Contratado</span>
-                        <span class="font-bold text-slate-900 text-sm">{{ $plano?->nome ?? 'MecDesk Pro' }}</span>
+                        <span class="font-bold text-slate-900 text-sm">MecDesk {{ $plano?->nome ?? 'Pro' }}</span>
                     </div>
                     <div>
                         <span class="text-slate-500 block mb-0.5 font-medium">Valor Mensal</span>
                         <span class="font-bold text-blue-600 text-sm">R$
-                            {{ number_format($plano?->preco_mensal ?? 99.9, 2, ',', '.') }} <span
+                            {{ number_format($assinatura?->preco_contratado ?? $plano?->preco_mensal ?? 99.90, 2, ',', '.') }} <span
                                 class="font-normal text-slate-500 text-xs">/ mês</span></span>
                     </div>
                     <div>

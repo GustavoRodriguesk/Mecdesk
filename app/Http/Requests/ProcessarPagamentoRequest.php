@@ -8,7 +8,7 @@ class ProcessarPagamentoRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return auth()->user()?->canManageSubscription() ?? false;
     }
 
     public function rules(): array

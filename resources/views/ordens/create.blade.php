@@ -51,7 +51,7 @@
                 </div>
 
                 <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                         {{-- Selecionar Cliente --}}
                         <div>
                             <label class="block mb-1.5 text-sm font-medium text-gray-700">
@@ -94,8 +94,27 @@
                             @enderror
                         </div>
 
+                        {{-- Funcionário Responsável --}}
+                        <div>
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700">
+                                Funcionário / Mecânico <span class="text-xs font-normal text-gray-400">(Opcional)</span>
+                            </label>
+                            <select name="funcionario_id" 
+                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors">
+                                <option value="">Nenhum (definir depois)</option>
+                                @foreach($funcionarios as $func)
+                                    <option value="{{ $func->id }}" @selected(old('funcionario_id') == $func->id)>
+                                        {{ $func->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('funcionario_id')
+                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         {{-- Problema Relatado --}}
-                        <div class="md:col-span-2">
+                        <div class="md:col-span-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700">
                                 Problema Relatado / Diagnóstico Inicial *
                             </label>
@@ -110,7 +129,7 @@
                         </div>
 
                         {{-- Observações Opcionais --}}
-                        <div class="md:col-span-2">
+                        <div class="md:col-span-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700">
                                 Observações Internas (Opcional)
                             </label>

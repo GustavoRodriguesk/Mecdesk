@@ -29,7 +29,7 @@ class OrdemServicoController extends Controller
 
     public function index(Request $request)
     {
-        $query = OrdemServico::with(['cliente', 'veiculo']);
+        $query = OrdemServico::with(['cliente', 'veiculo', 'funcionario']);
 
         // Busca geral
         if ($request->filled('search')) {
@@ -45,6 +45,9 @@ class OrdemServicoController extends Controller
                       $veiculo->where('placa', 'like', "%{$search}%")
                                ->orWhere('marca', 'like', "%{$search}%")
                                ->orWhere('modelo', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('funcionario', function ($funcionario) use ($search) {
+                      $funcionario->where('name', 'like', "%{$search}%");
                   });
             });
         }
@@ -57,6 +60,11 @@ class OrdemServicoController extends Controller
         // Cliente
         if ($request->filled('cliente_id')) {
             $query->where('cliente_id', $request->cliente_id);
+        }
+
+        // Funcionário Responsável
+        if ($request->filled('funcionario_id')) {
+            $query->where('funcionario_id', $request->funcionario_id);
         }
 
         // Data inicial
@@ -79,8 +87,9 @@ class OrdemServicoController extends Controller
 
         $ordens = $query->paginate(10)->withQueryString();
         $clientes = Cliente::orderBy('nome')->get();
+        $funcionarios = auth()->user()->empresa?->users()->where('ativo', true)->orderBy('name')->get() ?? collect();
 
-        return view('ordens.index', compact('ordens', 'clientes'));
+        return view('ordens.index', compact('ordens', 'clientes', 'funcionarios'));
     }
 
     public function create()
@@ -89,12 +98,14 @@ class OrdemServicoController extends Controller
         $veiculos = Veiculo::orderBy('placa')->get();
         $servicos = Servico::orderBy('nome')->get();
         $pecas = Peca::orderBy('nome')->get();
+        $funcionarios = auth()->user()->empresa?->users()->where('ativo', true)->orderBy('name')->get() ?? collect();
 
         return view('ordens.create', compact(
             'clientes',
             'veiculos',
             'servicos',
-            'pecas'
+            'pecas',
+            'funcionarios'
         ));
     }
 
@@ -122,6 +133,7 @@ class OrdemServicoController extends Controller
                 'cliente_id'         => $request->cliente_id,
                 'veiculo_id'         => $request->veiculo_id,
                 'user_id'            => Auth::id(),
+                'funcionario_id'     => $request->funcionario_id,
                 'status'             => 'aberta',
                 'descricao_problema' => $request->descricao_problema,
                 'problemas_previos'  => $request->problemas_previos,
@@ -162,6 +174,7 @@ class OrdemServicoController extends Controller
         $ordem->load([
             'cliente',
             'veiculo',
+            'funcionario',
             'itens',
             'fotos',
             'historicos' => function ($query) {
@@ -173,13 +186,15 @@ class OrdemServicoController extends Controller
         $pecas = Peca::orderBy('nome')->get();
         $clientes = Cliente::orderBy('nome')->get();
         $veiculos = Veiculo::orderBy('placa')->get();
+        $funcionarios = auth()->user()->empresa?->users()->where('ativo', true)->orderBy('name')->get() ?? collect();
 
         return view('ordens.show', compact(
             'ordem',
             'servicos',
             'pecas',
             'clientes',
-            'veiculos'
+            'veiculos',
+            'funcionarios'
         ));
     }
 
@@ -195,6 +210,7 @@ class OrdemServicoController extends Controller
         $ordem->update($request->only([
             'cliente_id',
             'veiculo_id',
+            'funcionario_id',
             'descricao_problema',
             'problemas_previos',
             'observacoes',
@@ -263,6 +279,8 @@ class OrdemServicoController extends Controller
 
     public function destroyFoto(OrdemServicoFoto $foto)
     {
+        abort_if(! auth()->user()->canDelete(), 403, 'Apenas administradores e gerentes podem remover fotos da ordem.');
+
         abort_if(
             $foto->empresa_id !== auth()->user()->empresa_id,
             403,
@@ -340,31 +358,12 @@ class OrdemServicoController extends Controller
             ->with('success', 'Solicitação de aprovação enviada! Utilize o botão do WhatsApp para enviar ao cliente.');
     }
 
-    public function budgetsIndex()
-    {
-        $approved = OrdemServico::where('status', 'concluida')
-            ->with(['cliente', 'veiculo'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $cancelled = OrdemServico::where('status', 'cancelada')
-            ->with(['cliente', 'veiculo'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $pending = OrdemServico::where('status', 'aguardando_aprovacao')
-            ->with(['cliente', 'veiculo'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return view('budgets.index', compact('approved', 'cancelled', 'pending'));
-    }
-
     public function pdf(OrdemServico $ordem)
     {
         $ordem->load([
             'cliente',
             'veiculo',
+            'funcionario',
             'itens',
             'fotos',
             'empresa'
@@ -389,6 +388,7 @@ class OrdemServicoController extends Controller
         $ordem->load([
             'cliente',
             'veiculo',
+            'funcionario',
             'fotos',
             'empresa'
         ]);

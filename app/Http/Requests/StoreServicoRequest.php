@@ -14,9 +14,9 @@ class StoreServicoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nome' => 'required',
+            'nome' => 'required|string|max:255',
             'descricao' => 'nullable|string',
-            'valor_base' => 'required|numeric',
+            'valor_base' => 'required|numeric|min:0',
         ];
     }
 }

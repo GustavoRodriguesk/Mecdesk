@@ -404,6 +404,12 @@
                             <th
                                 class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
                                 Cadastrado em</th>
+                            <th
+                                class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
+                                Status</th>
+                            <th
+                                class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
+                                Ações</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -440,10 +446,44 @@
                                 <td class="px-6 py-4 text-gray-400 text-xs">
                                     {{ $funcionario->created_at ? $funcionario->created_at->format('d/m/Y') : '—' }}
                                 </td>
+                                <td class="px-6 py-4">
+                                    @if ($funcionario->isAtivo())
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                                            Ativo
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+                                            Inativo
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    @if ($funcionario->id !== auth()->id())
+                                        <div class="flex items-center justify-end gap-2">
+                                            <form method="POST" action="{{ route('usuarios.toggle', $funcionario->id) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="text-xs px-2.5 py-1 rounded border {{ $funcionario->isAtivo() ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-green-300 text-green-700 hover:bg-green-50' }} transition-colors">
+                                                    {{ $funcionario->isAtivo() ? 'Desativar' : 'Ativar' }}
+                                                </button>
+                                            </form>
+
+                                            <form method="POST" action="{{ route('usuarios.destroy', $funcionario->id) }}" onsubmit="return confirm('Deseja realmente excluir este usuário da oficina?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-xs px-2.5 py-1 rounded border border-red-200 text-red-600 hover:bg-red-50 transition-colors">
+                                                    Excluir
+                                                </button>
+                                            </form>
+                                        </div>
+                                    @else
+                                        <span class="text-xs text-gray-400 italic">Sua conta</span>
+                                    @endif
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-16 text-center">
+                                <td colspan="6" class="px-6 py-16 text-center">
                                     <div class="flex flex-col items-center gap-3 text-gray-400">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-300"
                                             fill="none" viewBox="0 0 24 24" stroke="currentColor"

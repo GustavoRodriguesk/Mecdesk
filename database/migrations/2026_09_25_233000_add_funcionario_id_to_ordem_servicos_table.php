@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('ordem_servicos', function (Blueprint $table) {
+            $table->foreignId('funcionario_id')
+                ->nullable()
+                ->after('user_id')
+                ->constrained('users')
+                ->nullOnDelete();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('ordem_servicos', function (Blueprint $table) {
+            $table->dropForeign(['funcionario_id']);
+            $table->dropColumn('funcionario_id');
+        });
+    }
+};

@@ -24,7 +24,6 @@ class Empresa extends Model
         'logo',
         'controle_estoque',
         'plano_id',
-        // ATENÇÃO: 'ativo' foi removido intencionalmente do fillable por motivos de segurança.
     ];
 
     protected $attributes = [

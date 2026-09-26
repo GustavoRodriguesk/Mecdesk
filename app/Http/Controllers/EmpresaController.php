@@ -38,7 +38,8 @@ class EmpresaController extends Controller
             return redirect()->back()->withErrors(['logo' => 'Empresa não encontrada para o usuário atual.']);
         }
 
-        $data = $request->except(['_token', '_method', 'logo', 'remover_logo', 'plano', 'ativo']);
+        $data = $request->validated();
+        unset($data['logo']);
 
         if ($request->has('controle_estoque')) {
             $data['controle_estoque'] = $request->boolean('controle_estoque');

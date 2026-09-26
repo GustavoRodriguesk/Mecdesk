@@ -399,3 +399,125 @@ test('geracao de proximo numero_os nao colide com OS soft-deletada', function ()
     expect($ordem2)->not->toBeNull()
         ->and($ordem2->numero_os)->toBe('OS-0002');
 });
+
+test('ordem de servico pode ser criada sem funcionario_id opcional', function () {
+    $payload = [
+        'cliente_id'         => $this->cliente->id,
+        'veiculo_id'         => $this->veiculo->id,
+        'funcionario_id'     => null,
+        'descricao_problema' => 'Problema sem mecânico definido',
+    ];
+
+    $response = $this->actingAs($this->user)->post(route('ordens.store'), $payload);
+    $response->assertSessionHasNoErrors();
+
+    $ordem = OrdemServico::where('descricao_problema', 'Problema sem mecânico definido')->first();
+    expect($ordem)->not->toBeNull()
+        ->and($ordem->funcionario_id)->toBeNull()
+        ->and($ordem->funcionario)->toBeNull();
+});
+
+test('ordem de servico pode ser vinculada a um funcionario da mesma empresa', function () {
+    $mecanico = User::factory()->create([
+        'empresa_id' => $this->empresa->id,
+        'role'       => 'funcionario',
+        'ativo'      => true,
+    ]);
+
+    $payload = [
+        'cliente_id'         => $this->cliente->id,
+        'veiculo_id'         => $this->veiculo->id,
+        'funcionario_id'     => $mecanico->id,
+        'descricao_problema' => 'Barulho no motor',
+    ];
+
+    $response = $this->actingAs($this->user)->post(route('ordens.store'), $payload);
+    $response->assertSessionHasNoErrors();
+
+    $ordem = OrdemServico::where('descricao_problema', 'Barulho no motor')->first();
+    expect($ordem)->not->toBeNull()
+        ->and($ordem->funcionario_id)->toBe($mecanico->id)
+        ->and($ordem->funcionario->id)->toBe($mecanico->id);
+});
+
+test('ordem de servico nao pode ser vinculada a funcionario de outra empresa', function () {
+    $outraEmpresa = Empresa::create([
+        'nome_fantasia' => 'Outra Oficina',
+        'razao_social'  => 'Outra Oficina Ltda',
+        'cnpj'          => '99.888.777/0001-66',
+        'plano_id'      => $this->empresa->plano_id,
+        'ativo'         => true,
+    ]);
+
+    $funcionarioOutraEmpresa = User::factory()->create([
+        'empresa_id' => $outraEmpresa->id,
+        'role'       => 'funcionario',
+        'ativo'      => true,
+    ]);
+
+    $payload = [
+        'cliente_id'         => $this->cliente->id,
+        'veiculo_id'         => $this->veiculo->id,
+        'funcionario_id'     => $funcionarioOutraEmpresa->id,
+        'descricao_problema' => 'Tentativa de vínculo indevido',
+    ];
+
+    $response = $this->actingAs($this->user)->post(route('ordens.store'), $payload);
+    $response->assertSessionHasErrors('funcionario_id');
+
+    expect(OrdemServico::where('descricao_problema', 'Tentativa de vínculo indevido')->count())->toBe(0);
+});
+
+test('ordem de servico pode atualizar e desvincular funcionario', function () {
+    $mecanico1 = User::factory()->create([
+        'empresa_id' => $this->empresa->id,
+        'role'       => 'funcionario',
+        'ativo'      => true,
+    ]);
+
+    $mecanico2 = User::factory()->create([
+        'empresa_id' => $this->empresa->id,
+        'role'       => 'funcionario',
+        'ativo'      => true,
+    ]);
+
+    $ordem = OrdemServico::create([
+        'empresa_id'         => $this->empresa->id,
+        'numero_os'          => 'OS-0001',
+        'cliente_id'         => $this->cliente->id,
+        'veiculo_id'         => $this->veiculo->id,
+        'user_id'            => $this->user->id,
+        'funcionario_id'     => $mecanico1->id,
+        'status'             => 'aberta',
+        'descricao_problema' => 'Revisão geral',
+        'valor_total'        => 0,
+        'data_entrada'       => now(),
+    ]);
+
+    // Trocar para mecânico 2
+    $updatePayload = [
+        'cliente_id'         => $this->cliente->id,
+        'veiculo_id'         => $this->veiculo->id,
+        'status'             => 'aberta',
+        'descricao_problema' => 'Revisão geral alterada',
+        'funcionario_id'     => $mecanico2->id,
+    ];
+
+    $response = $this->actingAs($this->user)->put(route('ordens.update', $ordem->id), $updatePayload);
+    $response->assertSessionHasNoErrors();
+    $ordem->refresh();
+    expect($ordem->funcionario_id)->toBe($mecanico2->id);
+
+    // Desvincular mecânico (tornar null)
+    $response = $this->actingAs($this->user)->put(route('ordens.update', $ordem->id), [
+        'cliente_id'         => $this->cliente->id,
+        'veiculo_id'         => $this->veiculo->id,
+        'status'             => 'aberta',
+        'descricao_problema' => 'Sem mecânico',
+        'funcionario_id'     => null,
+    ]);
+    $response->assertSessionHasNoErrors();
+    $ordem->refresh();
+    expect($ordem->funcionario_id)->toBeNull();
+});
+

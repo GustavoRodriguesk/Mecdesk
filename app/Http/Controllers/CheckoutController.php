@@ -41,6 +41,8 @@ class CheckoutController extends Controller
         $assinatura = null;
 
         if ($user) {
+            abort_if(! $user->canManageSubscription(), 403, 'Acesso restrito a administradores da oficina.');
+
             $empresa = $user->empresa;
             if ($empresa && $empresa->isAtiva()) {
                 return redirect()->route('dashboard');
@@ -165,6 +167,7 @@ class CheckoutController extends Controller
     public function processarPagamento(ProcessarPagamentoRequest $request): JsonResponse
     {
         $user = auth()->user();
+        abort_if(! $user || ! $user->canManageSubscription(), 403, 'Acesso restrito a administradores da oficina.');
         $empresa = $user->empresa;
 
         // Proteção contra duplicidade no backend: bloqueia se a empresa já estiver ativa com assinatura authorized

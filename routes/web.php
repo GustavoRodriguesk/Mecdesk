@@ -28,19 +28,23 @@ Route::get('/', function () {
 | Rotas Públicas & Webhooks
 |--------------------------------------------------------------------------
 */
-Route::post('/webhooks/mercadopago', [WebhookController::class, 'handle'])->name('webhooks.mercadopago');
+Route::post('/webhooks/mercadopago', [WebhookController::class, 'handle'])->name('webhooks.mercadopago')->middleware('throttle:60,1');
 
 Route::get('/aprovacao/{token}', [AprovacaoController::class, 'show'])->name('aprovacao.show');
-Route::post('/aprovacao/{token}/aprovar', [AprovacaoController::class, 'approve'])->name('aprovacao.approve');
-Route::post('/aprovacao/{token}/reprovar', [AprovacaoController::class, 'reject'])->name('aprovacao.reject');
+Route::post('/aprovacao/{token}/aprovar', [AprovacaoController::class, 'approve'])->name('aprovacao.approve')->middleware('throttle:10,1');
+Route::post('/aprovacao/{token}/reprovar', [AprovacaoController::class, 'reject'])->name('aprovacao.reject')->middleware('throttle:10,1');
 
 // Área pública de planos e contratação
 Route::get('/planos', function () {
-    return view('planos.index');
+    $plano = \App\Models\Plano::where('slug', 'pro')->where('ativo', true)->first()
+        ?? \App\Models\Plano::where('ativo', true)->first()
+        ?? \App\Models\Plano::first();
+
+    return view('planos.index', compact('plano'));
 })->name('planos.index');
 
 Route::get('/contratar', [CheckoutController::class, 'contratar'])->name('planos.contratar');
-Route::post('/contratar/criar-conta', [CheckoutController::class, 'cadastrarConta'])->name('contratar.criar-conta');
+Route::post('/contratar/criar-conta', [CheckoutController::class, 'cadastrarConta'])->name('contratar.criar-conta')->middleware('throttle:5,1');
 
 Route::get('/assinar', function () {
     return redirect()->route('planos.contratar');
@@ -53,10 +57,13 @@ Route::get('/assinar', function () {
 */
 Route::middleware(['auth'])->group(function () {
     Route::get('/assinatura/pendente', function () {
-        if (auth()->user()->empresa && auth()->user()->empresa->isAtiva()) {
+        $empresa = auth()->user()->empresa;
+        if ($empresa && $empresa->isAtiva()) {
             return redirect()->route('dashboard');
         }
-        return view('planos.pendente');
+        $plano = $empresa?->plano ?? \App\Models\Plano::where('slug', 'pro')->first();
+        $assinatura = $empresa?->assinaturaVigente ?? $empresa?->assinaturas()->latest()->first();
+        return view('planos.pendente', compact('empresa', 'plano', 'assinatura'));
     })->name('assinatura.pendente');
 
     Route::get('/assinatura/sucesso', function () {
@@ -64,8 +71,9 @@ Route::middleware(['auth'])->group(function () {
         if (!$empresa || !$empresa->isAtiva()) {
             return redirect()->route('checkout.show');
         }
+        $plano = $empresa->plano ?? \App\Models\Plano::where('slug', 'pro')->first();
         $assinatura = $empresa->assinaturaAtiva()->first() ?? $empresa->assinaturas()->latest()->first();
-        return view('planos.sucesso', compact('empresa', 'assinatura'));
+        return view('planos.sucesso', compact('empresa', 'assinatura', 'plano'));
     })->name('assinatura.sucesso');
 
     // Endpoint de polling para verificar se a assinatura foi ativada (usado pela página pendente)
@@ -87,7 +95,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/minha-assinatura', [SubscriptionController::class, 'index'])->name('assinatura.minha');
 
     Route::get('/checkout/{plano:slug?}', [CheckoutController::class, 'show'])->name('checkout.show');
-    Route::post('/checkout/processar', [CheckoutController::class, 'processarPagamento'])->name('checkout.processar');
+    Route::post('/checkout/processar', [CheckoutController::class, 'processarPagamento'])->name('checkout.processar')->middleware('throttle:10,1');
     Route::get('/planos/callback', [CheckoutController::class, 'callback'])->name('planos.callback');
     Route::post('/assinatura/cancelar', [SubscriptionController::class, 'cancelar'])->name('assinatura.cancelar');
 
@@ -109,6 +117,8 @@ Route::middleware(['auth', 'empresa.ativa'])->group(function () {
 
     Route::get('/usuarios/create', [UsuarioController::class, 'create'])->name('usuarios.create');
     Route::post('/usuarios', [UsuarioController::class, 'store'])->name('usuarios.store');
+    Route::patch('/usuarios/{usuario}/toggle', [UsuarioController::class, 'toggleStatus'])->name('usuarios.toggle');
+    Route::delete('/usuarios/{usuario}', [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
 
     Route::resource('clientes', ClienteController::class);
     Route::resource('pecas', PecaController::class);

@@ -58,7 +58,6 @@
         .os-banner {
             width: 100%;
             background: #111827;
-            border-radius: 6px;
             padding: 9px 14px;
             margin-bottom: 4px;
         }
@@ -80,7 +79,6 @@
             font-size: 8pt;
             font-weight: bold;
             padding: 3px 10px;
-            border-radius: 4px;
             letter-spacing: 0.8px;
             text-transform: uppercase;
         }
@@ -98,7 +96,6 @@
         .card-wrapper {
             width: 100%;
             border: 1px solid #e5e7eb;
-            border-radius: 7px;
             margin-bottom: 10px;
         }
 
@@ -111,7 +108,6 @@
             color: #374151;
             letter-spacing: 0.8px;
             text-transform: uppercase;
-            border-radius: 7px 7px 0 0;
         }
 
         .card-body {
@@ -228,7 +224,6 @@
             font-size: 7.5pt;
             font-weight: bold;
             padding: 2px 7px;
-            border-radius: 4px;
             letter-spacing: 0.4px;
             text-transform: uppercase;
         }
@@ -239,7 +234,6 @@
             font-size: 7.5pt;
             font-weight: bold;
             padding: 2px 7px;
-            border-radius: 4px;
             letter-spacing: 0.4px;
             text-transform: uppercase;
         }
@@ -248,7 +242,6 @@
         .total-bar {
             width: 100%;
             background: #111827;
-            border-radius: 0 0 6px 6px;
             padding: 10px;
         }
 
@@ -362,7 +355,12 @@
             <td><span class="os-numero">ORDEM DE SERVI&Ccedil;O &nbsp;#&nbsp;{{ $ordem->numero_os }}</span></td>
         </tr>
     </table>
-    <span class="os-data">Entrada: {{ optional($ordem->data_entrada)->format('d/m/Y') }}</span>
+    <span class="os-data">
+        Entrada: {{ optional($ordem->data_entrada)->format('d/m/Y') }}
+        @if ($ordem->funcionario)
+            &nbsp;&nbsp;&bull;&nbsp;&nbsp;Mec&acirc;nico / Respons&aacute;vel: {{ $ordem->funcionario->name }}
+        @endif
+    </span>
 
     {{-- CLIENTE E VEÍCULO --}}
     <table class="card-wrapper" cellpadding="0" cellspacing="0" style="margin-bottom:10px;">
@@ -382,6 +380,10 @@
                                 @if ($ordem->cliente->email)
                                     <div class="field-label">E-mail</div>
                                     <div class="field-value-light">{{ $ordem->cliente->email }}</div>
+                                @endif
+                                @if ($ordem->funcionario)
+                                    <div class="field-label">Mec&acirc;nico / Respons&aacute;vel</div>
+                                    <div class="field-value-light">{{ $ordem->funcionario->name }}</div>
                                 @endif
                             </td>
                             <td>

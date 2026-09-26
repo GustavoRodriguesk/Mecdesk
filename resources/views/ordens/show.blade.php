@@ -6,6 +6,12 @@
                 Ordem de Serviço #{{ $ordem->numero_os }}
             </h2>
             <div class="flex items-center gap-2">
+                @if ($ordem->funcionario)
+                    <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200" title="Funcionário Responsável">
+                        <i class="bi bi-person-badge text-slate-500"></i>
+                        {{ $ordem->funcionario->name }}
+                    </span>
+                @endif
                 <span
                     class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ str_replace('bg-', 'bg-opacity-20 text-', $ordem->status_color) }} {{ $ordem->status_color }}">
                     {{ $ordem->status_formatado }}
@@ -112,7 +118,23 @@
                                         class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150">{{ old('problemas_previos', $ordem->problemas_previos) }}</textarea>
                                 </div>
 
-                                <div class="md:col-span-2">
+                                <div>
+                                    <label class="block mb-1.5 text-sm font-medium text-gray-700">
+                                        Funcionário / Mecânico
+                                    </label>
+                                    <select name="funcionario_id"
+                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150">
+                                        <option value="">Nenhum funcionário atribuído</option>
+                                        @foreach ($funcionarios as $func)
+                                            <option value="{{ $func->id }}"
+                                                {{ $ordem->funcionario_id == $func->id ? 'selected' : '' }}>
+                                                {{ $func->name }} ({{ ucfirst($func->role) }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div>
                                     <label class="block mb-1.5 text-sm font-medium text-gray-700">
                                         Status
                                     </label>
@@ -560,9 +582,17 @@
                 .then(response => response.json())
                 .then(data => {
                     let select = document.getElementById('veiculo_id');
-                    select.innerHTML = '<option value="">Selecione um veículo...</option>';
+                    select.innerHTML = '';
+                    let defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = 'Selecione um veículo...';
+                    select.appendChild(defaultOption);
+
                     data.forEach(veiculo => {
-                        select.innerHTML += `<option value="${veiculo.id}">${veiculo.marca} ${veiculo.modelo} - ${veiculo.placa}</option>`;
+                        let opt = document.createElement('option');
+                        opt.value = veiculo.id;
+                        opt.textContent = `${veiculo.marca || ''} ${veiculo.modelo || ''} - ${veiculo.placa || ''}`.trim();
+                        select.appendChild(opt);
                     });
                 });
         });
