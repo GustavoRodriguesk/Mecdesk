@@ -7,6 +7,7 @@
     </x-slot>
 
     <div class="w-full">
+        <h1> TESTE TESTE TESTE </h1>
 
         <div class="flex items-center justify-between mb-6">
             <div>
@@ -103,9 +104,15 @@
                                 <i class="bi bi-info-circle"></i> Sobre os Níveis de Acesso
                             </h4>
                             <p class="text-xs text-blue-700 mt-1 space-y-1">
-                                <span class="block"><strong class="font-semibold">Funcionário:</strong> Pode criar e editar cadastros e OS, mas não pode excluir nada nem acessar dados da empresa/assinatura.</span>
-                                <span class="block"><strong class="font-semibold">Gerente:</strong> Controle operacional completo (cria, edita e exclui clientes, veículos, OS, peças e serviços), sem acesso a "Minha Empresa" e "Minha Assinatura".</span>
-                                <span class="block"><strong class="font-semibold">Administrador:</strong> Controle total sobre todas as funções do sistema, incluindo dados fiscais da empresa, gestão da equipe e assinatura do SaaS.</span>
+                                <span class="block"><strong class="font-semibold">Funcionário:</strong> Pode criar e
+                                    editar cadastros e OS, mas não pode excluir nada nem acessar dados da
+                                    empresa/assinatura.</span>
+                                <span class="block"><strong class="font-semibold">Gerente:</strong> Controle
+                                    operacional completo (cria, edita e exclui clientes, veículos, OS, peças e
+                                    serviços), sem acesso a "Minha Empresa" e "Minha Assinatura".</span>
+                                <span class="block"><strong class="font-semibold">Administrador:</strong> Controle
+                                    total sobre todas as funções do sistema, incluindo dados fiscais da empresa, gestão
+                                    da equipe e assinatura do SaaS.</span>
                             </p>
                         </div>
                     </div>
