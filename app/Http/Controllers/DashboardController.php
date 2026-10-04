@@ -33,6 +33,8 @@ class DashboardController extends Controller
 
             'osAndamento' => OrdemServico::where('status', 'em_andamento')->count(),
 
+            'osAguardandoAprovacao' => OrdemServico::where('status', 'aguardando_aprovacao')->count(),
+
             'osConcluidas' => OrdemServico::where('status', 'concluida')->count(),
 
             'osCanceladas' => OrdemServico::where('status', 'cancelada')->count(),
@@ -50,7 +52,7 @@ class DashboardController extends Controller
             ->whereYear('created_at', now()->year)
             ->sum('valor_total'),
 
-            'faturamentoChart' => DB::connection()->getDriverName() === 'sqlite'
+            'faturamentoChart' => (DB::connection()->getDriverName() === 'sqlite'
                 ? OrdemServico::selectRaw(
                     "strftime('%m', created_at) as mes_num,
                      strftime('%m', created_at) as mes,
@@ -68,14 +70,37 @@ class DashboardController extends Controller
                 ->where('status', 'concluida')
                 ->groupBy('mes_num', 'mes')
                 ->orderBy('mes_num')
-                ->get(),
+                ->get()
+            )->map(function ($item) {
+                $meses = [
+                    1 => 'Jan', 2 => 'Fev', 3 => 'Mar', 4 => 'Abr',
+                    5 => 'Mai', 6 => 'Jun', 7 => 'Jul', 8 => 'Ago',
+                    9 => 'Set', 10 => 'Out', 11 => 'Nov', 12 => 'Dez',
+                ];
+                $item->mes_pt = $meses[(int)$item->mes_num] ?? $item->mes;
+                return $item;
+            }),
 
             'statusChart' => OrdemServico::selectRaw(
                 'status,
                  COUNT(*) as total'
             )
             ->groupBy('status')
-            ->get(),
+            ->get()
+            ->map(function ($item) {
+                $labels = [
+                    'aberta'               => 'Aberta',
+                    'em_andamento'         => 'Em Andamento',
+                    'aguardando_aprovacao' => 'Aguardando Aprovação',
+                    'aprovada'             => 'Aprovada',
+                    'reprovada'            => 'Reprovada',
+                    'concluida'            => 'Concluída',
+                    'entregue'             => 'Entregue',
+                    'cancelada'            => 'Cancelada',
+                ];
+                $item->status_label = $labels[$item->status] ?? ucfirst(str_replace('_', ' ', $item->status));
+                return $item;
+            }),
 
             'servicosChart' => DB::table('ordem_servico_itens')
                 ->join(

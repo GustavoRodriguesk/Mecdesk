@@ -53,7 +53,7 @@
                                 Busca rápida
                             </label>
                             <input type="text" name="search" value="{{ request('search') }}"
-                                placeholder="Nome ou código..."
+                                placeholder="Buscar por nome, marca, código ou código de barras..."
                                 class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors duration-150">
                         </div>
 
@@ -144,13 +144,13 @@
                         <tr class="bg-white border-b border-gray-100">
                             <th
                                 class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
-                                Nome</th>
+                                Peça / Marca</th>
                             <th
                                 class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
-                                Código</th>
+                                Código / Barras</th>
                             <th
                                 class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
-                                Valor</th>
+                                Preços (Venda / Custo)</th>
                             @if(auth()->user()->empresa?->hasControleEstoque())
                                 <th
                                     class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
@@ -165,17 +165,44 @@
 
                         @forelse($pecas as $peca)
                             <tr class="data-row">
-                                <td class="px-6 py-4 font-medium text-gray-900 truncate">
-                                    {{ $peca->nome }}
+                                <td class="px-6 py-4">
+                                    <div class="font-medium text-gray-900 truncate">
+                                        {{ $peca->nome }}
+                                    </div>
+                                    @if($peca->marca)
+                                        <div class="inline-flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                                            <i class="bi bi-tag text-[11px] text-blue-500"></i>
+                                            <span>{{ $peca->marca }}</span>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
-                                        {{ $peca->codigo }}
-                                    </span>
+                                    <div class="flex flex-col gap-1 items-start">
+                                        @if($peca->codigo)
+                                            <span
+                                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                                                {{ $peca->codigo }}
+                                            </span>
+                                        @endif
+                                        @if($peca->codigo_barras)
+                                            <span class="inline-flex items-center gap-1 text-[11px] text-gray-500 font-mono" title="Código de Barras">
+                                                <i class="bi bi-upc-scan text-gray-400"></i> {{ $peca->codigo_barras }}
+                                            </span>
+                                        @endif
+                                        @if(!$peca->codigo && !$peca->codigo_barras)
+                                            <span class="text-xs text-gray-400">-</span>
+                                        @endif
+                                    </div>
                                 </td>
-                                <td class="px-6 py-4 text-gray-500 tabular-nums">
-                                    R$ {{ number_format($peca->valor_unitario, 2, ',', '.') }}
+                                <td class="px-6 py-4 tabular-nums">
+                                    <div class="font-semibold text-gray-900">
+                                        R$ {{ number_format($peca->preco_venda ?? $peca->valor_unitario, 2, ',', '.') }}
+                                    </div>
+                                    @if($peca->preco_custo > 0)
+                                        <div class="text-[11px] text-gray-400">
+                                            Custo: R$ {{ number_format($peca->preco_custo, 2, ',', '.') }}
+                                        </div>
+                                    @endif
                                 </td>
                                 @if(auth()->user()->empresa?->hasControleEstoque())
                                     <td class="px-6 py-4 text-gray-500 tabular-nums">

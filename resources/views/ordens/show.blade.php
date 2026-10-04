@@ -711,7 +711,9 @@
                             nome: this.novoItem.nome.trim(),
                             codigo: this.novoItem.codigo.trim() || null,
                             estoque: parseInt(this.novoItem.estoque) || 0,
-                            valor_unitario: vUnit
+                            valor_unitario: vUnit,
+                            preco_venda: vUnit,
+                            preco_custo: 0
                         };
 
                     this.salvandoNovo = true;

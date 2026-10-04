@@ -30,7 +30,7 @@
         .header {
             width: 100%;
             padding-bottom: 6px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .header td {
@@ -38,7 +38,7 @@
         }
 
         .logo-img {
-            width: 120px;
+            width: 130px;
             height: auto;
         }
 
@@ -47,16 +47,16 @@
         }
 
         .empresa h1 {
-            font-size: 14pt;
+            font-size: 16pt;
             font-weight: bold;
             color: #111827;
-            margin-bottom: 1px;
+            margin-bottom: 2px;
         }
 
         .empresa p {
-            font-size: 7.5pt;
+            font-size: 8pt;
             color: #6b7280;
-            line-height: 1.35;
+            line-height: 1.45;
         }
 
         /* ── BANNER OS ── */
@@ -65,6 +65,7 @@
             background: #111827;
             padding: 5px 12px;
             margin-bottom: 2px;
+            border-radius: 4px;
         }
 
         .os-banner td {
@@ -100,6 +101,8 @@
             width: 100%;
             border: 1px solid #e5e7eb;
             margin-bottom: 5px;
+            border-radius: 4px;
+            overflow: hidden;
         }
 
         .card-header {
@@ -111,6 +114,8 @@
             color: #374151;
             letter-spacing: 0.5px;
             text-transform: uppercase;
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
         }
 
         .card-body {
@@ -224,6 +229,8 @@
             font-size: 6.5pt;
             font-style: italic;
             padding: 2.5px 7px;
+            border-bottom-left-radius: 3px;
+            border-bottom-right-radius: 3px;
         }
 
         /* ── FOTOS ── */
@@ -233,6 +240,7 @@
             background: #f9fafb;
             padding: 3px;
             text-align: center;
+            border-radius: 4px;
         }
 
         .foto-img {
@@ -254,6 +262,7 @@
             padding: 4px;
             text-align: center;
             background: #f9fafb;
+            border-radius: 4px;
         }
 
         .sem-fotos-hint {
@@ -270,6 +279,7 @@
             border-left: 3px solid #374151;
             padding: 4px 8px;
             line-height: 1.3;
+            border-radius: 0 4px 4px 0;
         }
 
         .problema-text.vazio {
@@ -333,7 +343,7 @@
     {{-- HEADER --}}
     <table class="header" cellpadding="0" cellspacing="0">
         <tr>
-            <td width="70">
+            <td width="135">
                 @if ($empresa->logo_path)
                     <img src="{{ $empresa->logo_path }}" class="logo-img">
                 @elseif (file_exists(public_path('img/logo.png')))
@@ -362,11 +372,14 @@
                     @endif
                 </p>
                 @if ($empresa->logradouro)
-                    <p>
-                        {{ $empresa->logradouro }}{{ $empresa->numero ? ', ' . $empresa->numero : '' }}
-                        {{ $empresa->bairro ? ' - ' . $empresa->bairro : '' }}
-                        {{ $empresa->cidade ? ' — ' . $empresa->cidade . '/' . $empresa->estado : '' }}
-                        {{ $empresa->cep ? ' | CEP ' . $empresa->cep : '' }}
+                    <p>{{ $empresa->logradouro }}, {{ $empresa->numero }}
+                        @if ($empresa->bairro)
+                            {{ $empresa->bairro }}
+                        @endif
+                        &#8212; {{ $empresa->cidade }}/{{ $empresa->estado }}
+                        @if ($empresa->cep)
+                            &nbsp;|&nbsp; CEP {{ $empresa->cep }}
+                        @endif
                     </p>
                 @endif
             </td>

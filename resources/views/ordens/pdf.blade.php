@@ -16,16 +16,15 @@
             font-size: 9.5pt;
             color: #1f2937;
             line-height: 1.5;
-            padding: 28px 32px 24px 32px;
+            padding: 20px 28px 18px 28px;
             background: #ffffff;
         }
 
         /* ── HEADER ── */
         .header {
             width: 100%;
-            border-bottom: 2px solid #111827;
-            padding-bottom: 12px;
-            margin-bottom: 16px;
+            padding-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .header td {
@@ -33,7 +32,7 @@
         }
 
         .logo-img {
-            width: 120px;
+            width: 130px;
             height: auto;
         }
 
@@ -42,7 +41,7 @@
         }
 
         .empresa h1 {
-            font-size: 18pt;
+            font-size: 16pt;
             font-weight: bold;
             color: #111827;
             margin-bottom: 2px;
@@ -51,15 +50,16 @@
         .empresa p {
             font-size: 8pt;
             color: #6b7280;
-            line-height: 1.6;
+            line-height: 1.45;
         }
 
         /* ── BANNER OS ── */
         .os-banner {
             width: 100%;
             background: #111827;
-            padding: 9px 14px;
-            margin-bottom: 4px;
+            padding: 6px 12px;
+            margin-bottom: 3px;
+            border-radius: 4px;
         }
 
         .os-banner td {
@@ -68,9 +68,9 @@
 
         .os-numero {
             color: #ffffff;
-            font-size: 12pt;
+            font-size: 13.5pt;
             font-weight: bold;
-            letter-spacing: 0.4px;
+            letter-spacing: 0.5px;
         }
 
         .os-status {
@@ -81,14 +81,15 @@
             padding: 3px 10px;
             letter-spacing: 0.8px;
             text-transform: uppercase;
+            border-radius: 3px;
         }
 
         .os-data {
             font-size: 8pt;
             color: #9ca3af;
             padding-left: 2px;
-            padding-top: 5px;
-            padding-bottom: 10px;
+            padding-top: 3px;
+            padding-bottom: 8px;
             display: block;
         }
 
@@ -96,7 +97,9 @@
         .card-wrapper {
             width: 100%;
             border: 1px solid #e5e7eb;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            overflow: hidden;
         }
 
         .card-header {
@@ -108,6 +111,8 @@
             color: #374151;
             letter-spacing: 0.8px;
             text-transform: uppercase;
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
         }
 
         .card-body {
@@ -162,6 +167,7 @@
             border-left: 3px solid #374151;
             padding: 7px 10px;
             font-style: italic;
+            border-radius: 0 4px 4px 0;
         }
 
         /* ── TABELA ITENS ── */
@@ -217,25 +223,31 @@
             text-transform: uppercase;
         }
 
+        .badge-tipo,
+        .badge-peca {
+            display: inline-block;
+            width: 68px;
+            text-align: center;
+            font-size: 7.5pt;
+            font-weight: bold;
+            padding: 1px 0;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            border-radius: 3px;
+        }
+
         .badge-tipo {
             background: #f3f4f6;
             color: #1f2937;
             border: 1px solid #d1d5db;
-            font-size: 7.5pt;
-            font-weight: bold;
-            padding: 2px 7px;
-            letter-spacing: 0.4px;
-            text-transform: uppercase;
+            border-radius: 3px;
         }
 
         .badge-peca {
-            background: #1f2937;
-            color: #ffffff;
-            font-size: 7.5pt;
-            font-weight: bold;
-            padding: 2px 7px;
-            letter-spacing: 0.4px;
-            text-transform: uppercase;
+            background: #f3f4f6;
+            color: #1f2937;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
         }
 
         /* ── TOTAL ── */
@@ -243,6 +255,8 @@
             width: 100%;
             background: #111827;
             padding: 10px;
+            border-bottom-left-radius: 3px;
+            border-bottom-right-radius: 3px;
         }
 
         .total-label {
@@ -306,7 +320,7 @@
     {{-- HEADER --}}
     <table class="header" cellpadding="0" cellspacing="0">
         <tr>
-            <td width="70">
+            <td width="135">
                 @if ($empresa->logo_path)
                     <img src="{{ $empresa->logo_path }}" class="logo-img">
                 @elseif (file_exists(public_path('img/logo.png')))
@@ -442,7 +456,7 @@
                             <tr class="{{ $idx + 1 === $total_itens ? 'last' : '' }}">
                                 <td>
                                     <span class="{{ $item->tipo_item === 'servico' ? 'badge-tipo' : 'badge-peca' }}">
-                                        {{ ucfirst($item->tipo_item) }}
+                                        {{ $item->tipo_item === 'servico' ? 'SERVIÇO' : 'PEÇA' }}
                                     </span>
                                 </td>
                                 <td>{{ $item->descricao }}</td>

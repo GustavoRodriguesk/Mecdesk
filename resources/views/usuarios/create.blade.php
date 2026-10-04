@@ -7,7 +7,6 @@
     </x-slot>
 
     <div class="w-full">
-        <h1> TESTE TESTE TESTE </h1>
 
         <div class="flex items-center justify-between mb-6">
             <div>

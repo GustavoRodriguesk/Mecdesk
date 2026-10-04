@@ -15,19 +15,17 @@ class PecaController extends Controller
         $query = Peca::query();
 
         if ($request->filled('search')) {
-
             $search = $request->search;
 
             $query->where(function ($q) use ($search) {
-
                 $q->where('nome', 'like', "%{$search}%")
-                    ->orWhere('codigo', 'like', "%{$search}%");
-
+                    ->orWhere('codigo', 'like', "%{$search}%")
+                    ->orWhere('marca', 'like', "%{$search}%")
+                    ->orWhere('codigo_barras', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('nome')) {
-
             $query->where(
                 'nome',
                 'like',
@@ -35,12 +33,27 @@ class PecaController extends Controller
             );
         }
 
-        if ($request->filled('codigo')) {
+        if ($request->filled('marca')) {
+            $query->where(
+                'marca',
+                'like',
+                '%'.$request->marca.'%'
+            );
+        }
 
+        if ($request->filled('codigo')) {
             $query->where(
                 'codigo',
                 'like',
                 '%'.$request->codigo.'%'
+            );
+        }
+
+        if ($request->filled('codigo_barras')) {
+            $query->where(
+                'codigo_barras',
+                'like',
+                '%'.$request->codigo_barras.'%'
             );
         }
 
