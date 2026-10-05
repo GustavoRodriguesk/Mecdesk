@@ -203,35 +203,39 @@
                     </template>
                 </div>
 
-                {{-- SEÇÃO 3: Estoque --}}
-                <div class="pt-8 mt-8 border-t border-gray-200 space-y-6">
-                    <div class="flex items-center gap-3 pb-3 border-b border-gray-200">
-                        <div
-                            class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-base shrink-0">
-                            <i class="bi bi-boxes"></i>
+                @if(auth()->user()->empresa?->hasControleEstoque())
+                    {{-- SEÇÃO 3: Estoque --}}
+                    <div class="pt-8 mt-8 border-t border-gray-200 space-y-6">
+                        <div class="flex items-center gap-3 pb-3 border-b border-gray-200">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-base shrink-0">
+                                <i class="bi bi-boxes"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-gray-900">Estoque</h2>
+                                <p class="text-xs text-gray-500">Controle de unidades disponíveis</p>
+                            </div>
                         </div>
-                        <div>
-                            <h2 class="text-base font-bold text-gray-900">Estoque</h2>
-                            <p class="text-xs text-gray-500">Controle de unidades disponíveis</p>
-                        </div>
-                    </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-700">
-                                Quantidade em Estoque
-                            </label>
-                            <input type="number" name="estoque" value="{{ old('estoque', $peca->estoque) }}"
-                                min="0" placeholder="0"
-                                class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-150">
-                            <span class="text-xs text-gray-500 mt-1.5 block">Quantidade física disponível para
-                                uso</span>
-                            @error('estoque')
-                                <span class="text-red-500 text-xs mt-1.5 block">{{ $message }}</span>
-                            @enderror
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block mb-2 text-sm font-medium text-gray-700">
+                                    Quantidade em Estoque
+                                </label>
+                                <input type="number" name="estoque" value="{{ old('estoque', $peca->estoque) }}"
+                                    min="0" placeholder="0"
+                                    class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-150">
+                                <span class="text-xs text-gray-500 mt-1.5 block">Quantidade física disponível para
+                                    uso</span>
+                                @error('estoque')
+                                    <span class="text-red-500 text-xs mt-1.5 block">{{ $message }}</span>
+                                @enderror
+                            </div>
                         </div>
                     </div>
-                </div>
+                @else
+                    <input type="hidden" name="estoque" value="{{ $peca->estoque ?? 0 }}">
+                @endif
 
                 {{-- SEÇÃO 4: Rodapé e Botões de Ação --}}
                 <div

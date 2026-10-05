@@ -467,6 +467,16 @@
                     </tbody>
                 </table>
                 <table class="total-bar">
+                    @if ($ordem->temDesconto())
+                        <tr>
+                            <td><span style="color: #9ca3af; font-size: 8.5pt; font-weight: bold; text-transform: uppercase;">Subtotal</span></td>
+                            <td style="text-align: right;"><span style="color: #e5e7eb; font-size: 10pt; font-weight: bold;">R$ {{ number_format($ordem->subtotal ?: ($ordem->valor_total + $ordem->valor_desconto), 2, ',', '.') }}</span></td>
+                        </tr>
+                        <tr>
+                            <td><span style="color: #34d399; font-size: 8.5pt; font-weight: bold; text-transform: uppercase;">Desconto ({{ $ordem->desconto_tipo === 'porcentagem' ? number_format($ordem->desconto_valor, 0) . '%' : 'fixo' }})</span></td>
+                            <td style="text-align: right;"><span style="color: #34d399; font-size: 10pt; font-weight: bold;">- R$ {{ number_format($ordem->valor_desconto, 2, ',', '.') }}</span></td>
+                        </tr>
+                    @endif
                     <tr>
                         <td><span class="total-label">Total a Pagar</span></td>
                         <td style="text-align: right;"><span class="total-valor">R$

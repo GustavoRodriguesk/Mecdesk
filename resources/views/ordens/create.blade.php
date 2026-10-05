@@ -402,23 +402,104 @@
 
             </div>
 
+            {{-- Card: Desconto Comercial da Ordem de Serviço --}}
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden p-6 transition-all duration-200">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">
+                                <i class="bi bi-tag"></i>
+                            </span>
+                            <h3 class="text-sm font-bold text-gray-900">
+                                Desconto Especial na OS
+                            </h3>
+                            <span class="text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                Opcional
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1 pl-10">
+                            Adicione um abatimento por valor fixo em reais (R$) ou percentual (%) sobre o total dos serviços e peças.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3 pl-10 md:pl-0">
+                        {{-- Tipo de Desconto: Dinheiro (R$) ou Porcentagem (%) --}}
+                        <div class="inline-flex rounded-lg bg-gray-100 p-1 border border-gray-200 text-xs font-semibold">
+                            <button type="button" 
+                                    @click="descontoTipo = 'dinheiro'"
+                                    :class="descontoTipo === 'dinheiro' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'"
+                                    class="px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5">
+                                <i class="bi bi-currency-dollar"></i>
+                                <span>R$ Fixo</span>
+                            </button>
+                            <button type="button" 
+                                    @click="descontoTipo = 'porcentagem'"
+                                    :class="descontoTipo === 'porcentagem' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'"
+                                    class="px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5">
+                                <i class="bi bi-percent"></i>
+                                <span>Porcentagem</span>
+                            </button>
+                        </div>
+
+                        {{-- Input do Desconto --}}
+                        <div class="relative w-44">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs text-gray-400 font-bold"
+                                  x-text="descontoTipo === 'dinheiro' ? 'R$' : '%'"></span>
+                            <input type="number" 
+                                   step="0.01" 
+                                   min="0" 
+                                   :max="descontoTipo === 'porcentagem' ? 100 : (subtotalGeral > 0 ? subtotalGeral : 999999)"
+                                   x-model.number="descontoValor" 
+                                   placeholder="0,00"
+                                   class="w-full pl-9 pr-8 py-2 text-sm font-semibold border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-colors">
+                            <button type="button" 
+                                    x-show="descontoValor > 0" 
+                                    @click="descontoValor = 0"
+                                    class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-gray-400 hover:text-red-500 transition-colors"
+                                    title="Remover desconto">
+                                <i class="bi bi-x-circle-fill text-xs"></i>
+                            </button>
+                        </div>
+
+                        {{-- Badge de Desconto Calculado --}}
+                        <template x-if="valorDescontoCalculado > 0">
+                            <div class="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-200">
+                                <span>-</span>
+                                <span x-text="formatarDinheiro(valorDescontoCalculado)"></span>
+                                <span class="font-normal text-emerald-600" x-show="descontoTipo === 'porcentagem'" x-text="'(' + descontoValor + '%)'"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
             {{-- Card de Resumo Financeiro & Ações Finais --}}
             <div class="bg-gradient-to-r from-gray-900 to-slate-900 text-white rounded-xl shadow-lg p-6 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div class="space-y-1 text-center md:text-left">
                     <div class="text-xs uppercase tracking-wider text-gray-400 font-semibold">Resumo Geral da Ordem de Serviço</div>
-                    <div class="flex flex-wrap items-center gap-4 text-xs text-gray-300">
+                    <div class="flex flex-wrap items-center gap-3 text-xs text-gray-300">
                         <span>Serviços: <strong class="text-white" x-text="formatarDinheiro(subtotalServicos)"></strong></span>
                         <span>&bull;</span>
                         <span>Peças: <strong class="text-white" x-text="formatarDinheiro(subtotalPecas)"></strong></span>
                         <span>&bull;</span>
-                        <span>Total de Itens: <strong class="text-white" x-text="itens.length"></strong></span>
+                        <span>Subtotal: <strong class="text-white" x-text="formatarDinheiro(subtotalGeral)"></strong></span>
+                        <template x-if="valorDescontoCalculado > 0">
+                            <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
+                                <span>&bull;</span>
+                                <span>Desconto: <strong class="text-emerald-300">-<span x-text="formatarDinheiro(valorDescontoCalculado)"></span></strong></span>
+                                <span class="text-[10px] text-emerald-300/80" x-show="descontoTipo === 'porcentagem'" x-text="'(' + descontoValor + '%)'"></span>
+                            </span>
+                        </template>
                     </div>
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-                    <div class="text-center sm:text-right bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/10 w-full sm:w-auto">
+                    <div class="text-center sm:text-right bg-white/10 px-5 py-2.5 rounded-lg backdrop-blur-sm border border-white/10 w-full sm:w-auto">
                         <div class="text-[11px] text-gray-300 uppercase tracking-wider">Valor Total da OS</div>
                         <div class="text-2xl font-black text-green-400 tracking-tight" x-text="formatarDinheiro(totalGeral)"></div>
+                        <template x-if="valorDescontoCalculado > 0">
+                            <div class="text-[10px] text-gray-400 line-through" x-text="'De: ' + formatarDinheiro(subtotalGeral)"></div>
+                        </template>
                     </div>
 
                     <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -437,6 +518,10 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Inputs Ocultos para Desconto Comercial --}}
+            <input type="hidden" name="desconto_tipo" :value="descontoValor > 0 ? descontoTipo : ''">
+            <input type="hidden" name="desconto_valor" :value="descontoValor > 0 ? descontoValor : 0">
 
             {{-- Inputs Ocultos para Submissão da Lista de Itens --}}
             <template x-for="(item, index) in itens" :key="item._tempId || index">
@@ -471,6 +556,10 @@
                 veiculosFiltrados: [],
                 carregandoVeiculos: false,
 
+                // Desconto Comercial
+                descontoTipo: '{{ old('desconto_tipo', 'dinheiro') }}',
+                descontoValor: {{ (float) old('desconto_valor', 0) }},
+
                 itens: [],
 
                 // Fotos do Veículo (Upload Progressivo & Exclusão)
@@ -495,9 +584,12 @@
                 novoItem: {
                     nome: '',
                     codigo: '',
+                    marca: '',
                     descricao: '',
+                    preco_custo: '',
+                    preco_venda: '',
                     valor_unitario: 0,
-                    estoque: 10,
+                    estoque: 0,
                     quantidade: 1
                 },
 
@@ -565,8 +657,23 @@
                     return this.pecasAdicionadas.reduce((acc, i) => acc + ((Number(i.quantidade) || 0) * (Number(i.valor_unitario) || 0)), 0);
                 },
 
-                get totalGeral() {
+                get subtotalGeral() {
                     return this.subtotalServicos + this.subtotalPecas;
+                },
+
+                get valorDescontoCalculado() {
+                    let sub = this.subtotalGeral;
+                    let val = Number(this.descontoValor) || 0;
+                    if (val <= 0 || sub <= 0) return 0;
+                    if (this.descontoTipo === 'porcentagem') {
+                        let p = Math.min(100, Math.max(0, val));
+                        return Math.round(sub * (p / 100) * 100) / 100;
+                    }
+                    return Math.min(sub, Math.max(0, val));
+                },
+
+                get totalGeral() {
+                    return Math.max(0, Math.round((this.subtotalGeral - this.valorDescontoCalculado) * 100) / 100);
                 },
 
                 get itensFiltrados() {
@@ -592,9 +699,12 @@
                     this.novoItem = {
                         nome: '',
                         codigo: '',
+                        marca: '',
                         descricao: '',
+                        preco_custo: '',
+                        preco_venda: '',
                         valor_unitario: '',
-                        estoque: 10,
+                        estoque: 0,
                         quantidade: 1
                     };
                     this.itemPersonalizado = {
@@ -666,33 +776,52 @@
                 },
 
                 cadastrarNovoECarregar() {
-                    if (!this.novoItem.nome.trim()) {
+                    if (!this.novoItem.nome || !this.novoItem.nome.trim()) {
                         alert('Informe o nome do item.');
-                        return;
-                    }
-
-                    let vUnit = parseFloat(this.novoItem.valor_unitario);
-                    if (isNaN(vUnit) || vUnit < 0) {
-                        alert('Informe um valor unitário válido.');
                         return;
                     }
 
                     let qtd = Math.max(1, parseInt(this.novoItem.quantidade) || 1);
                     let url = this.modalTipo === 'servico' ? '/servicos' : '/pecas';
-                    let payload = this.modalTipo === 'servico' 
-                        ? {
-                            nome: this.novoItem.nome.trim(),
-                            descricao: this.novoItem.descricao.trim() || this.novoItem.nome.trim(),
-                            valor_base: vUnit
+                    let payload = {};
+                    let precoUnitarioOS = 0;
+
+                    if (this.modalTipo === 'servico') {
+                        let vUnit = parseFloat(this.novoItem.valor_unitario);
+                        if (isNaN(vUnit) || vUnit < 0) {
+                            alert('Informe um valor unitário válido.');
+                            return;
                         }
-                        : {
+                        precoUnitarioOS = vUnit;
+                        payload = {
                             nome: this.novoItem.nome.trim(),
-                            codigo: this.novoItem.codigo.trim() || null,
-                            estoque: parseInt(this.novoItem.estoque) || 0,
-                            valor_unitario: vUnit,
-                            preco_venda: vUnit,
-                            preco_custo: 0
+                            descricao: this.novoItem.descricao ? this.novoItem.descricao.trim() : this.novoItem.nome.trim(),
+                            valor_base: vUnit
                         };
+                    } else {
+                        let precoCusto = parseFloat(this.novoItem.preco_custo);
+                        if (isNaN(precoCusto) || precoCusto < 0) {
+                            alert('Informe o preço de custo (compra) válido.');
+                            return;
+                        }
+
+                        let precoVenda = parseFloat(this.novoItem.preco_venda);
+                        if (isNaN(precoVenda) || precoVenda < 0) {
+                            alert('Informe o preço de venda válido.');
+                            return;
+                        }
+
+                        precoUnitarioOS = precoVenda;
+                        payload = {
+                            nome: this.novoItem.nome.trim(),
+                            marca: this.novoItem.marca ? this.novoItem.marca.trim() : null,
+                            codigo: this.novoItem.codigo ? this.novoItem.codigo.trim() : null,
+                            estoque: parseInt(this.novoItem.estoque) || 0,
+                            preco_custo: precoCusto,
+                            preco_venda: precoVenda,
+                            valor_unitario: precoVenda
+                        };
+                    }
 
                     this.salvandoNovo = true;
 
@@ -732,8 +861,8 @@
                             peca_id: this.modalTipo === 'peca' ? novoRegistro.id : null,
                             descricao: novoRegistro.nome,
                             quantidade: qtd,
-                            valor_unitario: vUnit,
-                            valor_total: qtd * vUnit
+                            valor_unitario: precoUnitarioOS,
+                            valor_total: qtd * precoUnitarioOS
                         });
 
                         this.fecharModal();

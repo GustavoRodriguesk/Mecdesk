@@ -86,10 +86,10 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-sm table-fixed">
                     <colgroup>
-                        <col style="width: 32%">
-                        <col style="width: 22%">
-                        <col style="width: 22%">
-                        <col style="width: 24%">
+                        <col style="width: 40%">
+                        <col style="width: 25%">
+                        <col style="width: 23%">
+                        <col style="width: 12%">
                     </colgroup>
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-100">
@@ -141,12 +141,12 @@
 
                                 {{-- Ações --}}
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center justify-end gap-2">
+                                    <div class="flex items-center justify-end gap-1.5">
                                         {{-- Editar --}}
                                         <a href="{{ route('clientes.edit', $cliente->id) }}"
-                                            class="btn-action inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 whitespace-nowrap">
-                                            <i class="bi bi-pencil"></i>
-                                            Editar
+                                            class="btn-action inline-flex items-center justify-center w-8 h-8 text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                                            title="Editar">
+                                            <i class="bi bi-pencil-square text-sm"></i>
                                         </a>
 
                                         {{-- Excluir --}}
@@ -156,9 +156,9 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
-                                                    class="btn-action inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 whitespace-nowrap">
-                                                    <i class="bi bi-trash"></i>
-                                                    Excluir
+                                                    class="btn-action inline-flex items-center justify-center w-8 h-8 text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                                                    title="Excluir">
+                                                    <i class="bi bi-trash text-sm"></i>
                                                 </button>
                                             </form>
                                         @endif

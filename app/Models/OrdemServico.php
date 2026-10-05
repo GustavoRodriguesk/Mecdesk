@@ -25,6 +25,10 @@ class OrdemServico extends Model
         'descricao_problema',
         'problemas_previos',
         'observacoes',
+        'subtotal',
+        'desconto_tipo',
+        'desconto_valor',
+        'valor_desconto',
         'valor_total',
         'aprovado_cliente',
         'data_entrada',
@@ -41,6 +45,10 @@ class OrdemServico extends Model
     protected function casts(): array
     {
         return [
+            'subtotal'              => 'decimal:2',
+            'desconto_valor'        => 'decimal:2',
+            'valor_desconto'        => 'decimal:2',
+            'valor_total'           => 'decimal:2',
             'approval_requested_at' => 'datetime',
             'approval_response_at'  => 'datetime',
             'data_entrada'          => 'datetime',
@@ -209,6 +217,31 @@ class OrdemServico extends Model
     }
 
     /**
+     * Verifica se a OS possui desconto aplicado.
+     */
+    public function temDesconto(): bool
+    {
+        return (float) ($this->valor_desconto ?? 0) > 0;
+    }
+
+    /**
+     * Retorna a descrição legível do desconto aplicado.
+     */
+    public function getDescontoDescricaoAttribute(): string
+    {
+        if (!$this->temDesconto()) {
+            return 'Sem desconto';
+        }
+
+        if ($this->desconto_tipo === 'porcentagem') {
+            $perc = number_format((float) $this->desconto_valor, 0, ',', '.');
+            return "{$perc}% (-R$ " . number_format((float) $this->valor_desconto, 2, ',', '.') . ")";
+        }
+
+        return "-R$ " . number_format((float) $this->valor_desconto, 2, ',', '.');
+    }
+
+    /**
      * Mensagem formatada para WhatsApp.
      */
     public function getWhatsappMessageAttribute(): string
@@ -219,15 +252,22 @@ class OrdemServico extends Model
             ? $this->veiculo->marca . ' ' . $this->veiculo->modelo
             : 'Veículo';
 
-        $valor = 'R$ ' . number_format($this->valor_total, 2, ',', '.');
-
         $cliente = $this->cliente->nome ?? 'Cliente';
         $primeiroNome = explode(' ', trim($cliente))[0];
+
+        $textoValor = "Valor: R$ " . number_format($this->valor_total, 2, ',', '.');
+        if ($this->temDesconto()) {
+            $subtotalFmt = number_format($this->subtotal ?: ($this->valor_total + $this->valor_desconto), 2, ',', '.');
+            $descontoFmt = number_format($this->valor_desconto, 2, ',', '.');
+            $textoValor = "Subtotal: R$ {$subtotalFmt}\n"
+                . "Desconto: -R$ {$descontoFmt}\n"
+                . "Total a Pagar: R$ " . number_format($this->valor_total, 2, ',', '.');
+        }
 
         return "Olá {$primeiroNome}!\n\n"
             . "Sua Ordem de Serviço está pronta para aprovação.\n\n"
             . "Veículo:\n{$veiculo}\n\n"
-            . "Valor:\n{$valor}\n\n"
+            . "{$textoValor}\n\n"
             . "Clique no link abaixo para visualizar:\n{$url}\n\n"
             . "Obrigado!";
     }

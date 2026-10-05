@@ -136,6 +136,7 @@ Route::middleware(['auth', 'empresa.ativa'])->group(function () {
     Route::get('/ordens/{ordem}/pdf', [OrdemServicoController::class, 'pdf'])->name('ordens.pdf');
     Route::get('/ordens/{ordem}/pdf-vistoria', [OrdemServicoController::class, 'pdfVistoria'])->name('ordens.pdf-vistoria');
     Route::post('/ordens/{ordem}/solicitar-aprovacao', [OrdemServicoController::class, 'solicitarAprovacao'])->name('ordens.solicitar-aprovacao');
+    Route::patch('/ordens/{ordem}/desconto', [OrdemServicoController::class, 'atualizarDesconto'])->name('ordens.desconto.update');
     Route::post('/ordens/{ordem}/fotos', [OrdemServicoController::class, 'uploadFoto'])->name('ordens.fotos.store');
     Route::delete('/ordens/fotos/{foto}', [OrdemServicoController::class, 'destroyFoto'])->name('ordens.fotos.destroy');
 

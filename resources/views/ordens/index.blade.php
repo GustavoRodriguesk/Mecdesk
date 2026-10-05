@@ -168,14 +168,15 @@
 
             {{-- Tabela --}}
             <div class="overflow-x-auto">
-                <table class="w-full text-sm table-fixed min-w-[900px]">
+                <table class="w-full text-sm table-fixed min-w-[950px]">
                     <colgroup>
                         <col style="width: 10%">
                         <col style="width: 20%">
                         <col style="width: 18%">
                         <col style="width: 14%">
-                        <col style="width: 18%">
-                        <col style="width: 20%">
+                        <col style="width: 15%">
+                        <col style="width: 13%">
+                        <col style="width: 10%">
                     </colgroup>
                     <thead>
                         <tr class="bg-white border-b border-gray-100">
@@ -194,6 +195,9 @@
                             <th
                                 class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
                                 Aprovação Cliente</th>
+                            <th
+                                class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
+                                Valor Total</th>
                             <th
                                 class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
                                 Ações</th>
@@ -259,12 +263,26 @@
                                     @endif
                                 </td>
 
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center justify-end gap-2">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-gray-900 text-sm">
+                                            R$ {{ number_format($ordem->valor_total, 2, ',', '.') }}
+                                        </span>
+                                        @if ($ordem->temDesconto())
+                                            <span class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 mt-0.5 self-start" title="Desconto: {{ $ordem->desconto_descricao }}">
+                                                <i class="bi bi-tag-fill text-[10px]"></i>
+                                                -R$ {{ number_format($ordem->valor_desconto, 2, ',', '.') }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </td>
 
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center justify-end gap-1.5">
                                         <a href="{{ route('ordens.edit', $ordem->id) }}"
-                                            class="btn-action inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 whitespace-nowrap">
-                                            <i class="bi bi-eye"></i> Ver
+                                            class="btn-action inline-flex items-center justify-center w-8 h-8 text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                                            title="Editar OS">
+                                            <i class="bi bi-pencil-square text-sm"></i>
                                         </a>
 
                                         @if (auth()->user()->canDelete())
@@ -273,8 +291,9 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
-                                                    class="btn-action inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 whitespace-nowrap">
-                                                    <i class="bi bi-trash"></i> Excluir
+                                                    class="btn-action inline-flex items-center justify-center w-8 h-8 text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                                                    title="Excluir OS">
+                                                    <i class="bi bi-trash text-sm"></i>
                                                 </button>
                                             </form>
                                         @endif
@@ -283,11 +302,11 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-16 text-center">
+                                <td colspan="7" class="px-6 py-16 text-center">
                                     <div class="flex flex-col items-center gap-3 text-gray-400">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-300"
                                             fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                            stroke-width="1.5">
+                                             stroke-width="1.5">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>

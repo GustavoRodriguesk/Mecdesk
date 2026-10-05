@@ -2,24 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreOrdemServicoRequest;
+use App\Http\Requests\UpdateOrdemServicoRequest;
+use App\Http\Requests\UploadFotoOrdemServicoRequest;
+use App\Models\Cliente;
+use App\Models\Empresa;
 use App\Models\OrdemServico;
 use App\Models\OrdemServicoFoto;
 use App\Models\Peca;
 use App\Models\Servico;
-use App\Models\Cliente;
 use App\Models\Veiculo;
-use App\Models\Empresa;
+use App\Services\OrdemServicoItemService;
 use Barryvdh\DomPDF\Facade\Pdf;
-use App\Http\Requests\StoreOrdemServicoRequest;
-use App\Http\Requests\UpdateOrdemServicoRequest;
-use App\Http\Requests\UploadFotoOrdemServicoRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-
-
-use App\Services\OrdemServicoItemService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class OrdemServicoController extends Controller
 {
@@ -37,18 +35,18 @@ class OrdemServicoController extends Controller
 
             $query->where(function ($q) use ($search) {
                 $q->where('numero_os', 'like', "%{$search}%")
-                  ->orWhere('status', 'like', "%{$search}%")
-                  ->orWhereHas('cliente', function ($cliente) use ($search) {
-                      $cliente->where('nome', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('veiculo', function ($veiculo) use ($search) {
-                      $veiculo->where('placa', 'like', "%{$search}%")
-                               ->orWhere('marca', 'like', "%{$search}%")
-                               ->orWhere('modelo', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('funcionario', function ($funcionario) use ($search) {
-                      $funcionario->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('status', 'like', "%{$search}%")
+                    ->orWhereHas('cliente', function ($cliente) use ($search) {
+                        $cliente->where('nome', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('veiculo', function ($veiculo) use ($search) {
+                        $veiculo->where('placa', 'like', "%{$search}%")
+                            ->orWhere('marca', 'like', "%{$search}%")
+                            ->orWhere('modelo', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('funcionario', function ($funcionario) use ($search) {
+                        $funcionario->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -123,24 +121,35 @@ class OrdemServicoController extends Controller
 
             $proximoNumero = 1;
             if ($ultimoNumero && preg_match('/OS-(\d+)/', $ultimoNumero, $matches)) {
-                $proximoNumero = ((int)$matches[1]) + 1;
+                $proximoNumero = ((int) $matches[1]) + 1;
             }
-            $numeroOs = 'OS-' . str_pad($proximoNumero, 4, '0', STR_PAD_LEFT);
+            $numeroOs = 'OS-'.str_pad($proximoNumero, 4, '0', STR_PAD_LEFT);
+
+            $descontoTipo = in_array($request->desconto_tipo, ['dinheiro', 'porcentagem'], true)
+                ? $request->desconto_tipo
+                : null;
+            $descontoValor = $request->filled('desconto_valor')
+                ? (float) $request->desconto_valor
+                : 0.0;
 
             $ordem = OrdemServico::create([
-                'empresa_id'         => $empresaId,
-                'numero_os'          => $numeroOs,
-                'cliente_id'         => $request->cliente_id,
-                'veiculo_id'         => $request->veiculo_id,
-                'user_id'            => Auth::id(),
-                'funcionario_id'     => $request->funcionario_id,
-                'status'             => 'aberta',
+                'empresa_id' => $empresaId,
+                'numero_os' => $numeroOs,
+                'cliente_id' => $request->cliente_id,
+                'veiculo_id' => $request->veiculo_id,
+                'user_id' => Auth::id(),
+                'funcionario_id' => $request->funcionario_id,
+                'status' => 'aberta',
                 'descricao_problema' => $request->descricao_problema,
-                'problemas_previos'  => $request->problemas_previos,
-                'observacoes'        => $request->observacoes,
-                'valor_total'        => 0,
-                'aprovado_cliente'   => false,
-                'data_entrada'       => now(),
+                'problemas_previos' => $request->problemas_previos,
+                'observacoes' => $request->observacoes,
+                'subtotal' => 0,
+                'desconto_tipo' => $descontoTipo,
+                'desconto_valor' => $descontoValor,
+                'valor_desconto' => 0,
+                'valor_total' => 0,
+                'aprovado_cliente' => false,
+                'data_entrada' => now(),
             ]);
 
             // Upload de fotos
@@ -149,7 +158,7 @@ class OrdemServicoController extends Controller
                     if ($fotoFile->isValid()) {
                         $path = $fotoFile->store('os_fotos', 'public');
                         $ordem->fotos()->create([
-                            'empresa_id'   => $empresaId,
+                            'empresa_id' => $empresaId,
                             'caminho_foto' => $path,
                         ]);
                     }
@@ -161,12 +170,39 @@ class OrdemServicoController extends Controller
                 $this->itemService->sincronizarItensNaCriacao($ordem, $request->itens);
             }
 
+            // Garante recalcular subtotal, desconto e valor_total
+            $this->itemService->recalcularTotalOrdem($ordem);
+
             return $ordem;
         });
 
         return redirect()
             ->route('ordens.show', $ordem->id)
             ->with('success', 'Ordem de serviço criada com sucesso!');
+    }
+
+    /**
+     * Atualiza o desconto de uma Ordem de Serviço existente (se aberta).
+     */
+    public function atualizarDesconto(Request $request, OrdemServico $ordem)
+    {
+        abort_if($ordem->empresa_id !== auth()->user()->empresa_id, 403);
+
+        if (! $ordem->podeEditar()) {
+            return back()->with('error', 'Para alterar o desconto, a Ordem de Serviço deve estar em condição Aberta.');
+        }
+
+        $request->validate([
+            'desconto_tipo' => 'nullable|string|in:dinheiro,porcentagem',
+            'desconto_valor' => 'nullable|numeric|min:0',
+        ]);
+
+        $tipo = $request->desconto_tipo;
+        $valor = (float) ($request->desconto_valor ?? 0);
+
+        $this->itemService->atualizarDesconto($ordem, $tipo, $valor);
+
+        return back()->with('success', 'Desconto atualizado com sucesso!');
     }
 
     public function show(OrdemServico $ordem)
@@ -179,7 +215,7 @@ class OrdemServicoController extends Controller
             'fotos',
             'historicos' => function ($query) {
                 $query->latest();
-            }
+            },
         ]);
 
         $servicos = Servico::orderBy('nome')->get();
@@ -219,7 +255,7 @@ class OrdemServicoController extends Controller
 
         if ($statusAnterior != $request->status) {
             $ordem->historicos()->create([
-                'status' => $request->status
+                'status' => $request->status,
             ]);
         }
 
@@ -229,7 +265,7 @@ class OrdemServicoController extends Controller
                 if ($fotoFile->isValid()) {
                     $path = $fotoFile->store('os_fotos', 'public');
                     $ordem->fotos()->create([
-                        'empresa_id'   => auth()->user()->empresa_id,
+                        'empresa_id' => auth()->user()->empresa_id,
                         'caminho_foto' => $path,
                     ]);
                 }
@@ -250,6 +286,7 @@ class OrdemServicoController extends Controller
                     'message' => 'Para realizar alterações em imagens de avarias, a Ordem de Serviço deve estar em condição Aberta.',
                 ], 422);
             }
+
             return back()->with('error', 'Para realizar alterações em imagens de avarias, a Ordem de Serviço deve estar em condição Aberta.');
         }
 
@@ -258,7 +295,7 @@ class OrdemServicoController extends Controller
                 if ($fotoFile->isValid()) {
                     $path = $fotoFile->store('os_fotos', 'public');
                     $ordem->fotos()->create([
-                        'empresa_id'   => auth()->user()->empresa_id,
+                        'empresa_id' => auth()->user()->empresa_id,
                         'caminho_foto' => $path,
                     ]);
                 }
@@ -268,7 +305,7 @@ class OrdemServicoController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Foto(s) adicionada(s) à Ordem de Serviço com sucesso!'
+                'message' => 'Foto(s) adicionada(s) à Ordem de Serviço com sucesso!',
             ]);
         }
 
@@ -295,6 +332,7 @@ class OrdemServicoController extends Controller
                     'message' => 'Para realizar alterações em imagens de avarias, a Ordem de Serviço deve estar em condição Aberta.',
                 ], 422);
             }
+
             return back()->with('error', 'Para realizar alterações em imagens de avarias, a Ordem de Serviço deve estar em condição Aberta.');
         }
 
@@ -308,7 +346,7 @@ class OrdemServicoController extends Controller
         if (request()->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Foto removida com sucesso!'
+                'message' => 'Foto removida com sucesso!',
             ]);
         }
 
@@ -366,7 +404,7 @@ class OrdemServicoController extends Controller
             'funcionario',
             'itens',
             'fotos',
-            'empresa'
+            'empresa',
         ]);
 
         $empresa = $ordem->empresa;
@@ -378,8 +416,8 @@ class OrdemServicoController extends Controller
 
         $nomeArquivo = str($ordem->cliente->nome)->slug('-');
 
-        return $pdf->download(
-            $nomeArquivo . '-orcamento.pdf'
+        return $pdf->stream(
+            $nomeArquivo.'-orcamento.pdf'
         );
     }
 
@@ -390,7 +428,7 @@ class OrdemServicoController extends Controller
             'veiculo',
             'funcionario',
             'fotos',
-            'empresa'
+            'empresa',
         ]);
 
         $empresa = $ordem->empresa;
@@ -400,10 +438,10 @@ class OrdemServicoController extends Controller
             compact('ordem', 'empresa')
         );
 
-        $nomeArquivo = str($ordem->cliente->nome)->slug('-') . '-vistoria';
+        $nomeArquivo = str($ordem->cliente->nome)->slug('-').'-vistoria';
 
-        return $pdf->download(
-            $nomeArquivo . '.pdf'
+        return $pdf->stream(
+            $nomeArquivo.'.pdf'
         );
     }
 }

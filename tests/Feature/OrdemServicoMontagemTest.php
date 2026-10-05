@@ -521,3 +521,151 @@ test('ordem de servico pode atualizar e desvincular funcionario', function () {
     expect($ordem->funcionario_id)->toBeNull();
 });
 
+test('pode criar uma OS com desconto em dinheiro (R$ fixo)', function () {
+    $payload = [
+        'cliente_id'         => $this->cliente->id,
+        'veiculo_id'         => $this->veiculo->id,
+        'descricao_problema' => 'OS com desconto fixo em dinheiro',
+        'desconto_tipo'      => 'dinheiro',
+        'desconto_valor'     => 40.00,
+        'itens'              => [
+            [
+                'tipo_item'      => 'servico',
+                'servico_id'     => $this->servico->id, // 150.00
+                'quantidade'     => 1,
+                'valor_unitario' => 150.00,
+            ],
+            [
+                'tipo_item'      => 'peca',
+                'peca_id'        => $this->peca->id, // 45.00 * 2 = 90.00
+                'quantidade'     => 2,
+                'valor_unitario' => 45.00,
+            ],
+        ],
+    ];
+
+    $response = $this->actingAs($this->user)->post(route('ordens.store'), $payload);
+
+    $ordem = OrdemServico::latest('id')->first();
+    $response->assertRedirect(route('ordens.show', $ordem->id));
+
+    // Subtotal: 150 + 90 = 240.00
+    // Desconto: 40.00
+    // Total Líquido: 200.00
+    expect((float) $ordem->subtotal)->toBe(240.0)
+        ->and($ordem->desconto_tipo)->toBe('dinheiro')
+        ->and((float) $ordem->desconto_valor)->toBe(40.0)
+        ->and((float) $ordem->valor_desconto)->toBe(40.0)
+        ->and((float) $ordem->valor_total)->toBe(200.0)
+        ->and($ordem->temDesconto())->toBeTrue();
+});
+
+test('pode criar uma OS com desconto em porcentagem (%)', function () {
+    $payload = [
+        'cliente_id'         => $this->cliente->id,
+        'veiculo_id'         => $this->veiculo->id,
+        'descricao_problema' => 'OS com desconto percentual',
+        'desconto_tipo'      => 'porcentagem',
+        'desconto_valor'     => 10, // 10%
+        'itens'              => [
+            [
+                'tipo_item'      => 'servico',
+                'servico_id'     => $this->servico->id, // 150.00
+                'quantidade'     => 2,
+                'valor_unitario' => 150.00,
+            ],
+        ],
+    ];
+
+    $response = $this->actingAs($this->user)->post(route('ordens.store'), $payload);
+
+    $ordem = OrdemServico::latest('id')->first();
+    $response->assertRedirect(route('ordens.show', $ordem->id));
+
+    // Subtotal: 300.00
+    // Desconto 10%: 30.00
+    // Total Líquido: 270.00
+    expect((float) $ordem->subtotal)->toBe(300.0)
+        ->and($ordem->desconto_tipo)->toBe('porcentagem')
+        ->and((float) $ordem->desconto_valor)->toBe(10.0)
+        ->and((float) $ordem->valor_desconto)->toBe(30.0)
+        ->and((float) $ordem->valor_total)->toBe(270.0)
+        ->and($ordem->temDesconto())->toBeTrue()
+        ->and($ordem->desconto_descricao)->toContain('10%');
+});
+
+test('pode atualizar desconto em OS aberta e recalcular valor total', function () {
+    $ordem = OrdemServico::create([
+        'empresa_id'         => $this->empresa->id,
+        'numero_os'          => 'OS-0999',
+        'cliente_id'         => $this->cliente->id,
+        'veiculo_id'         => $this->veiculo->id,
+        'user_id'            => $this->user->id,
+        'status'             => 'aberta',
+        'descricao_problema' => 'Troca de pastilhas',
+        'subtotal'           => 100.00,
+        'valor_desconto'     => 0,
+        'valor_total'        => 100.00,
+        'data_entrada'       => now(),
+    ]);
+
+    $itemService = app(\App\Services\OrdemServicoItemService::class);
+    $itemService->adicionarServico($ordem, [
+        'servico_id'     => $this->servico->id,
+        'quantidade'     => 1,
+        'valor_unitario' => 100.00,
+    ]);
+
+    // Aplicar desconto de 15%
+    $response = $this->actingAs($this->user)->patch(route('ordens.desconto.update', $ordem->id), [
+        'desconto_tipo'  => 'porcentagem',
+        'desconto_valor' => 15,
+    ]);
+
+    $response->assertRedirect();
+    $ordem->refresh();
+
+    expect((float) $ordem->subtotal)->toBe(100.0)
+        ->and((float) $ordem->valor_desconto)->toBe(15.0)
+        ->and((float) $ordem->valor_total)->toBe(85.0);
+
+    // Remover desconto (desconto_valor = 0)
+    $response = $this->actingAs($this->user)->patch(route('ordens.desconto.update', $ordem->id), [
+        'desconto_tipo'  => 'dinheiro',
+        'desconto_valor' => 0,
+    ]);
+
+    $response->assertRedirect();
+    $ordem->refresh();
+
+    expect((float) $ordem->valor_desconto)->toBe(0.0)
+        ->and((float) $ordem->valor_total)->toBe(100.0)
+        ->and($ordem->temDesconto())->toBeFalse();
+});
+
+test('bloqueia alteracao de desconto se OS nao estiver aberta', function () {
+    $ordem = OrdemServico::create([
+        'empresa_id'         => $this->empresa->id,
+        'numero_os'          => 'OS-0998',
+        'cliente_id'         => $this->cliente->id,
+        'veiculo_id'         => $this->veiculo->id,
+        'user_id'            => $this->user->id,
+        'status'             => 'concluida',
+        'descricao_problema' => 'Serviço finalizado',
+        'subtotal'           => 100.00,
+        'valor_desconto'     => 0,
+        'valor_total'        => 100.00,
+        'data_entrada'       => now(),
+    ]);
+
+    $response = $this->actingAs($this->user)->patch(route('ordens.desconto.update', $ordem->id), [
+        'desconto_tipo'  => 'dinheiro',
+        'desconto_valor' => 20,
+    ]);
+
+    $response->assertSessionHas('error');
+    $ordem->refresh();
+    expect((float) $ordem->valor_desconto)->toBe(0.0);
+});
+
+

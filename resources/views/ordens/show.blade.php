@@ -251,6 +251,12 @@
                         @if ($ordem->podeEditar())
                             <div class="flex items-center gap-2">
                                 <button type="button" 
+                                        @click="descontoModalOpen = true"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-md transition-colors">
+                                    <i class="bi bi-tag"></i>
+                                    {{ $ordem->temDesconto() ? 'Editar Desconto' : '+ Desconto' }}
+                                </button>
+                                <button type="button" 
                                         @click="abrirModal('servico')"
                                         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors">
                                     <i class="bi bi-wrench"></i>
@@ -333,7 +339,31 @@
                                     @endforeach
                                 </tbody>
                                 <tfoot class="bg-gray-50 border-t border-gray-100">
-                                    <tr>
+                                    @if ($ordem->temDesconto())
+                                        <tr>
+                                            <td colspan="4" class="px-6 py-2.5 text-right font-medium text-gray-500 text-sm">
+                                                Subtotal:
+                                            </td>
+                                            <td class="px-4 py-2.5 text-right font-semibold text-gray-700 text-sm whitespace-nowrap">
+                                                R$ {{ number_format($ordem->subtotal ?: ($ordem->valor_total + $ordem->valor_desconto), 2, ',', '.') }}
+                                            </td>
+                                            @if ($ordem->podeEditar())
+                                                <td></td>
+                                            @endif
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4" class="px-6 py-2.5 text-right font-medium text-emerald-600 text-sm">
+                                                Desconto ({{ $ordem->desconto_tipo === 'porcentagem' ? number_format($ordem->desconto_valor, 0) . '%' : 'fixo' }}):
+                                            </td>
+                                            <td class="px-4 py-2.5 text-right font-bold text-emerald-600 text-sm whitespace-nowrap">
+                                                - R$ {{ number_format($ordem->valor_desconto, 2, ',', '.') }}
+                                            </td>
+                                            @if ($ordem->podeEditar())
+                                                <td></td>
+                                            @endif
+                                        </tr>
+                                    @endif
+                                    <tr class="{{ $ordem->temDesconto() ? 'border-t border-gray-200' : '' }}">
                                         <td colspan="4" class="px-6 py-4 text-right font-bold text-gray-900 text-base">
                                             Total da Ordem:
                                         </td>
@@ -570,6 +600,96 @@
             </div>
         </div>
 
+        {{-- Modal de Desconto da OS --}}
+        <div x-show="descontoModalOpen" x-transition class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4" style="display: none;" @keydown.escape.window="descontoModalOpen = false">
+            <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4" @click.away="descontoModalOpen = false">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs">
+                            <i class="bi bi-tag-fill"></i>
+                        </span>
+                        Desconto da Ordem de Serviço
+                    </h3>
+                    <button type="button" @click="descontoModalOpen = false" class="text-gray-400 hover:text-gray-600">
+                        <i class="bi bi-x-lg text-sm"></i>
+                    </button>
+                </div>
+
+                <form action="{{ route('ordens.desconto.update', $ordem->id) }}" method="POST" class="space-y-4">
+                    @csrf
+                    @method('PATCH')
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
+                            Tipo de Desconto
+                        </label>
+                        <div class="grid grid-cols-2 gap-2 bg-gray-100 p-1 rounded-lg">
+                            <button type="button" 
+                                    @click="descontoTipo = 'dinheiro'"
+                                    :class="descontoTipo === 'dinheiro' ? 'bg-white text-gray-900 shadow-sm font-bold' : 'text-gray-500 font-medium hover:text-gray-900'"
+                                    class="py-2 text-xs rounded-md transition-all flex items-center justify-center gap-1.5">
+                                <i class="bi bi-currency-dollar"></i> R$ Fixo
+                            </button>
+                            <button type="button" 
+                                    @click="descontoTipo = 'porcentagem'"
+                                    :class="descontoTipo === 'porcentagem' ? 'bg-white text-gray-900 shadow-sm font-bold' : 'text-gray-500 font-medium hover:text-gray-900'"
+                                    class="py-2 text-xs rounded-md transition-all flex items-center justify-center gap-1.5">
+                                <i class="bi bi-percent"></i> Porcentagem
+                            </button>
+                        </div>
+                        <input type="hidden" name="desconto_tipo" :value="descontoTipo">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                            <span x-text="descontoTipo === 'dinheiro' ? 'Valor do Desconto (R$)' : 'Percentual de Desconto (%)'"></span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs text-gray-400 font-bold"
+                                  x-text="descontoTipo === 'dinheiro' ? 'R$' : '%'"></span>
+                            <input type="number" 
+                                   step="0.01" 
+                                   min="0" 
+                                   :max="descontoTipo === 'porcentagem' ? 100 : (subtotalOrdem > 0 ? subtotalOrdem : 999999)"
+                                   name="desconto_valor" 
+                                   x-model.number="descontoValor" 
+                                   class="w-full pl-9 pr-3 py-2 text-sm font-semibold border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" 
+                                   placeholder="0,00"
+                                   required>
+                        </div>
+                        <p class="text-[11px] text-gray-400 mt-1">
+                            Para remover o desconto, digite 0 e salve.
+                        </p>
+                    </div>
+
+                    {{-- Resumo / Preview --}}
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100 space-y-1.5 text-xs">
+                        <div class="flex justify-between text-gray-500">
+                            <span>Subtotal da OS:</span>
+                            <span class="font-semibold text-gray-700">R$ {{ number_format($ordem->subtotal ?: ($ordem->valor_total + $ordem->valor_desconto), 2, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between text-emerald-600 font-medium">
+                            <span>Desconto aplicado:</span>
+                            <span class="font-bold">- R$ <span x-text="valorDescontoPreview.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></span></span>
+                        </div>
+                        <div class="flex justify-between text-gray-900 font-bold border-t border-gray-200 pt-1.5 text-sm">
+                            <span>Total Final:</span>
+                            <span class="text-blue-700">R$ <span x-text="totalFinalPreview.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></span></span>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
+                        <button type="button" @click="descontoModalOpen = false" class="px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-colors">
+                            Salvar Desconto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
 
     @push('scripts')
@@ -604,6 +724,27 @@
                 pecasCatalogo: config.pecasCatalogo || [],
                 hasEstoqueControl: config.hasEstoqueControl ?? true,
 
+                // Desconto
+                descontoModalOpen: false,
+                descontoTipo: '{{ $ordem->desconto_tipo ?? 'dinheiro' }}',
+                descontoValor: {{ (float) ($ordem->desconto_valor ?? 0) }},
+                subtotalOrdem: {{ (float) ($ordem->subtotal ?: ($ordem->valor_total + $ordem->valor_desconto)) }},
+
+                get valorDescontoPreview() {
+                    let sub = this.subtotalOrdem;
+                    let val = Number(this.descontoValor) || 0;
+                    if (val <= 0 || sub <= 0) return 0;
+                    if (this.descontoTipo === 'porcentagem') {
+                        let p = Math.min(100, Math.max(0, val));
+                        return Math.round(sub * (p / 100) * 100) / 100;
+                    }
+                    return Math.min(sub, Math.max(0, val));
+                },
+
+                get totalFinalPreview() {
+                    return Math.max(0, Math.round((this.subtotalOrdem - this.valorDescontoPreview) * 100) / 100);
+                },
+
                 modalOpen: false,
                 modalTipo: 'servico',
                 modalAba: 'catalogo',
@@ -612,7 +753,17 @@
                 salvandoNovo: false,
 
                 itemForm: { quantidade: 1, valor_unitario: 0 },
-                novoItem: { nome: '', codigo: '', descricao: '', valor_unitario: '', estoque: 10, quantidade: 1 },
+                novoItem: {
+                    nome: '',
+                    codigo: '',
+                    marca: '',
+                    descricao: '',
+                    preco_custo: '',
+                    preco_venda: '',
+                    valor_unitario: '',
+                    estoque: 0,
+                    quantidade: 1
+                },
                 itemPersonalizado: { descricao: '', quantidade: 1, valor_unitario: '' },
 
                 modalEdicaoOpen: false,
@@ -636,7 +787,17 @@
                     this.buscaTermo = '';
                     this.itemSelecionado = null;
                     this.itemForm = { quantidade: 1, valor_unitario: 0 };
-                    this.novoItem = { nome: '', codigo: '', descricao: '', valor_unitario: '', estoque: 10, quantidade: 1 };
+                    this.novoItem = {
+                        nome: '',
+                        codigo: '',
+                        marca: '',
+                        descricao: '',
+                        preco_custo: '',
+                        preco_venda: '',
+                        valor_unitario: '',
+                        estoque: 0,
+                        quantidade: 1
+                    };
                     this.itemPersonalizado = { descricao: '', quantidade: 1, valor_unitario: '' };
                     this.modalOpen = true;
                 },
@@ -648,7 +809,7 @@
                 selecionarItemCatalogo(item) {
                     this.itemSelecionado = item;
                     this.itemForm.quantidade = 1;
-                    this.itemForm.valor_unitario = Number(this.modalTipo === 'servico' ? item.valor_base : item.valor_unitario);
+                    this.itemForm.valor_unitario = Number(this.modalTipo === 'servico' ? item.valor_base : (item.preco_venda || item.valor_unitario));
                 },
 
                 confirmarAdicionarCatalogo() {
@@ -689,32 +850,52 @@
                 },
 
                 cadastrarNovoECarregar() {
-                    if (!this.novoItem.nome.trim()) {
+                    if (!this.novoItem.nome || !this.novoItem.nome.trim()) {
                         alert('Informe o nome do item.');
                         return;
                     }
 
-                    let vUnit = parseFloat(this.novoItem.valor_unitario);
-                    if (isNaN(vUnit) || vUnit < 0) {
-                        alert('Informe um valor unitário válido.');
-                        return;
-                    }
-
+                    let qtd = Math.max(1, parseInt(this.novoItem.quantidade) || 1);
                     let url = this.modalTipo === 'servico' ? '/servicos' : '/pecas';
-                    let payload = this.modalTipo === 'servico' 
-                        ? {
-                            nome: this.novoItem.nome.trim(),
-                            descricao: this.novoItem.descricao.trim() || this.novoItem.nome.trim(),
-                            valor_base: vUnit
+                    let payload = {};
+                    let precoUnitarioOS = 0;
+
+                    if (this.modalTipo === 'servico') {
+                        let vUnit = parseFloat(this.novoItem.valor_unitario);
+                        if (isNaN(vUnit) || vUnit < 0) {
+                            alert('Informe um valor unitário válido.');
+                            return;
                         }
-                        : {
+                        precoUnitarioOS = vUnit;
+                        payload = {
                             nome: this.novoItem.nome.trim(),
-                            codigo: this.novoItem.codigo.trim() || null,
-                            estoque: parseInt(this.novoItem.estoque) || 0,
-                            valor_unitario: vUnit,
-                            preco_venda: vUnit,
-                            preco_custo: 0
+                            descricao: this.novoItem.descricao ? this.novoItem.descricao.trim() : this.novoItem.nome.trim(),
+                            valor_base: vUnit
                         };
+                    } else {
+                        let precoCusto = parseFloat(this.novoItem.preco_custo);
+                        if (isNaN(precoCusto) || precoCusto < 0) {
+                            alert('Informe o preço de custo (compra) válido.');
+                            return;
+                        }
+
+                        let precoVenda = parseFloat(this.novoItem.preco_venda);
+                        if (isNaN(precoVenda) || precoVenda < 0) {
+                            alert('Informe o preço de venda válido.');
+                            return;
+                        }
+
+                        precoUnitarioOS = precoVenda;
+                        payload = {
+                            nome: this.novoItem.nome.trim(),
+                            marca: this.novoItem.marca ? this.novoItem.marca.trim() : null,
+                            codigo: this.novoItem.codigo ? this.novoItem.codigo.trim() : null,
+                            estoque: parseInt(this.novoItem.estoque) || 0,
+                            preco_custo: precoCusto,
+                            preco_venda: precoVenda,
+                            valor_unitario: precoVenda
+                        };
+                    }
 
                     this.salvandoNovo = true;
 
@@ -740,8 +921,8 @@
                         let novoRegistro = data.servico || data.peca;
                         let urlItem = this.modalTipo === 'servico' ? `/ordens/${this.ordemId}/itens` : `/ordens/${this.ordemId}/itens/peca`;
                         let payloadItem = this.modalTipo === 'servico'
-                            ? { servico_id: novoRegistro.id, descricao: novoRegistro.nome, quantidade: this.novoItem.quantidade || 1, valor_unitario: vUnit }
-                            : { peca_id: novoRegistro.id, descricao: novoRegistro.nome, quantidade: this.novoItem.quantidade || 1, valor_unitario: vUnit };
+                            ? { servico_id: novoRegistro.id, descricao: novoRegistro.nome, quantidade: qtd, valor_unitario: precoUnitarioOS }
+                            : { peca_id: novoRegistro.id, descricao: novoRegistro.nome, quantidade: qtd, valor_unitario: precoUnitarioOS };
 
                         this.enviarItemServidor(urlItem, payloadItem);
                     })

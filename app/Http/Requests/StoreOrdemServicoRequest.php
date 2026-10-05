@@ -44,6 +44,8 @@ class StoreOrdemServicoRequest extends FormRequest
             'itens.*.descricao'  => 'nullable|string|max:255',
             'itens.*.quantidade' => 'nullable|integer|min:1',
             'itens.*.valor_unitario' => 'nullable|numeric|min:0',
+            'desconto_tipo'      => 'nullable|string|in:dinheiro,porcentagem',
+            'desconto_valor'     => 'nullable|numeric|min:0',
         ];
     }
 }

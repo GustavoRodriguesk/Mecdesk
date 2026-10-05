@@ -128,16 +128,16 @@
                 <table class="w-full text-sm table-fixed min-w-[700px]">
                     <colgroup>
                         @if(auth()->user()->empresa?->hasControleEstoque())
-                            <col style="width: 35%">
-                            <col style="width: 15%">
-                            <col style="width: 15%">
-                            <col style="width: 10%">
-                            <col style="width: 25%">
+                            <col style="width: 40%">
+                            <col style="width: 18%">
+                            <col style="width: 18%">
+                            <col style="width: 12%">
+                            <col style="width: 12%">
                         @else
-                            <col style="width: 45%">
-                            <col style="width: 15%">
-                            <col style="width: 15%">
-                            <col style="width: 25%">
+                            <col style="width: 48%">
+                            <col style="width: 20%">
+                            <col style="width: 20%">
+                            <col style="width: 12%">
                         @endif
                     </colgroup>
                     <thead>
@@ -214,10 +214,11 @@
                                 @endif
 
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center justify-end gap-2">
+                                    <div class="flex items-center justify-end gap-1.5">
                                         <a href="{{ route('pecas.edit', $peca->id) }}"
-                                            class="btn-action inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 whitespace-nowrap">
-                                            <i class="bi bi-pencil"></i> Editar
+                                            class="btn-action inline-flex items-center justify-center w-8 h-8 text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                                            title="Editar">
+                                            <i class="bi bi-pencil-square text-sm"></i>
                                         </a>
 
                                         @if (auth()->user()->canDelete())
@@ -226,8 +227,9 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
-                                                    class="btn-action inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 whitespace-nowrap">
-                                                    <i class="bi bi-trash"></i> Excluir
+                                                    class="btn-action inline-flex items-center justify-center w-8 h-8 text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                                                    title="Excluir">
+                                                    <i class="bi bi-trash text-sm"></i>
                                                 </button>
                                             </form>
                                         @endif

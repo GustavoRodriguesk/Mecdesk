@@ -253,17 +253,46 @@ class OrdemServicoItemService
     }
 
     /**
-     * Recalcula e atualiza o valor_total da Ordem de Serviço no banco de dados.
+     * Recalcula e atualiza o subtotal, desconto e valor_total da Ordem de Serviço no banco de dados.
      */
     public function recalcularTotalOrdem(OrdemServico $ordem): float
     {
-        $total = (float) $ordem->itens()->sum('valor_total');
+        $subtotal = (float) $ordem->itens()->sum('valor_total');
+
+        $descontoTipo = $ordem->desconto_tipo;
+        $descontoValor = (float) ($ordem->desconto_valor ?? 0);
+        $valorDesconto = 0.0;
+
+        if ($descontoValor > 0 && $subtotal > 0) {
+            if ($descontoTipo === 'porcentagem') {
+                $valorDesconto = round($subtotal * (min(100.0, $descontoValor) / 100), 2);
+            } elseif ($descontoTipo === 'dinheiro') {
+                $valorDesconto = round(min($subtotal, $descontoValor), 2);
+            }
+        }
+
+        $valorTotal = max(0.0, round($subtotal - $valorDesconto, 2));
 
         $ordem->update([
-            'valor_total' => $total,
+            'subtotal'       => $subtotal,
+            'valor_desconto' => $valorDesconto,
+            'valor_total'    => $valorTotal,
         ]);
 
-        return $total;
+        return $valorTotal;
+    }
+
+    /**
+     * Atualiza o desconto da OS e recalcula os valores.
+     */
+    public function atualizarDesconto(OrdemServico $ordem, ?string $tipo, float $valor): void
+    {
+        $ordem->update([
+            'desconto_tipo'  => in_array($tipo, ['dinheiro', 'porcentagem'], true) ? $tipo : null,
+            'desconto_valor' => max(0.0, $valor),
+        ]);
+
+        $this->recalcularTotalOrdem($ordem);
     }
 
     /**

@@ -480,7 +480,17 @@
                     Valor sujeito a alterações caso novos serviços sejam solicitados.
                 </div>
                 <div
-                    class="text-center sm:text-right shrink-0 order-1 sm:order-2 w-full sm:w-auto bg-white sm:bg-transparent p-3 sm:p-0 rounded-xl border sm:border-0 border-slate-200/80">
+                    class="text-center sm:text-right shrink-0 order-1 sm:order-2 w-full sm:w-auto bg-white sm:bg-transparent p-3 sm:p-0 rounded-xl border sm:border-0 border-slate-200/80 space-y-1">
+                    @if ($ordem->temDesconto())
+                        <div class="text-xs text-slate-500 flex sm:justify-end gap-3 justify-between">
+                            <span>Subtotal:</span>
+                            <span class="font-semibold text-slate-700">R$ {{ number_format($ordem->subtotal ?: ($ordem->valor_total + $ordem->valor_desconto), 2, ',', '.') }}</span>
+                        </div>
+                        <div class="text-xs text-emerald-600 font-medium flex sm:justify-end gap-3 justify-between">
+                            <span>Desconto aplicado:</span>
+                            <span class="font-bold">- R$ {{ number_format($ordem->valor_desconto, 2, ',', '.') }} ({{ $ordem->desconto_tipo === 'porcentagem' ? number_format($ordem->desconto_valor, 0) . '%' : 'fixo' }})</span>
+                        </div>
+                    @endif
                     <span class="text-[11px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">Valor
                         Total Geral</span>
                     <span class="text-2xl sm:text-3xl font-black text-blue-700 tracking-tight">R$
