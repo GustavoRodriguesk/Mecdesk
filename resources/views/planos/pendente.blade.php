@@ -1,5 +1,12 @@
 <x-app-layout>
-    <x-slot name="header">Ativação da Assinatura</x-slot>
+    <x-slot name="header">
+        <div class="flex items-center gap-2">
+            <i class="bi bi-hourglass-split text-amber-500 text-lg"></i>
+            <h2 class="font-semibold text-lg text-gray-800 leading-tight">
+                Ativação da Assinatura
+            </h2>
+        </div>
+    </x-slot>
 
     <div class="max-w-4xl mx-auto py-8 px-4">
 

@@ -56,7 +56,14 @@ class ClienteController extends Controller
 
     public function show(Cliente $cliente)
     {
-        return redirect()->route('clientes.edit', $cliente->id);
+        $cliente->load([
+            'veiculos',
+            'ordensServico' => function ($query) {
+                $query->with('veiculo')->latest()->limit(10);
+            }
+        ]);
+
+        return view('clientes.show', compact('cliente'));
     }
 
     public function update(UpdateClienteRequest $request, Cliente $cliente)

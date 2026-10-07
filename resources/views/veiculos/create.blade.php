@@ -1,9 +1,17 @@
 <x-app-layout>
 
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Veículos
-        </h2>
+        <div class="flex items-center gap-2 text-sm">
+            <a href="{{ route('veiculos.index') }}" class="text-gray-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 font-medium">
+                <i class="bi bi-car-front"></i>
+                <span>Veículos</span>
+            </a>
+            <i class="bi bi-chevron-right text-xs text-gray-400"></i>
+            <span class="font-semibold text-gray-900 text-base flex items-center gap-1.5">
+                <i class="bi bi-plus-circle text-blue-600"></i>
+                Novo Veículo
+            </span>
+        </div>
     </x-slot>
 
     <div class="w-full">

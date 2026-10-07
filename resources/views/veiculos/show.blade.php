@@ -1,9 +1,17 @@
 <x-app-layout>
 
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Detalhes do Veículo
-        </h2>
+        <div class="flex items-center gap-2 text-sm">
+            <a href="{{ route('veiculos.index') }}" class="text-gray-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 font-medium">
+                <i class="bi bi-car-front"></i>
+                <span>Veículos</span>
+            </a>
+            <i class="bi bi-chevron-right text-xs text-gray-400"></i>
+            <span class="font-semibold text-gray-900 text-base flex items-center gap-1.5">
+                <i class="bi bi-info-circle text-blue-600"></i>
+                Detalhes do Veículo: <span class="uppercase text-blue-700">{{ $veiculo->placa }}</span>
+            </span>
+        </div>
     </x-slot>
 
     <style>
@@ -24,90 +32,115 @@
         }
     </style>
 
-    <div class="w-full">
+    <div class="w-full space-y-6">
 
-        <div class="flex items-center justify-between mb-6">
+        {{-- Cabeçalho da Página --}}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
                     <span
-                        class="shrink-0 inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold uppercase select-none">
+                        class="shrink-0 inline-flex items-center justify-center h-9 w-9 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold select-none">
                         <i class="bi bi-car-front-fill"></i>
                     </span>
-                    {{ $veiculo->marca }} {{ $veiculo->modelo }}
+                    <span>{{ $veiculo->marca }} {{ $veiculo->modelo }}</span>
+                    <span
+                        class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-gray-200 text-gray-800 border border-gray-300 uppercase">
+                        {{ $veiculo->placa }}
+                    </span>
                 </h1>
                 <p class="text-sm text-gray-500 mt-1">
-                    Informações do veículo e histórico de serviços
+                    Informações cadastrais do veículo e histórico completo de ordens de serviço
                 </p>
             </div>
 
-            <a href="{{ route('veiculos.index') }}"
-                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
-                <i class="bi bi-arrow-left"></i>
-                Voltar
-            </a>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('ordens.create', ['veiculo' => $veiculo->id]) }}"
+                    class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs">
+                    <i class="bi bi-plus-lg"></i>
+                    Nova OS
+                </a>
+
+                <a href="{{ route('veiculos.edit', $veiculo->id) }}"
+                    class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="bi bi-pencil"></i>
+                    Editar Veículo
+                </a>
+
+                <a href="{{ route('veiculos.index') }}"
+                    class="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
+                    <i class="bi bi-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
         </div>
 
-        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden mb-6">
+        {{-- Card de Dados do Veículo --}}
+        <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                 <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
                     <i class="bi bi-info-circle text-gray-500"></i>
-                    Dados do Veículo
+                    Dados Cadastrais do Veículo
                 </h3>
-                @if (auth()->user()->isAdmin())
-                    <a href="{{ route('veiculos.edit', $veiculo->id) }}"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors">
-                        <i class="bi bi-pencil"></i>
-                        Editar
-                    </a>
-                @endif
             </div>
-            <div class="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                <div class="bg-gray-50 rounded-md p-4 border border-gray-100">
+            <div class="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                     <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Placa</span>
-                    <span
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-200 text-gray-800 border border-gray-300 uppercase">
+                    <span class="text-base font-bold text-gray-900 uppercase tracking-wider font-mono">
                         {{ $veiculo->placa }}
                     </span>
                 </div>
-                <div class="bg-gray-50 rounded-md p-4 border border-gray-100">
-                    <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Ano</span>
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                    <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Marca /
+                        Modelo</span>
+                    <span class="text-sm font-medium text-gray-900">{{ $veiculo->marca }} {{ $veiculo->modelo }}</span>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                    <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Ano de
+                        Fabricação</span>
                     <span class="text-sm font-medium text-gray-900">{{ $veiculo->ano ?: '-' }}</span>
                 </div>
-                <div class="bg-gray-50 rounded-md p-4 border border-gray-100">
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                     <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Cor</span>
                     <span class="text-sm font-medium text-gray-900">{{ $veiculo->cor ?: '-' }}</span>
                 </div>
-                <div class="bg-gray-50 rounded-md p-4 border border-gray-100">
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                     <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">KM
                         Atual</span>
-                    <span
-                        class="text-sm font-medium text-gray-900">{{ $veiculo->quilometragem ? number_format($veiculo->quilometragem, 0, ',', '.') . ' km' : '-' }}</span>
+                    <span class="text-sm font-medium text-gray-900">
+                        {{ $veiculo->quilometragem ? number_format($veiculo->quilometragem, 0, ',', '.') . ' km' : '-' }}
+                    </span>
                 </div>
                 <div
-                    class="bg-gray-50 rounded-md p-4 border border-gray-100 sm:col-span-2 md:col-span-4 flex items-center justify-between">
+                    class="bg-gray-50 rounded-lg p-4 border border-gray-100 sm:col-span-2 md:col-span-3 flex items-center justify-between">
                     <div>
                         <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Cliente
                             Associado</span>
-                        <span class="text-sm font-medium text-gray-900 flex items-center gap-2">
-                            <i class="bi bi-person text-gray-400"></i> {{ $veiculo->cliente->nome }}
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-semibold text-gray-900">{{ $veiculo->cliente->nome }}</span>
+                            @if ($veiculo->cliente->telefone)
+                                <span
+                                    class="text-xs text-gray-500">({{ $veiculo->cliente->telefone_formatado ?: $veiculo->cliente->telefone }})</span>
+                            @endif
+                        </div>
                     </div>
                     <a href="{{ route('clientes.show', $veiculo->cliente->id) }}"
-                        class="text-xs text-blue-600 hover:text-blue-800 font-medium hover:underline">
-                        Ver Cliente &rarr;
+                        class="text-xs text-blue-600 hover:text-blue-800 font-medium hover:underline inline-flex items-center gap-1">
+                        <span>Ver Perfil do Cliente</span>
+                        <i class="bi bi-arrow-right"></i>
                     </a>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        {{-- Card de Histórico de Ordens de Serviço --}}
+        <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
                 <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
                     <i class="bi bi-tools text-gray-500"></i>
                     Histórico de Ordens de Serviço ({{ $veiculo->ordensServico->count() }})
                 </h3>
                 <a href="{{ route('ordens.create', ['veiculo' => $veiculo->id]) }}"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-700 hover:bg-blue-800 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs">
                     <i class="bi bi-plus-lg"></i>
                     Nova OS
                 </a>
@@ -119,19 +152,24 @@
                         <tr>
                             <th
                                 class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
-                                Nº OS</th>
+                                Nº OS
+                            </th>
                             <th
                                 class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
-                                Data</th>
+                                Data
+                            </th>
                             <th
                                 class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
-                                Status</th>
+                                Status
+                            </th>
                             <th
                                 class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
-                                Valor</th>
+                                Valor Total
+                            </th>
                             <th
                                 class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">
-                                Ação</th>
+                                Ação
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -152,13 +190,13 @@
                                         {{ $ordem->status }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-gray-500 tabular-nums">
+                                <td class="px-6 py-4 text-gray-700 font-medium tabular-nums">
                                     R$ {{ number_format($ordem->valor_total, 2, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <a href="{{ route('ordens.show', $ordem->id) }}"
                                         class="btn-action inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 whitespace-nowrap">
-                                        <i class="bi bi-eye"></i> Ver
+                                        <i class="bi bi-eye"></i> Ver OS
                                     </a>
                                 </td>
                             </tr>
@@ -171,6 +209,10 @@
                                     </div>
                                     <p class="text-sm font-medium text-gray-500">Nenhuma ordem de serviço registrada
                                         para este veículo.</p>
+                                    <a href="{{ route('ordens.create', ['veiculo' => $veiculo->id]) }}"
+                                        class="mt-2 inline-block text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline">
+                                        Criar a primeira Ordem de Serviço
+                                    </a>
                                 </td>
                             </tr>
                         @endforelse

@@ -1,7 +1,12 @@
 <x-app-layout>
 
     <x-slot name="header">
-        Meu Perfil
+        <div class="flex items-center gap-2">
+            <i class="bi bi-person-circle text-blue-600 text-lg"></i>
+            <h2 class="font-semibold text-lg text-gray-800 leading-tight">
+                Meu Perfil
+            </h2>
+        </div>
     </x-slot>
 
     <div class="w-full mx-auto space-y-6">

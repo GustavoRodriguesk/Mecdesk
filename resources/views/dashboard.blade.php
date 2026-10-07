@@ -1,17 +1,17 @@
 <x-app-layout>
 
     <x-slot name="header">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <h2 class="font-bold text-xl sm:text-2xl text-gray-800 dark:text-gray-100 leading-tight">
-                Dashboard
-            </h2>
+        <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-2">
+                <i class="bi bi-speedometer2 text-blue-600 text-lg"></i>
+                <h2 class="font-semibold text-lg text-gray-800 leading-tight">
+                    Dashboard
+                </h2>
+            </div>
             <div class="flex items-center gap-2">
                 <a href="{{ route('ordens.create') }}"
-                   class="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow-sm transition">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    Nova OS
+                    class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    <i class="bi bi-file-earmark-plus"></i> Nova Ordem
                 </a>
             </div>
         </div>

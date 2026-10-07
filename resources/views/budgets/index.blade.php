@@ -1,8 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Resumo de Ordens de Serviço
-        </h2>
+        <div class="flex items-center gap-2">
+            <i class="bi bi-clipboard-check text-blue-600 text-lg"></i>
+            <h2 class="font-semibold text-lg text-gray-800 leading-tight">
+                Resumo de Ordens de Serviço
+            </h2>
+        </div>
     </x-slot>
 
     <div class="max-w-7xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">

@@ -114,7 +114,7 @@ class VeiculoController extends Controller
 
         return redirect()
             ->route('veiculos.index')
-            ->with('success', 'Veculo cadastrado com sucesso!');
+            ->with('success', 'Veículo cadastrado com sucesso!');
     }
 
     public function edit(Veiculo $veiculo)
@@ -133,7 +133,7 @@ class VeiculoController extends Controller
 
         return redirect()
             ->route('veiculos.index')
-            ->with('success', 'Veculo atualizado com sucesso!');
+            ->with('success', 'Veículo atualizado com sucesso!');
     }
 
     public function destroy(Veiculo $veiculo)
@@ -161,6 +161,13 @@ class VeiculoController extends Controller
 
     public function show(Veiculo $veiculo)
     {
-        return redirect()->route('veiculos.edit', $veiculo->id);
+        $veiculo->load([
+            'cliente',
+            'ordensServico' => function ($query) {
+                $query->latest();
+            },
+        ]);
+
+        return view('veiculos.show', compact('veiculo'));
     }
 }

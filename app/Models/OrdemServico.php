@@ -246,7 +246,7 @@ class OrdemServico extends Model
      */
     public function getWhatsappMessageAttribute(): string
     {
-        $url = route('aprovacao.show', $this->approval_token);
+        $url = $this->approval_token ? route('aprovacao.show', $this->approval_token) : '';
 
         $veiculo = $this->veiculo
             ? $this->veiculo->marca . ' ' . $this->veiculo->modelo
@@ -277,6 +277,10 @@ class OrdemServico extends Model
      */
     public function getWhatsappLinkAttribute(): string
     {
+        if (! $this->approval_token) {
+            return '';
+        }
+
         $telefone = preg_replace('/\D/', '', $this->cliente->telefone ?? '');
 
         if ($telefone && strlen($telefone) <= 11) {

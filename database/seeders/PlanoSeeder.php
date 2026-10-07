@@ -16,18 +16,18 @@ class PlanoSeeder extends Seeder
         Plano::updateOrCreate(
             ['slug' => 'pro'],
             [
-                'nome'         => 'Pro',
-                'descricao'    => 'Plano profissional completo para gestão de oficinas mecânicas.',
-                'preco_mensal' => 99.90,
-                'max_usuarios' => 5,
-                'recursos'     => [
-                    'ordens_servico'  => 'unlimited',
-                    'clientes'        => 'unlimited',
-                    'pdf_custom'      => true,
+                'nome' => 'Pro',
+                'descricao' => 'Plano profissional completo para gestão de oficinas mecânicas.',
+                'preco_mensal' => 89.90,
+                'max_usuarios' => 20,
+                'recursos' => [
+                    'ordens_servico' => 'unlimited',
+                    'clientes' => 'unlimited',
+                    'pdf_custom' => true,
                     'whatsapp_direct' => true,
-                    'suporte'         => 'prioritario',
+                    'suporte' => 'prioritario',
                 ],
-                'ativo'        => true,
+                'ativo' => true,
             ]
         );
     }

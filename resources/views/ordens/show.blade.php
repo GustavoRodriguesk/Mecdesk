@@ -1,33 +1,41 @@
 <x-app-layout>
 
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Ordem de Serviço #{{ $ordem->numero_os }}
-            </h2>
+        <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-2 text-sm">
+                <a href="{{ route('ordens.index') }}"
+                    class="text-gray-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 font-medium">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <span>Ordens de Serviço</span>
+                </a>
+                <i class="bi bi-chevron-right text-xs text-gray-400"></i>
+                <span class="font-semibold text-gray-900 text-base flex items-center gap-1.5">
+                    <i class="bi bi-info-circle text-blue-600"></i>
+                    {{ $ordem->numero_os }}
+                </span>
+            </div>
             <div class="flex items-center gap-2">
                 @if ($ordem->funcionario)
-                    <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200" title="Funcionário Responsável">
+                    <span
+                        class="hidden md:inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200"
+                        title="Funcionário Responsável">
                         <i class="bi bi-person-badge text-slate-500"></i>
                         {{ $ordem->funcionario->name }}
                     </span>
                 @endif
-                <span
-                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ str_replace('bg-', 'bg-opacity-20 text-', $ordem->status_color) }} {{ $ordem->status_color }}">
-                    {{ $ordem->status_formatado }}
-                </span>
-                <a href="{{ route('ordens.pdf', $ordem->id) }}"
-                    class="inline-flex items-center gap-1.5 px-3 py-1 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-colors"
-                    target="_blank" title="PDF de Ordem de Serviço / Orçamento">
+                <a href="{{ route('ordens.edit', $ordem->id) }}"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors"
+                    title="Editar Informações da OS">
+                    <i class="bi bi-pencil-square"></i>
+                    <span class="hidden sm:inline">Editar OS</span>
+                </a>
+                <button type="button" onclick="window.dispatchEvent(new CustomEvent('abrir-modal-pdf'))"
+                    class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-all cursor-pointer"
+                    title="Exportar Documentos em PDF (OS e Vistoria)">
                     <i class="bi bi-file-earmark-pdf"></i>
-                    PDF OS
-                </a>
-                <a href="{{ route('ordens.pdf-vistoria', $ordem->id) }}"
-                    class="inline-flex items-center gap-1.5 px-3 py-1 text-sm font-medium text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 transition-colors"
-                    target="_blank" title="Imprimir Termo de Vistoria de Entrada do Veículo">
-                    <i class="bi bi-camera"></i>
-                    PDF Vistoria
-                </a>
+                    <span>Exportar PDF</span>
+                    <i class="bi bi-chevron-down text-xs opacity-80"></i>
+                </button>
             </div>
         </div>
     </x-slot>
@@ -42,182 +50,183 @@
         }
     </style>
 
-    <div class="w-full" x-data="ordemServicoShow({
-        ordemId: {{ $ordem->id }},
-        servicosCatalogo: {{ Js::from($servicos) }},
-        pecasCatalogo: {{ Js::from($pecas) }},
-        hasEstoqueControl: {{ ($ordem->empresa?->hasControleEstoque() ?? true) ? 'true' : 'false' }}
-    })">
+    <div class="w-full" x-data="{ fotoModalUrl: null, exportPdfModalOpen: false }" @abrir-modal-pdf.window="exportPdfModalOpen = true">
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             {{-- Coluna Principal --}}
             <div class="lg:col-span-2 space-y-6">
 
-                {{-- Formulário de Informações Gerais --}}
+                {{-- Módulo de Visualização: Informações Gerais da OS --}}
                 <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                         <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                            <i class="bi bi-info-circle text-gray-500"></i>
-                            Informações Gerais
+                            <i class="bi bi-info-circle text-blue-600"></i>
+                            Informações da Ordem de Serviço
                         </h3>
                     </div>
-                    <div class="p-6">
-                        <form action="{{ route('ordens.update', $ordem->id) }}" method="POST" class="space-y-5">
-                            @csrf
-                            @method('PUT')
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div>
-                                    <label class="block mb-1.5 text-sm font-medium text-gray-700">
-                                        Cliente
-                                    </label>
-                                    <select name="cliente_id" id="cliente_id"
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150"
-                                        required>
-                                        @foreach ($clientes as $cliente)
-                                            <option value="{{ $cliente->id }}"
-                                                {{ $ordem->cliente_id == $cliente->id ? 'selected' : '' }}>
-                                                {{ $cliente->nome }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label class="block mb-1.5 text-sm font-medium text-gray-700">
-                                        Veículo
-                                    </label>
-                                    <select name="veiculo_id" id="veiculo_id"
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150"
-                                        required>
-                                        @foreach ($veiculos as $veiculo)
-                                            <option value="{{ $veiculo->id }}"
-                                                {{ $ordem->veiculo_id == $veiculo->id ? 'selected' : '' }}>
-                                                {{ $veiculo->marca }} {{ $veiculo->modelo }} - {{ $veiculo->placa }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <div class="md:col-span-2">
-                                    <label class="block mb-1.5 text-sm font-medium text-gray-700">
-                                        Problema Relatado
-                                    </label>
-                                    <textarea name="descricao_problema" rows="3"
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150"
-                                        required>{{ old('descricao_problema', $ordem->descricao_problema) }}</textarea>
-                                </div>
-
-                                <div class="md:col-span-2">
-                                    <label class="block mb-1.5 text-sm font-medium text-gray-700">
-                                        Avarias / Problemas Prévios do Veículo (Vistoria Entrada)
-                                    </label>
-                                    <textarea name="problemas_previos" rows="2"
-                                        placeholder="Ex: Arranhão na porta traseira, para-choque trincado..."
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150">{{ old('problemas_previos', $ordem->problemas_previos) }}</textarea>
-                                </div>
-
-                                <div>
-                                    <label class="block mb-1.5 text-sm font-medium text-gray-700">
-                                        Funcionário / Mecânico
-                                    </label>
-                                    <select name="funcionario_id"
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150">
-                                        <option value="">Nenhum funcionário atribuído</option>
-                                        @foreach ($funcionarios as $func)
-                                            <option value="{{ $func->id }}"
-                                                {{ $ordem->funcionario_id == $func->id ? 'selected' : '' }}>
-                                                {{ $func->name }} ({{ ucfirst($func->role) }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label class="block mb-1.5 text-sm font-medium text-gray-700">
-                                        Status
-                                    </label>
-                                    <select name="status"
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-150"
-                                        required>
-                                        <option value="aberta" {{ $ordem->status == 'aberta' ? 'selected' : '' }}>Aberta</option>
-                                        <option value="em_andamento" {{ $ordem->status == 'em_andamento' ? 'selected' : '' }}>Em andamento</option>
-                                        <option value="aguardando_aprovacao" {{ $ordem->status == 'aguardando_aprovacao' ? 'selected' : '' }}>Aguardando aprovação</option>
-                                        <option value="aprovada" {{ $ordem->status == 'aprovada' ? 'selected' : '' }}>Aprovada</option>
-                                        <option value="reprovada" {{ $ordem->status == 'reprovada' ? 'selected' : '' }}>Reprovada</option>
-                                        <option value="concluida" {{ $ordem->status == 'concluida' ? 'selected' : '' }}>Concluída</option>
-                                        <option value="entregue" {{ $ordem->status == 'entregue' ? 'selected' : '' }}>Entregue</option>
-                                        <option value="cancelada" {{ $ordem->status == 'cancelada' ? 'selected' : '' }}>Cancelada</option>
-                                    </select>
+                    <div class="p-6 space-y-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {{-- Cliente --}}
+                            <div class="bg-gray-50/80 rounded-lg p-3.5 border border-gray-100">
+                                <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                    Cliente
+                                </span>
+                                <div class="flex items-center justify-between">
+                                    <a href="{{ route('clientes.show', $ordem->cliente->id) }}"
+                                        class="text-sm font-bold text-gray-900 hover:text-blue-600 hover:underline">
+                                        {{ $ordem->cliente->nome }}
+                                    </a>
+                                    @if ($ordem->cliente->telefone)
+                                        <span class="text-xs text-gray-600 font-mono">
+                                            {{ $ordem->cliente->telefone }}
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
 
-                            <div class="pt-4 flex items-center justify-end border-t border-gray-100 mt-2">
-                                <button type="submit"
-                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-                                    <i class="bi bi-check2"></i>
-                                    Salvar Alterações
-                                </button>
+                            {{-- Veículo --}}
+                            <div class="bg-gray-50/80 rounded-lg p-3.5 border border-gray-100">
+                                <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                    Veículo
+                                </span>
+                                <div class="flex items-center justify-between">
+                                    <a href="{{ route('veiculos.show', $ordem->veiculo->id) }}"
+                                        class="text-sm font-bold text-gray-900 hover:text-blue-600 hover:underline">
+                                        {{ $ordem->veiculo->marca }} {{ $ordem->veiculo->modelo }}
+                                    </a>
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-white text-gray-800 border border-gray-200 uppercase font-mono">
+                                        {{ $ordem->veiculo->placa }}
+                                    </span>
+                                </div>
                             </div>
-                        </form>
+
+                            {{-- Funcionário / Mecânico --}}
+                            <div class="bg-gray-50/80 rounded-lg p-3.5 border border-gray-100">
+                                <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                    Mecânico / Responsável
+                                </span>
+                                <div class="text-sm font-medium text-gray-900 flex items-center gap-1.5">
+                                    <i class="bi bi-person text-gray-400"></i>
+                                    @if ($ordem->funcionario)
+                                        <span>{{ $ordem->funcionario->name }}</span>
+                                        <span
+                                            class="text-xs text-gray-500">({{ ucfirst($ordem->funcionario->role) }})</span>
+                                    @else
+                                        <span class="text-gray-400 italic">Nenhum funcionário atribuído</span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            {{-- Status e Entrada --}}
+                            <div class="bg-gray-50/80 rounded-lg p-3.5 border border-gray-100">
+                                <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                    Status & Entrada
+                                </span>
+                                <div class="flex items-center justify-between">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $ordem->status_color }}">
+                                        {{ $ordem->status_formatado }}
+                                    </span>
+                                    <span class="text-xs text-gray-500">
+                                        <i class="bi bi-calendar3 mr-1 text-gray-400"></i>
+                                        {{ $ordem->data_entrada ? $ordem->data_entrada->format('d/m/Y H:i') : $ordem->created_at->format('d/m/Y H:i') }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Problema Relatado --}}
+                        <div class="bg-gray-50/80 rounded-lg p-3.5 border border-gray-100">
+                            <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                                Problema Relatado / Queixa do Cliente
+                            </span>
+                            <p class="text-sm text-gray-800 whitespace-pre-line leading-relaxed">
+                                {{ $ordem->descricao_problema }}
+                            </p>
+                        </div>
+
+                        {{-- Avarias Prévias (se houver) --}}
+                        @if ($ordem->problemas_previos)
+                            <div class="bg-amber-50/70 rounded-lg p-3.5 border border-amber-200/80">
+                                <span
+                                    class="block text-xs font-semibold text-amber-800 uppercase tracking-wider mb-1.5">
+                                    <i class="bi bi-exclamation-triangle mr-1"></i> Avarias / Problemas Prévios
+                                    (Vistoria Entrada)
+                                </span>
+                                <p class="text-sm text-amber-950 font-medium whitespace-pre-line leading-relaxed">
+                                    {{ $ordem->problemas_previos }}
+                                </p>
+                            </div>
+                        @endif
+
+                        {{-- Observações Adicionais (se houver) --}}
+                        @if ($ordem->observacoes)
+                            <div class="bg-gray-50/80 rounded-lg p-3.5 border border-gray-100">
+                                <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                                    Observações Adicionais
+                                </span>
+                                <p class="text-sm text-gray-800 whitespace-pre-line leading-relaxed">
+                                    {{ $ordem->observacoes }}
+                                </p>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
                 {{-- Banner Informativo quando a OS não está Aberta --}}
                 @if (!$ordem->podeEditar())
-                    <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs flex items-center gap-3 shadow-sm">
+                    <div
+                        class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs flex items-center gap-3 shadow-sm">
                         <i class="bi bi-lock-fill text-amber-600 text-xl shrink-0"></i>
                         <div>
-                            <span class="font-semibold block text-sm text-amber-950 mb-0.5">Ordem de Serviço com status "{{ $ordem->status_formatado }}"</span>
-                            <span class="text-amber-800">Esta Ordem de Serviço não pode sofrer alterações nas peças, serviços ou fotos de avarias. Para realizar qualquer alteração, altere o status para <strong>Aberta</strong> nas Informações Gerais acima.</span>
+                            <span class="font-semibold block text-sm text-amber-950 mb-0.5">Ordem de Serviço com status
+                                "{{ $ordem->status_formatado }}"</span>
+                            <span class="text-amber-800">Esta Ordem de Serviço não pode sofrer alterações nas peças,
+                                serviços ou fotos de avarias. Para alterar informações cadastrais ou mudar o status para
+                                <strong>Aberta</strong>, acesse o módulo de <a
+                                    href="{{ route('ordens.edit', $ordem->id) }}"
+                                    class="underline font-semibold text-amber-950 hover:text-black">edição da
+                                    OS</a>.</span>
                         </div>
                     </div>
                 @endif
 
                 {{-- Card de Vistoria & Fotos do Veículo --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden" x-data="{ fotoModalUrl: null }">
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
                         <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
                             <i class="bi bi-camera text-blue-600"></i>
                             Vistoria & Fotos do Veículo ({{ $ordem->fotos->count() }})
                         </h3>
-                        @if ($ordem->podeEditar())
-                            <form id="form-upload-fotos" action="{{ route('ordens.fotos.store', $ordem->id) }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-2">
-                                @csrf
-                                <label id="btn-adicionar-fotos-label" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md cursor-pointer transition-all shadow-sm">
-                                    <i id="btn-adicionar-fotos-icon" class="bi bi-plus-lg"></i>
-                                    <span id="btn-adicionar-fotos-text">+ Adicionar Fotos</span>
-                                    <input type="file" name="fotos[]" multiple accept="image/*" class="hidden" id="input-fotos-show" onchange="enviarFotosComCompressao(this)">
-                                </label>
-                            </form>
-                        @endif
+                        <a href="{{ route('ordens.pdf-vistoria', $ordem->id) }}" target="_blank"
+                            class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors"
+                            title="Imprimir Termo de Vistoria de Entrada do Veículo">
+                            <i class="bi bi-file-earmark-pdf text-amber-600"></i>
+                            <span>PDF Vistoria</span>
+                        </a>
                     </div>
                     <div class="p-6 space-y-4">
                         @if ($ordem->problemas_previos)
                             <div class="p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-lg">
                                 <span class="text-xs font-semibold text-amber-800 uppercase tracking-wider block mb-1">
-                                    <i class="bi bi-exclamation-triangle mr-1"></i> Avarias / Problemas Prévios Registrados:
+                                    <i class="bi bi-exclamation-triangle mr-1"></i> Avarias / Problemas Prévios
+                                    Registrados:
                                 </span>
-                                <p class="text-sm text-amber-950 font-medium whitespace-pre-line">{{ $ordem->problemas_previos }}</p>
+                                <p class="text-sm text-amber-950 font-medium whitespace-pre-line">
+                                    {{ $ordem->problemas_previos }}</p>
                             </div>
                         @endif
 
                         @if ($ordem->fotos->count())
                             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                                 @foreach ($ordem->fotos as $foto)
-                                    <div class="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-100">
-                                        <img src="{{ $foto->url }}" alt="Foto do veículo" class="w-full h-full object-cover cursor-pointer transition-transform duration-200 group-hover:scale-105" @click="fotoModalUrl = '{{ $foto->url }}'">
-                                        
-                                        @if ($ordem->podeEditar())
-                                            <form action="{{ route('ordens.fotos.destroy', $foto->id) }}" method="POST" class="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Deseja remover esta foto?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="p-1 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-md text-xs" title="Excluir foto">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
-                                        @endif
+                                    <div
+                                        class="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-100">
+                                        <img src="{{ $foto->url }}" alt="Foto do veículo"
+                                            class="w-full h-full object-cover cursor-pointer transition-transform duration-200 group-hover:scale-105"
+                                            @click="fotoModalUrl = '{{ $foto->url }}'">
                                     </div>
                                 @endforeach
                             </div>
@@ -228,48 +237,15 @@
                             </div>
                         @endif
                     </div>
-
-                    {{-- Lightbox Modal para Zoom da Foto --}}
-                    <div x-show="fotoModalUrl" x-transition class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-80 flex items-center justify-center p-4" style="display: none;" @keydown.escape.window="fotoModalUrl = null">
-                        <div class="relative max-w-4xl w-full bg-black rounded-lg overflow-hidden flex flex-col items-center justify-center" @click.away="fotoModalUrl = null">
-                            <button type="button" @click="fotoModalUrl = null" class="absolute top-3 right-3 text-white text-xl bg-gray-800/80 hover:bg-gray-800 rounded-full w-8 h-8 flex items-center justify-center z-10">
-                                <i class="bi bi-x-lg"></i>
-                            </button>
-                            <img :src="fotoModalUrl" class="max-h-[85vh] w-auto object-contain">
-                        </div>
-                    </div>
                 </div>
 
                 {{-- Itens da Ordem (Serviços e Peças) --}}
                 <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
                         <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
                             <i class="bi bi-list-check text-gray-500"></i>
                             Serviços e Peças Executados
                         </h3>
-
-                        @if ($ordem->podeEditar())
-                            <div class="flex items-center gap-2">
-                                <button type="button" 
-                                        @click="descontoModalOpen = true"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-md transition-colors">
-                                    <i class="bi bi-tag"></i>
-                                    {{ $ordem->temDesconto() ? 'Editar Desconto' : '+ Desconto' }}
-                                </button>
-                                <button type="button" 
-                                        @click="abrirModal('servico')"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors">
-                                    <i class="bi bi-wrench"></i>
-                                    + Adicionar Serviço
-                                </button>
-                                <button type="button" 
-                                        @click="abrirModal('peca')"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-md transition-colors">
-                                    <i class="bi bi-box-seam"></i>
-                                    + Adicionar Peça
-                                </button>
-                            </div>
-                        @endif
                     </div>
 
                     <div class="overflow-x-auto">
@@ -277,29 +253,39 @@
                             <table class="w-full text-sm">
                                 <thead class="bg-white border-b border-gray-100">
                                     <tr>
-                                        <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3">Tipo</th>
-                                        <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Descrição</th>
-                                        <th class="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Qtd</th>
-                                        <th class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">V. Unitário</th>
-                                        <th class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Total</th>
-                                        @if ($ordem->podeEditar())
-                                            <th class="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Ações</th>
-                                        @endif
+                                        <th
+                                            class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3">
+                                            Tipo</th>
+                                        <th
+                                            class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">
+                                            Descrição</th>
+                                        <th
+                                            class="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">
+                                            Qtd</th>
+                                        <th
+                                            class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">
+                                            V. Unitário</th>
+                                        <th
+                                            class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3">
+                                            Total</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     @foreach ($ordem->itens as $item)
                                         <tr class="data-row">
                                             <td class="px-6 py-3 whitespace-nowrap">
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold {{ $item->tipo_item === 'servico' ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700' }}">
-                                                    <i class="bi {{ $item->tipo_item === 'servico' ? 'bi-wrench' : 'bi-box-seam' }}"></i>
+                                                <span
+                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold {{ $item->tipo_item === 'servico' ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700' }}">
+                                                    <i
+                                                        class="bi {{ $item->tipo_item === 'servico' ? 'bi-wrench' : 'bi-box-seam' }}"></i>
                                                     {{ ucfirst($item->tipo_item) }}
                                                 </span>
                                             </td>
                                             <td class="px-4 py-3 text-gray-900 font-medium">
                                                 {{ $item->descricao }}
                                                 @if (($item->tipo_item === 'servico' && !$item->servico_id) || ($item->tipo_item === 'peca' && !$item->peca_id))
-                                                    <span class="ml-1 text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded border border-gray-200">Personalizado</span>
+                                                    <span
+                                                        class="ml-1 text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded border border-gray-200">Personalizado</span>
                                                 @endif
                                             </td>
                                             <td class="px-4 py-3 text-center text-gray-600">
@@ -308,89 +294,54 @@
                                             <td class="px-4 py-3 text-right text-gray-600">
                                                 R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}
                                             </td>
-                                            <td class="px-4 py-3 text-right font-bold text-gray-900">
+                                            <td class="px-6 py-3 text-right font-bold text-gray-900">
                                                 R$ {{ number_format($item->valor_total, 2, ',', '.') }}
                                             </td>
-                                            @if ($ordem->podeEditar())
-                                                <td class="px-4 py-3 text-center whitespace-nowrap">
-                                                    <div class="flex items-center justify-center gap-1">
-                                                        <button type="button" 
-                                                                @click="abrirEdicaoItem({{ Js::from($item) }})"
-                                                                class="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors"
-                                                                title="Editar Item">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </button>
-                                                        <form action="{{ route('ordens.itens.destroy', $item->id) }}"
-                                                            method="POST"
-                                                            onsubmit="return confirm('Tem certeza que deseja remover este item da OS?');"
-                                                            class="inline">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit"
-                                                                class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors"
-                                                                title="Remover Item">
-                                                                <i class="bi bi-trash"></i>
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                </td>
-                                            @endif
                                         </tr>
                                     @endforeach
                                 </tbody>
                                 <tfoot class="bg-gray-50 border-t border-gray-100">
                                     @if ($ordem->temDesconto())
                                         <tr>
-                                            <td colspan="4" class="px-6 py-2.5 text-right font-medium text-gray-500 text-sm">
+                                            <td colspan="4"
+                                                class="px-6 py-2.5 text-right font-medium text-gray-500 text-sm">
                                                 Subtotal:
                                             </td>
-                                            <td class="px-4 py-2.5 text-right font-semibold text-gray-700 text-sm whitespace-nowrap">
-                                                R$ {{ number_format($ordem->subtotal ?: ($ordem->valor_total + $ordem->valor_desconto), 2, ',', '.') }}
+                                            <td
+                                                class="px-6 py-2.5 text-right font-semibold text-gray-700 text-sm whitespace-nowrap">
+                                                R$
+                                                {{ number_format($ordem->subtotal ?: $ordem->valor_total + $ordem->valor_desconto, 2, ',', '.') }}
                                             </td>
-                                            @if ($ordem->podeEditar())
-                                                <td></td>
-                                            @endif
                                         </tr>
                                         <tr>
-                                            <td colspan="4" class="px-6 py-2.5 text-right font-medium text-emerald-600 text-sm">
-                                                Desconto ({{ $ordem->desconto_tipo === 'porcentagem' ? number_format($ordem->desconto_valor, 0) . '%' : 'fixo' }}):
+                                            <td colspan="4"
+                                                class="px-6 py-2.5 text-right font-medium text-emerald-600 text-sm">
+                                                Desconto
+                                                ({{ $ordem->desconto_tipo === 'porcentagem' ? number_format($ordem->desconto_valor, 0) . '%' : 'fixo' }}):
                                             </td>
-                                            <td class="px-4 py-2.5 text-right font-bold text-emerald-600 text-sm whitespace-nowrap">
+                                            <td
+                                                class="px-6 py-2.5 text-right font-bold text-emerald-600 text-sm whitespace-nowrap">
                                                 - R$ {{ number_format($ordem->valor_desconto, 2, ',', '.') }}
                                             </td>
-                                            @if ($ordem->podeEditar())
-                                                <td></td>
-                                            @endif
                                         </tr>
                                     @endif
                                     <tr class="{{ $ordem->temDesconto() ? 'border-t border-gray-200' : '' }}">
-                                        <td colspan="4" class="px-6 py-4 text-right font-bold text-gray-900 text-base">
+                                        <td colspan="4"
+                                            class="px-6 py-4 text-right font-bold text-gray-900 text-base">
                                             Total da Ordem:
                                         </td>
-                                        <td class="px-4 py-4 text-right font-bold text-blue-700 text-lg whitespace-nowrap">
+                                        <td
+                                            class="px-6 py-4 text-right font-bold text-blue-700 text-lg whitespace-nowrap">
                                             R$ {{ number_format($ordem->valor_total, 2, ',', '.') }}
                                         </td>
-                                        @if ($ordem->podeEditar())
-                                            <td></td>
-                                        @endif
                                     </tr>
                                 </tfoot>
                             </table>
                         @else
                             <div class="px-6 py-12 text-center text-gray-500">
                                 <i class="bi bi-box-seam text-3xl mb-2 block text-gray-300"></i>
-                                <p class="text-sm font-medium">Nenhum serviço ou peça adicionado ainda.</p>
-                                @if ($ordem->podeEditar())
-                                    <div class="mt-3 flex items-center justify-center gap-3">
-                                        <button type="button" @click="abrirModal('servico')" class="text-xs font-semibold text-blue-700 hover:underline">
-                                            + Adicionar Serviço
-                                        </button>
-                                        <span>&bull;</span>
-                                        <button type="button" @click="abrirModal('peca')" class="text-xs font-semibold text-amber-700 hover:underline">
-                                            + Adicionar Peça
-                                        </button>
-                                    </div>
-                                @endif
+                                <p class="text-sm font-medium">Nenhum serviço ou peça registrado nesta Ordem de
+                                    Serviço.</p>
                             </div>
                         @endif
                     </div>
@@ -412,7 +363,8 @@
                         </div>
                         <div class="p-6 space-y-4">
                             @if (!$ordem->approval_token)
-                                <p class="text-xs text-gray-500">Gere um link seguro para enviar ao cliente para que ele
+                                <p class="text-xs text-gray-500">Gere um link seguro para enviar ao cliente para que
+                                    ele
                                     possa aprovar ou reprovar esta OS sem precisar de login.</p>
                                 <form action="{{ route('ordens.solicitar-aprovacao', $ordem->id) }}" method="POST">
                                     @csrf
@@ -432,14 +384,16 @@
                                             default => 'bg-yellow-100 text-yellow-800',
                                         };
                                     @endphp
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $appStatusColor }}">
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $appStatusColor }}">
                                         {{ $ordem->approval_status_formatado }}
                                     </span>
                                 </div>
 
                                 @if ($ordem->approval_status === 'pending')
                                     <div class="space-y-2">
-                                        <label class="block text-xs font-semibold text-gray-500 uppercase">Link de Aprovação</label>
+                                        <label class="block text-xs font-semibold text-gray-500 uppercase">Link de
+                                            Aprovação</label>
                                         <div class="flex gap-2">
                                             <input type="text" readonly
                                                 value="{{ route('aprovacao.show', $ordem->approval_token) }}"
@@ -460,8 +414,8 @@
                                         Enviar pelo WhatsApp
                                     </a>
 
-                                    <form action="{{ route('ordens.solicitar-aprovacao', $ordem->id) }}" method="POST"
-                                        class="pt-2 border-t border-gray-100">
+                                    <form action="{{ route('ordens.solicitar-aprovacao', $ordem->id) }}"
+                                        method="POST" class="pt-2 border-t border-gray-100">
                                         @csrf
                                         <button type="submit"
                                             class="w-full text-xs text-gray-500 hover:text-gray-700 text-center block bg-transparent border-0 cursor-pointer p-0">
@@ -489,25 +443,33 @@
                                 <span class="font-medium text-gray-900">{{ $ordem->approval_status_formatado }}</span>
                             </div>
                             <div>
-                                <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">Data do envio</span>
-                                <span class="font-medium text-gray-900">{{ $ordem->approval_requested_at ? $ordem->approval_requested_at->format('d/m/Y H:i') : '—' }}</span>
+                                <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">Data do
+                                    envio</span>
+                                <span
+                                    class="font-medium text-gray-900">{{ $ordem->approval_requested_at ? $ordem->approval_requested_at->format('d/m/Y H:i') : '—' }}</span>
                             </div>
                             <div>
-                                <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">Data da resposta</span>
-                                <span class="font-medium text-gray-900">{{ $ordem->approval_response_at ? $ordem->approval_response_at->format('d/m/Y H:i') : '—' }}</span>
+                                <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">Data da
+                                    resposta</span>
+                                <span
+                                    class="font-medium text-gray-900">{{ $ordem->approval_response_at ? $ordem->approval_response_at->format('d/m/Y H:i') : '—' }}</span>
                             </div>
                             <div>
                                 <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">IP</span>
                                 <span class="font-medium text-gray-900">{{ $ordem->approval_ip ?? '—' }}</span>
                             </div>
                             <div>
-                                <span class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">Navegador</span>
-                                <span class="font-medium text-gray-900 text-xs block break-all text-gray-600">{{ $ordem->approval_user_agent ?? '—' }}</span>
+                                <span
+                                    class="block text-xs font-semibold text-gray-500 uppercase mb-0.5">Navegador</span>
+                                <span
+                                    class="font-medium text-gray-900 text-xs block break-all text-gray-600">{{ $ordem->approval_user_agent ?? '—' }}</span>
                             </div>
                             @if ($ordem->approval_comment)
                                 <div class="pt-2 border-t border-gray-100">
-                                    <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Comentário do cliente</span>
-                                    <div class="p-2 bg-gray-50 rounded text-xs text-gray-700 border border-gray-100 break-words">
+                                    <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Comentário
+                                        do cliente</span>
+                                    <div
+                                        class="p-2 bg-gray-50 rounded text-xs text-gray-700 border border-gray-100 break-words">
                                         {{ $ordem->approval_comment }}
                                     </div>
                                 </div>
@@ -556,522 +518,114 @@
 
         </div>
 
-        {{-- Modal Compartilhado de Adição de Itens --}}
-        @include('ordens.partials.item-modal')
-
-        {{-- Modal de Edição de Item Existente --}}
-        <div x-show="modalEdicaoOpen" 
-             x-transition
-             class="fixed inset-0 z-50 overflow-y-auto bg-gray-900 bg-opacity-50 flex items-center justify-center p-4"
-             style="display: none;"
-             @keydown.escape.window="modalEdicaoOpen = false">
-            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden" @click.away="modalEdicaoOpen = false">
-                <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                    <h3 class="text-sm font-bold text-gray-900">Editar Item da Ordem</h3>
-                    <button type="button" @click="modalEdicaoOpen = false" class="text-gray-400 hover:text-gray-600">
+        {{-- Lightbox Modal para Zoom da Foto --}}
+        <template x-teleport="body">
+            <div x-show="fotoModalUrl" x-transition
+                class="fixed inset-0 z-[100] overflow-y-auto bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center p-4"
+                style="display: none;" @keydown.escape.window="fotoModalUrl = null">
+                <div class="relative max-w-4xl w-full bg-black rounded-lg overflow-hidden flex flex-col items-center justify-center"
+                    @click.away="fotoModalUrl = null">
+                    <button type="button" @click="fotoModalUrl = null"
+                        class="absolute top-3 right-3 text-white text-xl bg-gray-800/80 hover:bg-gray-800 rounded-full w-8 h-8 flex items-center justify-center z-10"
+                        title="Fechar">
                         <i class="bi bi-x-lg"></i>
                     </button>
+                    <img :src="fotoModalUrl" class="max-h-[85vh] w-auto object-contain">
                 </div>
-                <form :action="'/ordens/itens/' + itemEditando.id" method="POST" class="p-6 space-y-4">
-                    @csrf
-                    @method('PUT')
-
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Descrição</label>
-                        <input type="text" name="descricao" x-model="itemEditando.descricao" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500" required>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Quantidade</label>
-                            <input type="number" name="quantidade" x-model.number="itemEditando.quantidade" min="1" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500" required>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Valor Unitário (R$)</label>
-                            <input type="number" step="0.01" name="valor_unitario" x-model.number="itemEditando.valor_unitario" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500" required>
-                        </div>
-                    </div>
-
-                    <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
-                        <button type="button" @click="modalEdicaoOpen = false" class="px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100 rounded-md">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-md">Salvar Alterações</button>
-                    </div>
-                </form>
             </div>
-        </div>
+        </template>
 
-        {{-- Modal de Desconto da OS --}}
-        <div x-show="descontoModalOpen" x-transition class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4" style="display: none;" @keydown.escape.window="descontoModalOpen = false">
-            <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4" @click.away="descontoModalOpen = false">
-                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
-                        <span class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs">
-                            <i class="bi bi-tag-fill"></i>
-                        </span>
-                        Desconto da Ordem de Serviço
-                    </h3>
-                    <button type="button" @click="descontoModalOpen = false" class="text-gray-400 hover:text-gray-600">
-                        <i class="bi bi-x-lg text-sm"></i>
-                    </button>
-                </div>
+        {{-- MODAL DE EXPORTAÇÃO DE PDFS (OS e Vistoria) --}}
+        <template x-teleport="body">
+            <div x-show="exportPdfModalOpen" x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="fixed inset-0 z-[100] overflow-y-auto bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+                style="display: none;" @keydown.escape.window="exportPdfModalOpen = false">
 
-                <form action="{{ route('ordens.desconto.update', $ordem->id) }}" method="POST" class="space-y-4">
-                    @csrf
-                    @method('PATCH')
+                <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-gray-100"
+                    @click.away="exportPdfModalOpen = false">
 
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
-                            Tipo de Desconto
-                        </label>
-                        <div class="grid grid-cols-2 gap-2 bg-gray-100 p-1 rounded-lg">
-                            <button type="button" 
-                                    @click="descontoTipo = 'dinheiro'"
-                                    :class="descontoTipo === 'dinheiro' ? 'bg-white text-gray-900 shadow-sm font-bold' : 'text-gray-500 font-medium hover:text-gray-900'"
-                                    class="py-2 text-xs rounded-md transition-all flex items-center justify-center gap-1.5">
-                                <i class="bi bi-currency-dollar"></i> R$ Fixo
-                            </button>
-                            <button type="button" 
-                                    @click="descontoTipo = 'porcentagem'"
-                                    :class="descontoTipo === 'porcentagem' ? 'bg-white text-gray-900 shadow-sm font-bold' : 'text-gray-500 font-medium hover:text-gray-900'"
-                                    class="py-2 text-xs rounded-md transition-all flex items-center justify-center gap-1.5">
-                                <i class="bi bi-percent"></i> Porcentagem
-                            </button>
+                    {{-- Cabeçalho do Modal --}}
+                    <div
+                        class="px-6 py-4 bg-gradient-to-r from-gray-50 to-slate-50 border-b border-gray-100 flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+                                <i class="bi bi-file-earmark-pdf-fill text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900">Exportar Documentos em PDF</h3>
+                                <p class="text-xs text-gray-500">Selecione o tipo de documento que deseja gerar</p>
+                            </div>
                         </div>
-                        <input type="hidden" name="desconto_tipo" :value="descontoTipo">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
-                            <span x-text="descontoTipo === 'dinheiro' ? 'Valor do Desconto (R$)' : 'Percentual de Desconto (%)'"></span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs text-gray-400 font-bold"
-                                  x-text="descontoTipo === 'dinheiro' ? 'R$' : '%'"></span>
-                            <input type="number" 
-                                   step="0.01" 
-                                   min="0" 
-                                   :max="descontoTipo === 'porcentagem' ? 100 : (subtotalOrdem > 0 ? subtotalOrdem : 999999)"
-                                   name="desconto_valor" 
-                                   x-model.number="descontoValor" 
-                                   class="w-full pl-9 pr-3 py-2 text-sm font-semibold border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" 
-                                   placeholder="0,00"
-                                   required>
-                        </div>
-                        <p class="text-[11px] text-gray-400 mt-1">
-                            Para remover o desconto, digite 0 e salve.
-                        </p>
-                    </div>
-
-                    {{-- Resumo / Preview --}}
-                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100 space-y-1.5 text-xs">
-                        <div class="flex justify-between text-gray-500">
-                            <span>Subtotal da OS:</span>
-                            <span class="font-semibold text-gray-700">R$ {{ number_format($ordem->subtotal ?: ($ordem->valor_total + $ordem->valor_desconto), 2, ',', '.') }}</span>
-                        </div>
-                        <div class="flex justify-between text-emerald-600 font-medium">
-                            <span>Desconto aplicado:</span>
-                            <span class="font-bold">- R$ <span x-text="valorDescontoPreview.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></span></span>
-                        </div>
-                        <div class="flex justify-between text-gray-900 font-bold border-t border-gray-200 pt-1.5 text-sm">
-                            <span>Total Final:</span>
-                            <span class="text-blue-700">R$ <span x-text="totalFinalPreview.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></span></span>
-                        </div>
-                    </div>
-
-                    <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
-                        <button type="button" @click="descontoModalOpen = false" class="px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                            Cancelar
-                        </button>
-                        <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-colors">
-                            Salvar Desconto
+                        <button type="button" @click="exportPdfModalOpen = false"
+                            class="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+                            <i class="bi bi-x-lg text-sm"></i>
                         </button>
                     </div>
-                </form>
+
+                    {{-- Opções de PDF --}}
+                    <div class="p-6 space-y-4">
+
+                        {{-- Opção 1: PDF da Ordem de Serviço --}}
+                        <a href="{{ route('ordens.pdf', $ordem->id) }}" target="_blank"
+                            @click="exportPdfModalOpen = false"
+                            class="group relative flex items-start gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-red-500 hover:bg-red-50/40 transition-all duration-200">
+                            <div
+                                class="w-11 h-11 rounded-xl bg-red-100 group-hover:bg-red-600 text-red-600 group-hover:text-white flex items-center justify-center shrink-0 transition-colors shadow-sm">
+                                <i class="bi bi-file-earmark-text text-xl"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-2">
+                                    <h4
+                                        class="text-sm font-bold text-gray-900 group-hover:text-red-700 transition-colors">
+                                        PDF da Ordem de Serviço (OS)
+                                    </h4>
+                                    <span
+                                        class="inline-flex items-center gap-1 text-[11px] font-semibold text-red-600 bg-red-50 group-hover:bg-red-100 px-2.5 py-0.5 rounded-full border border-red-200">
+                                        <i class="bi bi-arrow-up-right"></i> Abrir PDF
+                                    </span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+                                    Orçamento detalhado com serviços, peças, valores unitários, descontos, total da OS e
+                                    termos para assinatura do cliente.
+                                </p>
+                            </div>
+                        </a>
+
+                        {{-- Opção 2: PDF do Laudo de Vistoria --}}
+                        <a href="{{ route('ordens.pdf-vistoria', $ordem->id) }}" target="_blank"
+                            @click="exportPdfModalOpen = false"
+                            class="group relative flex items-start gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-amber-500 hover:bg-amber-50/40 transition-all duration-200">
+                            <div
+                                class="w-11 h-11 rounded-xl bg-amber-100 group-hover:bg-amber-600 text-amber-700 group-hover:text-white flex items-center justify-center shrink-0 transition-colors shadow-sm">
+                                <i class="bi bi-camera text-xl"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-2">
+                                    <h4
+                                        class="text-sm font-bold text-gray-900 group-hover:text-amber-800 transition-colors">
+                                        PDF do Termo de Vistoria
+                                    </h4>
+                                    <span
+                                        class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 group-hover:bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-200">
+                                        <i class="bi bi-arrow-up-right"></i> Abrir PDF
+                                    </span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+                                    Checklist de entrada do veículo, diagnóstico da queixa, avarias prévias registradas
+                                    e anexo com todas as fotos.
+                                </p>
+                            </div>
+                        </a>
+
+                    </div>
+
+                </div>
             </div>
-        </div>
+        </template>
 
     </div>
-
-    @push('scripts')
-    <script>
-        document.getElementById('cliente_id')?.addEventListener('change', function() {
-            let clienteId = this.value;
-            if (!clienteId) return;
-
-            fetch(`/clientes/${clienteId}/veiculos`)
-                .then(response => response.json())
-                .then(data => {
-                    let select = document.getElementById('veiculo_id');
-                    select.innerHTML = '';
-                    let defaultOption = document.createElement('option');
-                    defaultOption.value = '';
-                    defaultOption.textContent = 'Selecione um veículo...';
-                    select.appendChild(defaultOption);
-
-                    data.forEach(veiculo => {
-                        let opt = document.createElement('option');
-                        opt.value = veiculo.id;
-                        opt.textContent = `${veiculo.marca || ''} ${veiculo.modelo || ''} - ${veiculo.placa || ''}`.trim();
-                        select.appendChild(opt);
-                    });
-                });
-        });
-
-        function ordemServicoShow(config) {
-            return {
-                ordemId: config.ordemId,
-                servicosCatalogo: config.servicosCatalogo || [],
-                pecasCatalogo: config.pecasCatalogo || [],
-                hasEstoqueControl: config.hasEstoqueControl ?? true,
-
-                // Desconto
-                descontoModalOpen: false,
-                descontoTipo: '{{ $ordem->desconto_tipo ?? 'dinheiro' }}',
-                descontoValor: {{ (float) ($ordem->desconto_valor ?? 0) }},
-                subtotalOrdem: {{ (float) ($ordem->subtotal ?: ($ordem->valor_total + $ordem->valor_desconto)) }},
-
-                get valorDescontoPreview() {
-                    let sub = this.subtotalOrdem;
-                    let val = Number(this.descontoValor) || 0;
-                    if (val <= 0 || sub <= 0) return 0;
-                    if (this.descontoTipo === 'porcentagem') {
-                        let p = Math.min(100, Math.max(0, val));
-                        return Math.round(sub * (p / 100) * 100) / 100;
-                    }
-                    return Math.min(sub, Math.max(0, val));
-                },
-
-                get totalFinalPreview() {
-                    return Math.max(0, Math.round((this.subtotalOrdem - this.valorDescontoPreview) * 100) / 100);
-                },
-
-                modalOpen: false,
-                modalTipo: 'servico',
-                modalAba: 'catalogo',
-                buscaTermo: '',
-                itemSelecionado: null,
-                salvandoNovo: false,
-
-                itemForm: { quantidade: 1, valor_unitario: 0 },
-                novoItem: {
-                    nome: '',
-                    codigo: '',
-                    marca: '',
-                    descricao: '',
-                    preco_custo: '',
-                    preco_venda: '',
-                    valor_unitario: '',
-                    estoque: 0,
-                    quantidade: 1
-                },
-                itemPersonalizado: { descricao: '', quantidade: 1, valor_unitario: '' },
-
-                modalEdicaoOpen: false,
-                itemEditando: { id: null, descricao: '', quantidade: 1, valor_unitario: 0 },
-
-                get itensFiltrados() {
-                    let termo = (this.buscaTermo || '').toLowerCase().trim();
-                    let lista = this.modalTipo === 'servico' ? this.servicosCatalogo : this.pecasCatalogo;
-                    if (!termo) return lista.slice(0, 15);
-                    return lista.filter(item => {
-                        let nomeMatch = (item.nome || '').toLowerCase().includes(termo);
-                        let descMatch = (item.descricao || '').toLowerCase().includes(termo);
-                        let codMatch = (item.codigo || '').toLowerCase().includes(termo);
-                        return nomeMatch || descMatch || codMatch;
-                    }).slice(0, 20);
-                },
-
-                abrirModal(tipo) {
-                    this.modalTipo = tipo;
-                    this.modalAba = 'catalogo';
-                    this.buscaTermo = '';
-                    this.itemSelecionado = null;
-                    this.itemForm = { quantidade: 1, valor_unitario: 0 };
-                    this.novoItem = {
-                        nome: '',
-                        codigo: '',
-                        marca: '',
-                        descricao: '',
-                        preco_custo: '',
-                        preco_venda: '',
-                        valor_unitario: '',
-                        estoque: 0,
-                        quantidade: 1
-                    };
-                    this.itemPersonalizado = { descricao: '', quantidade: 1, valor_unitario: '' };
-                    this.modalOpen = true;
-                },
-
-                fecharModal() {
-                    this.modalOpen = false;
-                },
-
-                selecionarItemCatalogo(item) {
-                    this.itemSelecionado = item;
-                    this.itemForm.quantidade = 1;
-                    this.itemForm.valor_unitario = Number(this.modalTipo === 'servico' ? item.valor_base : (item.preco_venda || item.valor_unitario));
-                },
-
-                confirmarAdicionarCatalogo() {
-                    if (!this.itemSelecionado) return;
-
-                    let url = this.modalTipo === 'servico' ? `/ordens/${this.ordemId}/itens` : `/ordens/${this.ordemId}/itens/peca`;
-                    let payload = this.modalTipo === 'servico'
-                        ? {
-                            servico_id: this.itemSelecionado.id,
-                            descricao: this.itemSelecionado.nome,
-                            quantidade: this.itemForm.quantidade,
-                            valor_unitario: this.itemForm.valor_unitario
-                        }
-                        : {
-                            peca_id: this.itemSelecionado.id,
-                            descricao: this.itemSelecionado.nome,
-                            quantidade: this.itemForm.quantidade,
-                            valor_unitario: this.itemForm.valor_unitario
-                        };
-
-                    this.enviarItemServidor(url, payload);
-                },
-
-                adicionarPersonalizado() {
-                    if (!this.itemPersonalizado.descricao.trim()) {
-                        alert('Informe a descrição do item.');
-                        return;
-                    }
-
-                    let url = this.modalTipo === 'servico' ? `/ordens/${this.ordemId}/itens` : `/ordens/${this.ordemId}/itens/peca`;
-                    let payload = {
-                        descricao: this.itemPersonalizado.descricao.trim(),
-                        quantidade: this.itemPersonalizado.quantidade,
-                        valor_unitario: this.itemPersonalizado.valor_unitario
-                    };
-
-                    this.enviarItemServidor(url, payload);
-                },
-
-                cadastrarNovoECarregar() {
-                    if (!this.novoItem.nome || !this.novoItem.nome.trim()) {
-                        alert('Informe o nome do item.');
-                        return;
-                    }
-
-                    let qtd = Math.max(1, parseInt(this.novoItem.quantidade) || 1);
-                    let url = this.modalTipo === 'servico' ? '/servicos' : '/pecas';
-                    let payload = {};
-                    let precoUnitarioOS = 0;
-
-                    if (this.modalTipo === 'servico') {
-                        let vUnit = parseFloat(this.novoItem.valor_unitario);
-                        if (isNaN(vUnit) || vUnit < 0) {
-                            alert('Informe um valor unitário válido.');
-                            return;
-                        }
-                        precoUnitarioOS = vUnit;
-                        payload = {
-                            nome: this.novoItem.nome.trim(),
-                            descricao: this.novoItem.descricao ? this.novoItem.descricao.trim() : this.novoItem.nome.trim(),
-                            valor_base: vUnit
-                        };
-                    } else {
-                        let precoCusto = parseFloat(this.novoItem.preco_custo);
-                        if (isNaN(precoCusto) || precoCusto < 0) {
-                            alert('Informe o preço de custo (compra) válido.');
-                            return;
-                        }
-
-                        let precoVenda = parseFloat(this.novoItem.preco_venda);
-                        if (isNaN(precoVenda) || precoVenda < 0) {
-                            alert('Informe o preço de venda válido.');
-                            return;
-                        }
-
-                        precoUnitarioOS = precoVenda;
-                        payload = {
-                            nome: this.novoItem.nome.trim(),
-                            marca: this.novoItem.marca ? this.novoItem.marca.trim() : null,
-                            codigo: this.novoItem.codigo ? this.novoItem.codigo.trim() : null,
-                            estoque: parseInt(this.novoItem.estoque) || 0,
-                            preco_custo: precoCusto,
-                            preco_venda: precoVenda,
-                            valor_unitario: precoVenda
-                        };
-                    }
-
-                    this.salvandoNovo = true;
-
-                    fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: JSON.stringify(payload)
-                    })
-                    .then(async response => {
-                        let res = await response.json();
-                        if (!response.ok) {
-                            let msg = res.message || 'Erro ao cadastrar item no catálogo.';
-                            if (res.errors) msg = Object.values(res.errors).flat().join('\n');
-                            throw new Error(msg);
-                        }
-                        return res;
-                    })
-                    .then(data => {
-                        let novoRegistro = data.servico || data.peca;
-                        let urlItem = this.modalTipo === 'servico' ? `/ordens/${this.ordemId}/itens` : `/ordens/${this.ordemId}/itens/peca`;
-                        let payloadItem = this.modalTipo === 'servico'
-                            ? { servico_id: novoRegistro.id, descricao: novoRegistro.nome, quantidade: qtd, valor_unitario: precoUnitarioOS }
-                            : { peca_id: novoRegistro.id, descricao: novoRegistro.nome, quantidade: qtd, valor_unitario: precoUnitarioOS };
-
-                        this.enviarItemServidor(urlItem, payloadItem);
-                    })
-                    .catch(err => {
-                        alert(err.message);
-                    })
-                    .finally(() => {
-                        this.salvandoNovo = false;
-                    });
-                },
-
-                enviarItemServidor(url, payload) {
-                    fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: JSON.stringify(payload)
-                    })
-                    .then(async response => {
-                        let res = await response.json();
-                        if (!response.ok) {
-                            let msg = res.message || 'Erro ao adicionar item.';
-                            if (res.errors) msg = Object.values(res.errors).flat().join('\n');
-                            throw new Error(msg);
-                        }
-                        window.location.reload();
-                    })
-                    .catch(err => {
-                        alert(err.message);
-                    });
-                },
-
-                abrirEdicaoItem(item) {
-                    this.itemEditando = {
-                        id: item.id,
-                        descricao: item.descricao,
-                        quantidade: item.quantidade,
-                        valor_unitario: item.valor_unitario
-                    };
-                    this.modalEdicaoOpen = true;
-                },
-
-                formatarDinheiro(val) {
-                    let num = parseFloat(val) || 0;
-                    return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                }
-            };
-        }
-
-        async function enviarFotosComCompressao(input) {
-            if (!input.files || input.files.length === 0) return;
-
-            let form = input.form;
-            let label = document.getElementById('btn-adicionar-fotos-label') || input.closest('label');
-            let icon = document.getElementById('btn-adicionar-fotos-icon');
-            let text = document.getElementById('btn-adicionar-fotos-text');
-
-            if (label) {
-                label.style.pointerEvents = 'none';
-                label.classList.add('opacity-75', 'bg-blue-100');
-            }
-            if (icon) {
-                icon.className = 'bi bi-arrow-repeat animate-spin';
-            }
-
-            try {
-                let dataTransfer = new DataTransfer();
-                let filesArr = Array.from(input.files);
-                let total = filesArr.length;
-
-                for (let i = 0; i < total; i++) {
-                    if (text) {
-                        text.textContent = `Compactando ${i + 1}/${total}...`;
-                    }
-                    let compressed = await compressImage(filesArr[i]);
-                    dataTransfer.items.add(compressed);
-                }
-
-                if (text) {
-                    text.textContent = 'Enviando...';
-                }
-
-                input.files = dataTransfer.files;
-                form.submit();
-            } catch (err) {
-                console.error('Erro ao processar fotos para envio:', err);
-                alert('Ocorreu um erro ao processar as fotos selecionadas. Tente novamente.');
-                if (label) {
-                    label.style.pointerEvents = 'auto';
-                    label.classList.remove('opacity-75', 'bg-blue-100');
-                }
-                if (icon) {
-                    icon.className = 'bi bi-plus-lg';
-                }
-                if (text) {
-                    text.textContent = '+ Adicionar Fotos';
-                }
-            }
-        }
-
-        async function compressImage(file, maxWidth = 1280, maxHeight = 1280, quality = 0.8) {
-            if (!file.type.startsWith('image/')) return file;
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        let width = img.width;
-                        let height = img.height;
-
-                        if (width > maxWidth || height > maxHeight) {
-                            if (width > height) {
-                                height = Math.round((height * maxWidth) / width);
-                                width = maxWidth;
-                            } else {
-                                width = Math.round((width * maxHeight) / height);
-                                height = maxHeight;
-                            }
-                        }
-
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        canvas.toBlob((blob) => {
-                            if (!blob) {
-                                resolve(file);
-                                return;
-                            }
-                            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
-                                type: 'image/jpeg',
-                                lastModified: Date.now()
-                            });
-                            resolve(compressedFile);
-                        }, 'image/jpeg', quality);
-                    };
-                    img.onerror = () => resolve(file);
-                    img.src = e.target.result;
-                };
-                reader.onerror = () => resolve(file);
-                reader.readAsDataURL(file);
-            });
-        }
-    </script>
-    @endpush
 
 </x-app-layout>

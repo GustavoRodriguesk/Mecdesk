@@ -1,9 +1,17 @@
 <x-app-layout>
 
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Novo Funcionário
-        </h2>
+        <div class="flex items-center gap-2 text-sm">
+            <a href="{{ route('empresa.edit') }}" class="text-gray-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 font-medium">
+                <i class="bi bi-building"></i>
+                <span>Minha Empresa</span>
+            </a>
+            <i class="bi bi-chevron-right text-xs text-gray-400"></i>
+            <span class="font-semibold text-gray-900 text-base flex items-center gap-1.5">
+                <i class="bi bi-person-plus text-blue-600"></i>
+                Novo Funcionário
+            </span>
+        </div>
     </x-slot>
 
     <div class="w-full">

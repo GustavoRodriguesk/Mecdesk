@@ -236,7 +236,30 @@ class OrdemServicoController extends Controller
 
     public function edit(OrdemServico $ordem)
     {
-        return redirect()->route('ordens.show', $ordem->id);
+        abort_if($ordem->empresa_id !== auth()->user()->empresa_id, 403);
+
+        $ordem->load([
+            'cliente',
+            'veiculo',
+            'funcionario',
+            'itens',
+            'fotos',
+        ]);
+
+        $servicos = Servico::orderBy('nome')->get();
+        $pecas = Peca::orderBy('nome')->get();
+        $clientes = Cliente::orderBy('nome')->get();
+        $veiculos = Veiculo::where('cliente_id', $ordem->cliente_id)->orderBy('placa')->get();
+        $funcionarios = auth()->user()->empresa?->users()->where('ativo', true)->orderBy('name')->get() ?? collect();
+
+        return view('ordens.edit', compact(
+            'ordem',
+            'servicos',
+            'pecas',
+            'clientes',
+            'veiculos',
+            'funcionarios'
+        ));
     }
 
     public function update(UpdateOrdemServicoRequest $request, OrdemServico $ordem)
@@ -310,7 +333,7 @@ class OrdemServicoController extends Controller
         }
 
         return redirect()
-            ->route('ordens.show', $ordem->id)
+            ->route('ordens.edit', $ordem->id)
             ->with('success', 'Foto(s) adicionada(s) à Ordem de Serviço com sucesso!');
     }
 
@@ -351,7 +374,7 @@ class OrdemServicoController extends Controller
         }
 
         return redirect()
-            ->route('ordens.show', $ordemId)
+            ->route('ordens.edit', $ordemId)
             ->with('success', 'Foto removida com sucesso!');
     }
 
@@ -388,6 +411,15 @@ class OrdemServicoController extends Controller
         if ($statusAnterior !== 'aguardando_aprovacao') {
             $ordem->historicos()->create([
                 'status' => 'aguardando_aprovacao',
+            ]);
+        }
+
+        if (request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'whatsapp_link' => $ordem->whatsapp_link,
+                'approval_token' => $ordem->approval_token,
+                'message' => 'Solicitação de aprovação enviada com sucesso!',
             ]);
         }
 

@@ -1,5 +1,12 @@
 <x-app-layout>
-    <x-slot name="header">Assinatura Confirmada</x-slot>
+    <x-slot name="header">
+        <div class="flex items-center gap-2">
+            <i class="bi bi-check-circle text-emerald-600 text-lg"></i>
+            <h2 class="font-semibold text-lg text-gray-800 leading-tight">
+                Assinatura Confirmada
+            </h2>
+        </div>
+    </x-slot>
 
     <div class="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
         {{-- Card Principal de Sucesso --}}

@@ -1,9 +1,17 @@
 <x-app-layout>
 
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Editar Serviço
-        </h2>
+        <div class="flex items-center gap-2 text-sm">
+            <a href="{{ route('servicos.index') }}" class="text-gray-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 font-medium">
+                <i class="bi bi-tools"></i>
+                <span>Serviços</span>
+            </a>
+            <i class="bi bi-chevron-right text-xs text-gray-400"></i>
+            <span class="font-semibold text-gray-900 text-base flex items-center gap-1.5 truncate max-w-xs sm:max-w-md">
+                <i class="bi bi-pencil-square text-blue-600"></i>
+                Editar Serviço: {{ $servico->nome }}
+            </span>
+        </div>
     </x-slot>
 
     <div class="w-full">

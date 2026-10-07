@@ -212,6 +212,9 @@
             font-weight: 600;
             color: #0F172A;
             flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
         }
 
         .topbar-actions {
@@ -773,13 +776,13 @@
                 </svg>
             </button>
 
-            <span class="topbar-title">
+            <div class="topbar-title">
                 @isset($header)
                     {{ $header }}
                 @else
                     MecDesk
                 @endisset
-            </span>
+            </div>
 
             @if (request()->routeIs('clientes.index'))
                 <div class="topbar-actions">

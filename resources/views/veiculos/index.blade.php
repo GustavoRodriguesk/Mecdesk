@@ -1,9 +1,12 @@
 <x-app-layout>
 
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Veículos
-        </h2>
+        <div class="flex items-center gap-2">
+            <i class="bi bi-car-front text-blue-600 text-lg"></i>
+            <h2 class="font-semibold text-lg text-gray-800 leading-tight">
+                Veículos
+            </h2>
+        </div>
     </x-slot>
 
     <style>
@@ -154,13 +157,13 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-sm table-fixed min-w-[800px]">
                     <colgroup>
-                        <col style="width: 25%">
+                        <col style="width: 24%">
+                        <col style="width: 15%">
                         <col style="width: 17%">
-                        <col style="width: 18%">
                         <col style="width: 8%">
                         <col style="width: 12%">
                         <col style="width: 10%">
-                        <col style="width: 10%">
+                        <col style="width: 14%">
                     </colgroup>
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-100">
@@ -195,19 +198,29 @@
                                     {{ $veiculo->cliente->nome }}
                                 </td>
                                 <td class="px-6 py-4 text-gray-500">{{ $veiculo->marca }}</td>
-                                <td class="px-6 py-4 text-gray-500">{{ $veiculo->modelo }}</td>
-                                <td class="px-6 py-4 text-gray-500 tabular-nums">{{ $veiculo->ano }}</td>
+                                <td class="px-6 py-4 text-gray-900 font-medium">
+                                    <a href="{{ route('veiculos.show', $veiculo->id) }}"
+                                        class="hover:text-blue-600 hover:underline">
+                                        {{ $veiculo->modelo }}
+                                    </a>
+                                </td>
+                                <td class="px-6 py-4 text-gray-500 tabular-nums">{{ $veiculo->ano ?: '-' }}</td>
                                 <td class="px-6 py-4">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                                    <a href="{{ route('veiculos.show', $veiculo->id) }}"
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-200 transition-colors uppercase font-mono">
                                         {{ $veiculo->placa }}
-                                    </span>
+                                    </a>
                                 </td>
                                 <td class="px-6 py-4 text-gray-500 tabular-nums">
                                     {{ number_format($veiculo->quilometragem, 0, ',', '.') }}</td>
 
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1.5">
+                                        <a href="{{ route('veiculos.show', $veiculo->id) }}"
+                                            class="btn-action inline-flex items-center justify-center w-8 h-8 text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                                            title="Ver Detalhes e Histórico">
+                                            <i class="bi bi-eye text-sm"></i>
+                                        </a>
                                         <a href="{{ route('veiculos.edit', $veiculo->id) }}"
                                             class="btn-action inline-flex items-center justify-center w-8 h-8 text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                                             title="Editar">
@@ -233,7 +246,8 @@
                                 <td colspan="7" class="px-6 py-16 text-center">
                                     <div class="flex flex-col items-center gap-3 text-gray-400">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-300"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                            stroke-width="1.5">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>

@@ -1,5 +1,12 @@
 <x-app-layout>
-    <x-slot name="header">Minha Assinatura</x-slot>
+    <x-slot name="header">
+        <div class="flex items-center gap-2">
+            <i class="bi bi-credit-card text-blue-600 text-lg"></i>
+            <h2 class="font-semibold text-lg text-gray-800 leading-tight">
+                Minha Assinatura
+            </h2>
+        </div>
+    </x-slot>
 
     <div class="w-full">
 
