@@ -43,48 +43,59 @@
         {{-- Card principal --}}
         <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
 
-            {{-- Barra de busca e metadados --}}
-            <div
-                class="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {{-- Filtros --}}
+            @php
+                $temFiltros = !empty($search);
+            @endphp
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/70">
+                <form method="GET" action="{{ route('clientes.index') }}" class="space-y-3">
 
-                {{-- Formulário de busca --}}
-                <form method="GET" action="{{ route('clientes.index') }}" class="flex items-end gap-2 w-full sm:w-96">
-                    <div class="relative flex-1">
-                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Busca
-                            rápida</label>
-                        <input type="text" name="search" value="{{ $search }}"
-                            placeholder="Buscar por nome ou CPF/CNPJ..."
-                            class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors duration-150">
-                    </div>
-                    <button type="submit"
-                        class="shrink-0 px-4 py-2 text-sm font-medium text-white bg-gray-800 hover:bg-gray-900 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2">
-                        Buscar
-                    </button>
-                </form>
-
-                {{-- Contador de resultados e Ação Novo Cliente --}}
-                <div class="flex items-center gap-4 shrink-0">
-                    <div class="flex items-center gap-2 text-sm text-gray-400">
-                        @if ($search)
+                    <div class="flex flex-col md:flex-row md:items-center gap-2">
+                        {{-- Busca Global --}}
+                        <div class="relative flex-1 min-w-0">
+                            <label for="filtro-search" class="sr-only">Buscar</label>
                             <span
-                                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
-                                </svg>
-                                Filtro ativo: "{{ $search }}"
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                                <i class="bi bi-search text-sm"></i>
                             </span>
-                            <a href="{{ route('clientes.index') }}"
-                                class="text-gray-400 hover:text-gray-600 text-xs transition-colors">
-                                Limpar
-                            </a>
-                            <span class="text-gray-200">|</span>
-                        @endif
-                        <span>{{ $clientes->total() }} {{ $clientes->total() === 1 ? 'cliente' : 'clientes' }}</span>
-                    </div>
-                </div>
+                            <input id="filtro-search" type="text" name="search" value="{{ $search }}"
+                                placeholder="Buscar por nome, CPF/CNPJ ou telefone..."
+                                class="search-input w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition duration-150">
+                        </div>
 
+                        <div class="flex items-center gap-2">
+                            {{-- Pesquisar --}}
+                            <button type="submit" title="Pesquisar" aria-label="Pesquisar"
+                                class="h-[38px] w-[38px] shrink-0 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors duration-150 flex items-center justify-center shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Indicadores de Filtros Ativos e Contagem --}}
+                    @if ($temFiltros)
+                        <div class="flex items-center justify-between pt-3 border-t border-gray-200/70 text-xs">
+                            <div class="flex items-center gap-2 text-gray-500">
+                                <i class="bi bi-funnel-fill text-blue-600"></i>
+                                @if (isset($clientes) && method_exists($clientes, 'total'))
+                                    <span>
+                                        <strong class="text-gray-800">{{ $clientes->total() }}</strong>
+                                        {{ $clientes->total() === 1 ? 'resultado encontrado' : 'resultados encontrados' }}
+                                    </span>
+                                @else
+                                    <span>Filtro ativo: "{{ $search }}"</span>
+                                @endif
+                            </div>
+
+                            <a href="{{ route('clientes.index') }}"
+                                class="text-gray-500 hover:text-red-600 font-medium flex items-center gap-1 transition-colors">
+                                <i class="bi bi-x-lg"></i>
+                                Limpar filtros
+                            </a>
+                        </div>
+                    @endif
+
+                </form>
             </div>
 
             {{-- Tabela --}}

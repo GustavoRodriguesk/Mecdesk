@@ -44,69 +44,100 @@
         {{-- Card principal --}}
         <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
 
-            {{-- Formulário de Filtros Avançados --}}
-            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex flex-col gap-4">
-                <form method="GET" action="{{ route('servicos.index') }}" class="flex flex-col gap-4">
+            {{-- Filtros --}}
+            @php
+                $filtrosAvancadosAtivos = request('valor_min') || request('valor_max');
+                $temFiltros = request('search') || $filtrosAvancadosAtivos;
+                $qtdAvancados = collect(['valor_min', 'valor_max'])->filter(fn($k) => request($k))->count();
+                $inputClass =
+                    'search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition duration-150';
+            @endphp
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/70"
+                x-data="{ maisFiltros: {{ $filtrosAvancadosAtivos ? 'true' : 'false' }} }">
+                <form method="GET" action="{{ route('servicos.index') }}" class="space-y-3">
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {{-- Linha principal: busca + pesquisar --}}
+                    <div class="flex flex-col md:flex-row md:items-center gap-2">
                         {{-- Busca Global --}}
-                        <div class="md:col-span-1">
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Busca
-                                rápida</label>
-                            <input type="text" name="search" value="{{ request('search') }}"
-                                placeholder="Nome do serviço..."
-                                class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors duration-150">
+                        <div class="relative flex-1 min-w-0">
+                            <label for="filtro-search" class="sr-only">Buscar</label>
+                            <span
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                                <i class="bi bi-search text-sm"></i>
+                            </span>
+                            <input id="filtro-search" type="text" name="search" value="{{ request('search') }}"
+                                placeholder="Buscar por nome do serviço..."
+                                class="search-input w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition duration-150">
                         </div>
 
-                        {{-- Valor Mínimo --}}
-                        <div class="md:col-span-1">
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Valor
-                                Mínimo</label>
-                            <input type="number" step="0.01" name="valor_min" value="{{ request('valor_min') }}"
-                                placeholder="R$ 0,00"
-                                class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors duration-150">
-                        </div>
+                        <div class="flex items-center gap-2">
+                            {{-- Mais filtros --}}
+                            <button type="button" @click="maisFiltros = !maisFiltros"
+                                :aria-expanded="maisFiltros.toString()" title="Mais filtros"
+                                :class="maisFiltros ? 'bg-blue-50 border-blue-300 text-blue-700' :
+                                    'bg-white border-gray-300 text-gray-600 hover:bg-gray-100'"
+                                class="relative h-[38px] px-3 text-sm font-medium border rounded-lg transition-colors duration-150 flex items-center gap-1.5 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-100">
+                                <i class="bi bi-sliders"></i>
+                                <span>Filtros</span>
+                                @if ($qtdAvancados > 0)
+                                    <span
+                                        class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-semibold text-white bg-blue-600 rounded-full">
+                                        {{ $qtdAvancados }}
+                                    </span>
+                                @endif
+                            </button>
 
-                        {{-- Valor Máximo --}}
-                        <div class="md:col-span-1">
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Valor
-                                Máximo</label>
-                            <input type="number" step="0.01" name="valor_max" value="{{ request('valor_max') }}"
-                                placeholder="R$ 0,00"
-                                class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors duration-150">
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between mt-2">
-                        <div class="flex items-center gap-2 text-sm text-gray-400">
-                            @if (request('search') || request('valor_min') || request('valor_max'))
-                                <span
-                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
-                                    </svg>
-                                    Filtros ativos
-                                </span>
-                            @endif
-                            @if (isset($servicos) && method_exists($servicos, 'total'))
-                                <span class="ml-2 text-gray-500">{{ $servicos->total() }}
-                                    {{ $servicos->total() === 1 ? 'serviço' : 'serviços' }}</span>
-                            @endif
-                        </div>
-
-                        <div class="flex gap-2">
-                            <a href="{{ route('servicos.index') }}"
-                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-gray-200">
-                                Limpar
-                            </a>
-                            <button type="submit"
-                                class="px-4 py-2 text-sm font-medium text-white bg-gray-800 hover:bg-gray-900 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-gray-700">
-                                Filtrar
+                            {{-- Pesquisar --}}
+                            <button type="submit" title="Pesquisar" aria-label="Pesquisar"
+                                class="h-[38px] w-[38px] shrink-0 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors duration-150 flex items-center justify-center shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
+                                <i class="bi bi-search"></i>
                             </button>
                         </div>
                     </div>
+
+                    {{-- Filtros avançados (recolhíveis) --}}
+                    <div x-show="maisFiltros" x-transition.opacity.duration.150ms
+                        @if (!$filtrosAvancadosAtivos) style="display: none" @endif
+                        class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        {{-- Valor Mínimo --}}
+                        <div>
+                            <label for="filtro-valor-min" class="block text-xs font-medium text-gray-500 mb-1">Valor
+                                Mínimo</label>
+                            <input id="filtro-valor-min" type="number" step="0.01" name="valor_min"
+                                value="{{ request('valor_min') }}" placeholder="R$ 0,00" class="{{ $inputClass }}">
+                        </div>
+
+                        {{-- Valor Máximo --}}
+                        <div>
+                            <label for="filtro-valor-max" class="block text-xs font-medium text-gray-500 mb-1">Valor
+                                Máximo</label>
+                            <input id="filtro-valor-max" type="number" step="0.01" name="valor_max"
+                                value="{{ request('valor_max') }}" placeholder="R$ 0,00" class="{{ $inputClass }}">
+                        </div>
+                    </div>
+
+                    {{-- Indicadores de Filtros Ativos e Contagem --}}
+                    @if ($temFiltros)
+                        <div class="flex items-center justify-between pt-3 border-t border-gray-200/70 text-xs">
+                            <div class="flex items-center gap-2 text-gray-500">
+                                <i class="bi bi-funnel-fill text-blue-600"></i>
+                                @if (isset($servicos) && method_exists($servicos, 'total'))
+                                    <span>
+                                        <strong class="text-gray-800">{{ $servicos->total() }}</strong>
+                                        {{ $servicos->total() === 1 ? 'resultado encontrado' : 'resultados encontrados' }}
+                                    </span>
+                                @else
+                                    <span>Filtros aplicados</span>
+                                @endif
+                            </div>
+
+                            <a href="{{ route('servicos.index') }}"
+                                class="text-gray-500 hover:text-red-600 font-medium flex items-center gap-1 transition-colors">
+                                <i class="bi bi-x-lg"></i>
+                                Limpar filtros
+                            </a>
+                        </div>
+                    @endif
 
                 </form>
             </div>
@@ -115,9 +146,9 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-sm table-fixed">
                     <colgroup>
-                        <col style="width: 60%">
-                        <col style="width: 28%">
-                        <col style="width: 12%">
+                        <col style="width: 55%">
+                        <col style="width: 27%">
+                        <col style="width: 18%">
                     </colgroup>
                     <thead>
                         <tr class="bg-white border-b border-gray-100">
@@ -145,6 +176,12 @@
 
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1.5">
+                                        <a href="{{ route('servicos.show', $servico->id) }}"
+                                            class="btn-action inline-flex items-center justify-center w-8 h-8 text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                                            title="Visualizar">
+                                            <i class="bi bi-eye text-sm"></i>
+                                        </a>
+
                                         <a href="{{ route('servicos.edit', $servico->id) }}"
                                             class="btn-action inline-flex items-center justify-center w-8 h-8 text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                                             title="Editar">

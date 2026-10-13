@@ -147,20 +147,6 @@
                             </p>
                         </div>
 
-                        {{-- Avarias Prévias (se houver) --}}
-                        @if ($ordem->problemas_previos)
-                            <div class="bg-amber-50/70 rounded-lg p-3.5 border border-amber-200/80">
-                                <span
-                                    class="block text-xs font-semibold text-amber-800 uppercase tracking-wider mb-1.5">
-                                    <i class="bi bi-exclamation-triangle mr-1"></i> Avarias / Problemas Prévios
-                                    (Vistoria Entrada)
-                                </span>
-                                <p class="text-sm text-amber-950 font-medium whitespace-pre-line leading-relaxed">
-                                    {{ $ordem->problemas_previos }}
-                                </p>
-                            </div>
-                        @endif
-
                         {{-- Observações Adicionais (se houver) --}}
                         @if ($ordem->observacoes)
                             <div class="bg-gray-50/80 rounded-lg p-3.5 border border-gray-100">
@@ -572,9 +558,8 @@
                         <a href="{{ route('ordens.pdf', $ordem->id) }}" target="_blank"
                             @click="exportPdfModalOpen = false"
                             class="group relative flex items-start gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-red-500 hover:bg-red-50/40 transition-all duration-200">
-                            <div
-                                class="w-11 h-11 rounded-xl bg-red-100 group-hover:bg-red-600 text-red-600 group-hover:text-white flex items-center justify-center shrink-0 transition-colors shadow-sm">
-                                <i class="bi bi-file-earmark-text text-xl"></i>
+                            <div>
+                                <i class="bi bi-file-earmark-text text-xl text-red-600"></i>
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center justify-between gap-2">
@@ -598,9 +583,8 @@
                         <a href="{{ route('ordens.pdf-vistoria', $ordem->id) }}" target="_blank"
                             @click="exportPdfModalOpen = false"
                             class="group relative flex items-start gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-amber-500 hover:bg-amber-50/40 transition-all duration-200">
-                            <div
-                                class="w-11 h-11 rounded-xl bg-amber-100 group-hover:bg-amber-600 text-amber-700 group-hover:text-white flex items-center justify-center shrink-0 transition-colors shadow-sm">
-                                <i class="bi bi-camera text-xl"></i>
+                            <div class="">
+                                <i class="bi bi-camera text-xl text-amber-700"></i>
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center justify-between gap-2">

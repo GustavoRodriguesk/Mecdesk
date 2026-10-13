@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Peca;
 use App\Http\Requests\StorePecaRequest;
 use App\Http\Requests\UpdatePecaRequest;
+use App\Models\Peca;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class PecaController extends Controller
 {
@@ -128,7 +127,9 @@ class PecaController extends Controller
 
     public function show(Peca $peca)
     {
-        return redirect()->route('pecas.edit', $peca->id);
+        $peca->load(['ordemServicoItens.ordem.cliente', 'ordemServicoItens.ordem.veiculo']);
+
+        return view('pecas.show', compact('peca'));
     }
 
     public function edit(Peca $peca)

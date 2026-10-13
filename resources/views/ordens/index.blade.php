@@ -50,12 +50,12 @@
             if (!confirm(`Deseja enviar a OS #${numeroOs} para aprovação? Isso mudará o status da OS para 'Aguardando cliente'.`)) {
                 return;
             }
-
+    
             if (hasToken && whatsappLink) {
                 window.open(whatsappLink, '_blank');
                 return;
             }
-
+    
             try {
                 const response = await fetch(`/ordens/${ordemId}/solicitar-aprovacao`, {
                     method: 'POST',
@@ -65,7 +65,7 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name=\'csrf-token\']').getAttribute('content')
                     }
                 });
-
+    
                 const data = await response.json();
                 if (data.success && data.whatsapp_link) {
                     window.open(data.whatsapp_link, '_blank');
@@ -83,27 +83,43 @@
         {{-- Card principal --}}
         <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
 
-            {{-- Formulário de Filtros Avançados --}}
-            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex flex-col gap-4">
-                <form method="GET" action="{{ route('ordens.index') }}" class="flex flex-col gap-4">
+            {{-- Filtros --}}
+            @php
+                $filtrosAvancadosAtivos =
+                    request('cliente_id') || request('funcionario_id') || request('inicio') || request('fim');
+                $temFiltros =
+                    request('search') ||
+                    request('status') ||
+                    $filtrosAvancadosAtivos ||
+                    (request('sort') && request('sort') !== 'recentes');
+                $qtdAvancados = collect(['cliente_id', 'funcionario_id', 'inicio', 'fim'])
+                    ->filter(fn($k) => request($k))
+                    ->count();
+                $inputClass =
+                    'search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition duration-150';
+            @endphp
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/70" x-data="{ maisFiltros: {{ $filtrosAvancadosAtivos ? 'true' : 'false' }} }">
+                <form method="GET" action="{{ route('ordens.index') }}" class="space-y-3">
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                    {{-- Linha principal: busca + status + ordenação + pesquisar --}}
+                    <div class="flex flex-col md:flex-row md:items-center gap-2">
                         {{-- Busca Global --}}
-                        <div class="xl:col-span-2">
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Busca
-                                rápida</label>
-                            <input type="text" name="search" value="{{ request('search') }}"
-                                placeholder="OS, cliente, placa..."
-                                class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors duration-150">
+                        <div class="relative flex-1 min-w-0">
+                            <label for="filtro-search" class="sr-only">Buscar</label>
+                            <span
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                                <i class="bi bi-search text-sm"></i>
+                            </span>
+                            <input id="filtro-search" type="text" name="search" value="{{ request('search') }}"
+                                placeholder="Buscar por nº da OS, cliente ou placa..."
+                                class="search-input w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition duration-150">
                         </div>
 
                         {{-- Status --}}
-                        <div class="xl:col-span-1">
-                            <label
-                                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Status</label>
-                            <select name="status"
-                                class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors duration-150">
-                                <option value="">Todos</option>
+                        <div class="md:w-48">
+                            <label for="filtro-status" class="sr-only">Status</label>
+                            <select id="filtro-status" name="status" class="{{ $inputClass }}">
+                                <option value="">Todos os status</option>
                                 <option value="aberta" @selected(request('status') == 'aberta')>Aberta</option>
                                 <option value="aguardando_aprovacao" @selected(request('status') == 'aguardando_aprovacao')>Aguardando Aprovação
                                 </option>
@@ -115,101 +131,111 @@
                             </select>
                         </div>
 
-                        {{-- Cliente --}}
-                        <div class="xl:col-span-1">
-                            <label
-                                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Cliente</label>
-                            <select name="cliente_id"
-                                class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors duration-150">
-                                <option value="">Todos</option>
-                                @foreach ($clientes as $cliente)
-                                    <option value="{{ $cliente->id }}" @selected(request('cliente_id') == $cliente->id)>
-                                        {{ $cliente->nome }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        {{-- Funcionário --}}
-                        <div class="xl:col-span-1">
-                            <label
-                                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Mecânico
-                                / Resp.</label>
-                            <select name="funcionario_id"
-                                class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors duration-150">
-                                <option value="">Todos</option>
-                                @foreach ($funcionarios as $func)
-                                    <option value="{{ $func->id }}" @selected(request('funcionario_id') == $func->id)>
-                                        {{ $func->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        {{-- Data Inicial --}}
-                        <div class="xl:col-span-1">
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Data
-                                Início</label>
-                            <input type="date" name="inicio" value="{{ request('inicio') }}"
-                                class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors duration-150">
-                        </div>
-
-                        {{-- Data Final --}}
-                        <div class="xl:col-span-1">
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Data
-                                Fim</label>
-                            <input type="date" name="fim" value="{{ request('fim') }}"
-                                class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors duration-150">
-                        </div>
-
-                        {{-- Ordenação (pode ficar abaixo se faltar espaço, ou no lugar de uma das datas dependendo do layout, mas colocarei na linha) --}}
-                        <div class="xl:col-span-2">
-                            <label
-                                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Ordenar
-                                por</label>
-                            <select name="sort"
-                                class="search-input w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors duration-150">
+                        {{-- Ordenação --}}
+                        <div class="md:w-44">
+                            <label for="filtro-sort" class="sr-only">Ordenar por</label>
+                            <select id="filtro-sort" name="sort" class="{{ $inputClass }}">
                                 <option value="recentes" @selected(request('sort') == 'recentes' || !request('sort'))>Mais recentes</option>
                                 <option value="antigas" @selected(request('sort') == 'antigas')>Mais antigas</option>
                                 <option value="valor_maior" @selected(request('sort') == 'valor_maior')>Maior valor</option>
                                 <option value="valor_menor" @selected(request('sort') == 'valor_menor')>Menor valor</option>
                             </select>
                         </div>
-                    </div>
 
-                    <div class="flex items-center justify-between mt-2">
-                        <div class="flex items-center gap-2 text-sm text-gray-400">
-                            @if (request('search') ||
-                                    request('status') ||
-                                    request('cliente_id') ||
-                                    request('funcionario_id') ||
-                                    request('inicio') ||
-                                    request('fim'))
-                                <span
-                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
-                                    </svg>
-                                    Filtros ativos
-                                </span>
-                            @endif
-                            @if (isset($ordens) && method_exists($ordens, 'total'))
-                                <span class="ml-2 text-gray-500">{{ $ordens->total() }}
-                                    {{ $ordens->total() === 1 ? 'ordem' : 'ordens' }}</span>
-                            @endif
-                        </div>
+                        <div class="flex items-center gap-2">
+                            {{-- Mais filtros --}}
+                            <button type="button" @click="maisFiltros = !maisFiltros"
+                                :aria-expanded="maisFiltros.toString()" title="Mais filtros"
+                                :class="maisFiltros ? 'bg-blue-50 border-blue-300 text-blue-700' :
+                                    'bg-white border-gray-300 text-gray-600 hover:bg-gray-100'"
+                                class="relative h-[38px] px-3 text-sm font-medium border rounded-lg transition-colors duration-150 flex items-center gap-1.5 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-100">
+                                <i class="bi bi-sliders"></i>
+                                <span>Filtros</span>
+                                @if ($qtdAvancados > 0)
+                                    <span
+                                        class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-semibold text-white bg-blue-600 rounded-full">
+                                        {{ $qtdAvancados }}
+                                    </span>
+                                @endif
+                            </button>
 
-                        <div class="flex gap-2">
-                            <a href="{{ route('ordens.index') }}"
-                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-gray-200">
-                                Limpar
-                            </a>
-                            <button type="submit"
-                                class="px-4 py-2 text-sm font-medium text-white bg-gray-800 hover:bg-gray-900 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-gray-700">
-                                Filtrar
+                            {{-- Pesquisar --}}
+                            <button type="submit" title="Pesquisar" aria-label="Pesquisar"
+                                class="h-[38px] w-[38px] shrink-0 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors duration-150 flex items-center justify-center shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
+                                <i class="bi bi-search"></i>
                             </button>
                         </div>
                     </div>
+
+                    {{-- Filtros avançados (recolhíveis) --}}
+                    <div x-show="maisFiltros" x-transition.opacity.duration.150ms
+                        @if (!$filtrosAvancadosAtivos) style="display: none" @endif
+                        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+                        {{-- Cliente --}}
+                        <div>
+                            <label for="filtro-cliente"
+                                class="block text-xs font-medium text-gray-500 mb-1">Cliente</label>
+                            <select id="filtro-cliente" name="cliente_id" class="{{ $inputClass }}">
+                                <option value="">Todos</option>
+                                @foreach ($clientes as $cliente)
+                                    <option value="{{ $cliente->id }}" @selected(request('cliente_id') == $cliente->id)>
+                                        {{ $cliente->nome }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Funcionário --}}
+                        <div>
+                            <label for="filtro-funcionario"
+                                class="block text-xs font-medium text-gray-500 mb-1">Mecânico / Responsável</label>
+                            <select id="filtro-funcionario" name="funcionario_id" class="{{ $inputClass }}">
+                                <option value="">Todos</option>
+                                @foreach ($funcionarios as $func)
+                                    <option value="{{ $func->id }}" @selected(request('funcionario_id') == $func->id)>
+                                        {{ $func->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Data Inicial --}}
+                        <div>
+                            <label for="filtro-inicio" class="block text-xs font-medium text-gray-500 mb-1">De</label>
+                            <input id="filtro-inicio" type="date" name="inicio" value="{{ request('inicio') }}"
+                                class="{{ $inputClass }}">
+                        </div>
+
+                        {{-- Data Final --}}
+                        <div>
+                            <label for="filtro-fim" class="block text-xs font-medium text-gray-500 mb-1">Até</label>
+                            <input id="filtro-fim" type="date" name="fim" value="{{ request('fim') }}"
+                                class="{{ $inputClass }}">
+                        </div>
+                    </div>
+
+                    {{-- Indicadores de Filtros Ativos e Contagem --}}
+                    @if ($temFiltros)
+                        <div class="flex items-center justify-between pt-3 border-t border-gray-200/70 text-xs">
+                            <div class="flex items-center gap-2 text-gray-500">
+                                <i class="bi bi-funnel-fill text-blue-600"></i>
+                                @if (isset($ordens) && method_exists($ordens, 'total'))
+                                    <span>
+                                        <strong class="text-gray-800">{{ $ordens->total() }}</strong>
+                                        {{ $ordens->total() === 1 ? 'resultado encontrado' : 'resultados encontrados' }}
+                                    </span>
+                                @else
+                                    <span>Filtros aplicados</span>
+                                @endif
+                            </div>
+
+                            <a href="{{ route('ordens.index') }}"
+                                class="text-gray-500 hover:text-red-600 font-medium flex items-center gap-1 transition-colors">
+                                <i class="bi bi-x-lg"></i>
+                                Limpar filtros
+                            </a>
+                        </div>
+                    @endif
 
                 </form>
             </div>
@@ -430,9 +456,8 @@
                         {{-- Opção 1: PDF da Ordem de Serviço --}}
                         <a :href="selectedOrdem.pdfUrl" target="_blank" @click="exportPdfModalOpen = false"
                             class="group relative flex items-start gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-red-500 hover:bg-red-50/40 transition-all duration-200">
-                            <div
-                                class="w-11 h-11 rounded-xl bg-red-100 group-hover:bg-red-600 text-red-600 group-hover:text-white flex items-center justify-center shrink-0 transition-colors shadow-sm">
-                                <i class="bi bi-file-earmark-text text-xl"></i>
+                            <div>
+                                <i class="bi bi-file-earmark-text text-xl text-red-600"></i>
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center justify-between gap-2">
@@ -455,9 +480,8 @@
                         {{-- Opção 2: PDF do Laudo de Vistoria --}}
                         <a :href="selectedOrdem.pdfVistoriaUrl" target="_blank" @click="exportPdfModalOpen = false"
                             class="group relative flex items-start gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-amber-500 hover:bg-amber-50/40 transition-all duration-200">
-                            <div
-                                class="w-11 h-11 rounded-xl bg-amber-100 group-hover:bg-amber-600 text-amber-700 group-hover:text-white flex items-center justify-center shrink-0 transition-colors shadow-sm">
-                                <i class="bi bi-camera text-xl"></i>
+                            <div>
+                                <i class="bi bi-camera text-xl text-amber-700"></i>
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center justify-between gap-2">

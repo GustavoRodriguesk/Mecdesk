@@ -36,12 +36,6 @@
                     Abra uma nova OS informando cliente, veículo e serviços
                 </p>
             </div>
-
-            <a href="{{ route('ordens.index') }}"
-                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors self-start sm:self-auto">
-                <i class="bi bi-arrow-left"></i>
-                Voltar à Lista
-            </a>
         </div>
 
         {{-- Formulário Principal --}}
@@ -460,7 +454,6 @@
                                 :class="descontoTipo === 'dinheiro' ? 'bg-white text-gray-900 shadow-sm' :
                                     'text-gray-500 hover:text-gray-900'"
                                 class="px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5">
-                                <i class="bi bi-currency-dollar"></i>
                                 <span>R$ Fixo</span>
                             </button>
                             <button type="button" @click="descontoTipo = 'porcentagem'"
@@ -481,11 +474,6 @@
                                 :max="descontoTipo === 'porcentagem' ? 100 : (subtotalGeral > 0 ? subtotalGeral : 999999)"
                                 x-model.number="descontoValor" placeholder="0,00"
                                 class="w-full pl-9 pr-8 py-2 text-sm font-semibold border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-colors">
-                            <button type="button" x-show="descontoValor > 0" @click="descontoValor = 0"
-                                class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-gray-400 hover:text-red-500 transition-colors"
-                                title="Remover desconto">
-                                <i class="bi bi-x-circle-fill text-xs"></i>
-                            </button>
                         </div>
 
                         {{-- Badge de Desconto Calculado --}}

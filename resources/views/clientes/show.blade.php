@@ -63,11 +63,6 @@
                     <i class="bi bi-person-lines-fill text-gray-500"></i>
                     Informações Pessoais e Contato
                 </h3>
-                <a href="{{ route('clientes.edit', $cliente->id) }}"
-                    class="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1">
-                    <i class="bi bi-pencil"></i>
-                    Editar Dados
-                </a>
             </div>
 
             <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-5">

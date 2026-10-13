@@ -2,7 +2,8 @@
 
     <x-slot name="header">
         <div class="flex items-center gap-2 text-sm">
-            <a href="{{ route('clientes.index') }}" class="text-gray-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 font-medium">
+            <a href="{{ route('clientes.index') }}"
+                class="text-gray-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 font-medium">
                 <i class="bi bi-people"></i>
                 <span>Clientes</span>
             </a>
@@ -26,12 +27,6 @@
                     Insira abaixo os dados do novo cliente do seu negócio
                 </p>
             </div>
-
-            <a href="{{ route('clientes.index') }}"
-                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors shadow-xs">
-                <i class="bi bi-arrow-left"></i>
-                Voltar
-            </a>
         </div>
 
         {{-- Card do Formulário --}}

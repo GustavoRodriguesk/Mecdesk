@@ -2,7 +2,8 @@
 
     <x-slot name="header">
         <div class="flex items-center gap-2 text-sm">
-            <a href="{{ route('servicos.index') }}" class="text-gray-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 font-medium">
+            <a href="{{ route('servicos.index') }}"
+                class="text-gray-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 font-medium">
                 <i class="bi bi-tools"></i>
                 <span>Serviços</span>
             </a>
@@ -25,12 +26,6 @@
                     Cadastre um novo tipo de serviço para suas OS
                 </p>
             </div>
-
-            <a href="{{ route('servicos.index') }}"
-                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors">
-                <i class="bi bi-arrow-left"></i>
-                Voltar
-            </a>
         </div>
 
         <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden p-6">

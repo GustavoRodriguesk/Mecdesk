@@ -48,12 +48,6 @@
                     Preencha as informações da peça para adicionar ao catálogo
                 </p>
             </div>
-
-            <a href="{{ route('pecas.index') }}"
-                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors shadow-xs">
-                <i class="bi bi-arrow-left"></i>
-                Voltar
-            </a>
         </div>
 
         {{-- Card do Formulário --}}

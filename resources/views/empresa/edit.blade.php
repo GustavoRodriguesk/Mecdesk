@@ -104,7 +104,7 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">CNPJ</label>
-                        <input type="text" name="cnpj" value="{{ old('cnpj', $empresa->cnpj) }}"
+                        <input type="text" name="cnpj" id="cnpj" value="{{ old('cnpj', $empresa->cnpj) }}"
                             class="field-input w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors">
                         @error('cnpj')
                             <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
@@ -113,7 +113,7 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">E-mail</label>
-                        <input type="email" name="email" value="{{ old('email', $empresa->email) }}"
+                        <input type="email" name="email" id="email" value="{{ old('email', $empresa->email) }}"
                             class="field-input w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors">
                         @error('email')
                             <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
@@ -122,7 +122,7 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">Telefone</label>
-                        <input type="text" name="telefone" value="{{ old('telefone', $empresa->telefone) }}"
+                        <input type="text" name="telefone" id="telefone" value="{{ old('telefone', $empresa->telefone) }}"
                             class="field-input w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors">
                         @error('telefone')
                             <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
@@ -131,7 +131,7 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">WhatsApp</label>
-                        <input type="text" name="whatsapp" value="{{ old('whatsapp', $empresa->whatsapp ?? '') }}"
+                        <input type="text" name="whatsapp" id="whatsapp" value="{{ old('whatsapp', $empresa->whatsapp ?? '') }}"
                             class="field-input w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors">
                         @error('whatsapp')
                             <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
@@ -144,49 +144,80 @@
                 <div class="px-6 py-5 border-t border-gray-100">
                     <h3 class="text-base font-semibold text-gray-900 mb-1">Endereço</h3>
                     <p class="text-sm text-gray-500 mb-5">Localização física da oficina</p>
-                    <div class="grid md:grid-cols-3 gap-5">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
 
-                        <div>
+                        <div class="md:col-span-4">
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">CEP</label>
-                            <input type="text" name="cep" id="cep"
-                                value="{{ old('cep', $empresa->cep ?? '') }}"
-                                class="field-input w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors"
-                                placeholder="00000-000">
+                            <div class="flex gap-2">
+                                <input type="text" name="cep" id="cep"
+                                    value="{{ old('cep', $empresa->cep ?? '') }}"
+                                    maxlength="9"
+                                    class="field-input w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                    placeholder="00000-000">
+                                <button type="button" id="btn-buscar-cep"
+                                    class="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs cursor-pointer">
+                                    <i class="bi bi-search text-xs" id="cep-search-icon"></i>
+                                    <span id="cep-btn-text">Buscar</span>
+                                </button>
+                            </div>
+                            <p id="cep-feedback" class="text-xs mt-1 hidden"></p>
+                            @error('cep')
+                                <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                            @enderror
                         </div>
 
-                        <div class="md:col-span-2">
+                        <div class="md:col-span-8">
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Rua / Logradouro</label>
                             <input type="text" name="logradouro" id="logradouro"
                                 value="{{ old('logradouro', $empresa->logradouro ?? '') }}"
+                                placeholder="Ex: Av. Paulista" maxlength="255"
                                 class="field-input w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors">
+                            @error('logradouro')
+                                <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                            @enderror
                         </div>
 
-                        <div>
+                        <div class="md:col-span-3">
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Número</label>
-                            <input type="text" name="numero" value="{{ old('numero', $empresa->numero ?? '') }}"
+                            <input type="text" name="numero" id="numero" value="{{ old('numero', $empresa->numero ?? '') }}"
+                                placeholder="Ex: 123" maxlength="20"
                                 class="field-input w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors">
+                            @error('numero')
+                                <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                            @enderror
                         </div>
 
-                        <div>
+                        <div class="md:col-span-3">
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Bairro</label>
                             <input type="text" name="bairro" id="bairro"
                                 value="{{ old('bairro', $empresa->bairro ?? '') }}"
+                                placeholder="Ex: Centro" maxlength="100"
                                 class="field-input w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors">
+                            @error('bairro')
+                                <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                            @enderror
                         </div>
 
-                        <div>
+                        <div class="md:col-span-4">
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Cidade</label>
-                            <input type="text" name="cidade" id="localidade"
+                            <input type="text" name="cidade" id="cidade"
                                 value="{{ old('cidade', $empresa->cidade ?? '') }}"
+                                placeholder="Ex: São Paulo" maxlength="100"
                                 class="field-input w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors">
+                            @error('cidade')
+                                <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                            @enderror
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Estado</label>
-                            <input type="text" name="estado" id="uf"
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Estado (UF)</label>
+                            <input type="text" name="estado" id="estado"
                                 value="{{ old('estado', $empresa->estado ?? '') }}"
-                                class="field-input w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors"
+                                class="field-input w-full px-3 py-2 text-sm uppercase border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 transition-colors"
                                 maxlength="2" placeholder="SP">
+                            @error('estado')
+                                <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                            @enderror
                         </div>
 
                     </div>
@@ -510,8 +541,9 @@
 
     </div>
 
-    {{-- ── Script de Preview da Logo e ViaCEP auto-fill ── --}}
+    {{-- ── Script de Preview da Logo, Máscaras e Consulta de CEP (ViaCEP API) ── --}}
     <script>
+        // Preview da Logo
         document.getElementById('logo-input')?.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -531,19 +563,158 @@
             }
         });
 
-        document.getElementById('cep')?.addEventListener('blur', async function() {
-            const cep = this.value.replace(/\D/g, '');
-            if (cep.length !== 8) return;
+        // Função utilitária para máscara de telefone
+        function aplicarMascaraTelefone(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 10) {
+                    value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+                    value = value.replace(/(\d{4})(\d)/, '$1-$2');
+                } else {
+                    value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+                    value = value.replace(/(\d{5})(\d)/, '$1-$2');
+                }
+                e.target.value = value.substring(0, 15);
+            });
+        }
+
+        aplicarMascaraTelefone('telefone');
+        aplicarMascaraTelefone('whatsapp');
+
+        // Máscara CNPJ
+        const cnpjInput = document.getElementById('cnpj');
+        if (cnpjInput) {
+            cnpjInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 11) {
+                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                } else {
+                    value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+                    value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                    value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                    value = value.replace(/(\d{4})(\d)/, '$1-$2');
+                }
+                e.target.value = value.substring(0, 18);
+            });
+        }
+
+        // Estado (UF) em maiúsculas
+        const estadoInput = document.getElementById('estado');
+        if (estadoInput) {
+            estadoInput.addEventListener('input', function(e) {
+                e.target.value = e.target.value.toUpperCase().substring(0, 2);
+            });
+        }
+
+        // ── Integração ViaCEP ──
+        const cepInput = document.getElementById('cep');
+        const btnBuscarCep = document.getElementById('btn-buscar-cep');
+        const cepFeedback = document.getElementById('cep-feedback');
+        const cepSearchIcon = document.getElementById('cep-search-icon');
+        const cepBtnText = document.getElementById('cep-btn-text');
+
+        // Máscara de CEP
+        if (cepInput) {
+            cepInput.addEventListener('input', function(e) {
+                let v = e.target.value.replace(/\D/g, '');
+                if (v.length > 8) v = v.substring(0, 8);
+                if (v.length > 5) {
+                    v = v.substring(0, 5) + '-' + v.substring(5);
+                }
+                e.target.value = v;
+            });
+
+            cepInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    consultarCep();
+                }
+            });
+
+            cepInput.addEventListener('blur', function() {
+                const raw = this.value.replace(/\D/g, '');
+                if (raw.length === 8) {
+                    consultarCep();
+                }
+            });
+        }
+
+        async function consultarCep() {
+            if (!cepInput) return;
+            const rawCep = cepInput.value.replace(/\D/g, '');
+
+            if (rawCep.length !== 8) {
+                if (cepFeedback) {
+                    cepFeedback.className = 'text-xs mt-1 text-amber-600 block';
+                    cepFeedback.textContent = 'Informe um CEP válido com 8 dígitos.';
+                }
+                return;
+            }
+
+            // Exibe estado de carregando
+            if (btnBuscarCep) btnBuscarCep.disabled = true;
+            if (cepSearchIcon) cepSearchIcon.className = 'bi bi-arrow-repeat text-xs animate-spin';
+            if (cepBtnText) cepBtnText.textContent = 'Buscando...';
+            if (cepFeedback) {
+                cepFeedback.className = 'text-xs mt-1 text-blue-600 block';
+                cepFeedback.textContent = 'Buscando endereço...';
+            }
+
             try {
-                const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-                const data = await res.json();
-                if (data.erro) return;
-                document.getElementById('logradouro').value = data.logradouro || '';
-                document.getElementById('bairro').value = data.bairro || '';
-                document.getElementById('localidade').value = data.localidade || '';
-                document.getElementById('uf').value = data.uf || '';
-            } catch (_) {}
-        });
+                const response = await fetch(`https://viacep.com.br/ws/${rawCep}/json/`);
+                const data = await response.json();
+
+                if (data.erro) {
+                    if (cepFeedback) {
+                        cepFeedback.className = 'text-xs mt-1 text-red-600 block';
+                        cepFeedback.textContent = 'CEP não encontrado.';
+                    }
+                    return;
+                }
+
+                // Preenche os campos de endereço
+                const logradouroEl = document.getElementById('logradouro');
+                const bairroEl = document.getElementById('bairro');
+                const cidadeEl = document.getElementById('cidade');
+                const estadoEl = document.getElementById('estado');
+                const numeroEl = document.getElementById('numero');
+
+                if (logradouroEl && data.logradouro) logradouroEl.value = data.logradouro;
+                if (bairroEl && data.bairro) bairroEl.value = data.bairro;
+                if (cidadeEl && data.localidade) cidadeEl.value = data.localidade;
+                if (estadoEl && data.uf) estadoEl.value = data.uf;
+
+                if (cepFeedback) {
+                    cepFeedback.className = 'text-xs mt-1 text-emerald-600 block';
+                    cepFeedback.textContent = 'Endereço localizado com sucesso!';
+                    setTimeout(() => {
+                        cepFeedback.classList.add('hidden');
+                    }, 4000);
+                }
+
+                // Move o cursor diretamente para o campo número
+                if (numeroEl) {
+                    numeroEl.focus();
+                }
+            } catch (err) {
+                if (cepFeedback) {
+                    cepFeedback.className = 'text-xs mt-1 text-red-600 block';
+                    cepFeedback.textContent = 'Não foi possível consultar o CEP no momento.';
+                }
+            } finally {
+                if (btnBuscarCep) btnBuscarCep.disabled = false;
+                if (cepSearchIcon) cepSearchIcon.className = 'bi bi-search text-xs';
+                if (cepBtnText) cepBtnText.textContent = 'Buscar';
+            }
+        }
+
+        if (btnBuscarCep) {
+            btnBuscarCep.addEventListener('click', consultarCep);
+        }
     </script>
 
 </x-app-layout>
