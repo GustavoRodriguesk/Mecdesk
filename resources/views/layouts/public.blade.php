@@ -10,6 +10,10 @@
     <meta name="description"
         content="O sistema completo e descomplicado para organizar ordens de serviço, clientes, veículos e faturamento da sua oficina mecânica.">
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+
     <!-- Inter Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
