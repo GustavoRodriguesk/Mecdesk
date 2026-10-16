@@ -9,14 +9,17 @@
                 </h2>
             </div>
             <div class="flex items-center gap-2">
-                <a href="{{ route('ordens.create') }}"
-                    class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    <i class="bi bi-file-earmark-plus"></i> Nova Ordem
-                </a>
+                @can('ordens.criar')
+                    <a href="{{ route('ordens.create') }}"
+                        class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <i class="bi bi-file-earmark-plus"></i> Nova Ordem
+                    </a>
+                @endcan
             </div>
         </div>
     </x-slot>
 
+    @can('dashboard.operacional.visualizar')
     {{-- 1. STATUS DAS ORDENS DE SERVIÇO (Destaque Principal no Topo) --}}
     <div class="flex items-center justify-between mb-3">
         <p class="text-xs font-semibold uppercase tracking-widest text-gray-400">Status das ordens</p>
@@ -70,7 +73,9 @@
             <span class="text-[11px] text-green-500/80 dark:text-green-400/80 mt-1 block group-hover:underline">Finalizadas</span>
         </a>
     </div>
+    @endcan
 
+    @can('dashboard.financeiro.visualizar')
     {{-- 2. FATURAMENTO --}}
     <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Faturamento</p>
 
@@ -101,12 +106,15 @@
             <span class="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 mt-1 block">Total faturado em {{ now()->translatedFormat('F/Y') }}</span>
         </div>
     </div>
+    @endcan
 
+    @if(auth()->user()->temPermissao('dashboard.financeiro.visualizar') || auth()->user()->temPermissao('dashboard.operacional.visualizar'))
     {{-- 3. GRÁFICOS E INDICADORES --}}
     <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Indicadores</p>
 
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+    <div class="grid grid-cols-1 {{ auth()->user()->temPermissao('dashboard.financeiro.visualizar') && auth()->user()->temPermissao('dashboard.operacional.visualizar') ? 'xl:grid-cols-2' : '' }} gap-6 mb-8">
         {{-- Gráfico de Faturamento --}}
+        @can('dashboard.financeiro.visualizar')
         <div class="bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 rounded-2xl p-5 sm:p-6">
             <h3 class="font-bold text-base text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -118,8 +126,10 @@
                 <canvas id="faturamentoChart"></canvas>
             </div>
         </div>
+        @endcan
 
         {{-- Gráfico de Status --}}
+        @can('dashboard.operacional.visualizar')
         <div class="bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 rounded-2xl p-5 sm:p-6">
             <h3 class="font-bold text-base text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <svg class="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -132,8 +142,11 @@
                 <canvas id="statusChart"></canvas>
             </div>
         </div>
+        @endcan
     </div>
+    @endif
 
+    @can('dashboard.operacional.visualizar')
     {{-- 4. CADASTROS GERAIS --}}
     <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Cadastros</p>
 
@@ -174,11 +187,13 @@
             <p class="text-2xl sm:text-3xl font-extrabold text-gray-800 dark:text-gray-100">{{ $servicos }}</p>
         </a>
     </div>
+    @endcan
 
     {{-- 5. ESTOQUE BAIXO E AÇÕES RÁPIDAS --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {{-- Estoque Baixo (Se ativo) --}}
         @if(auth()->user()->empresa?->hasControleEstoque())
+            @can('pecas.visualizar')
             <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm rounded-2xl p-5 sm:p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-base font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
@@ -214,6 +229,7 @@
                     </p>
                 @endif
             </div>
+            @endcan
         @endif
 
         {{-- Ações Rápidas --}}
@@ -226,6 +242,7 @@
             </h3>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                @can('ordens.criar')
                 <a href="{{ route('ordens.create') }}"
                    class="flex items-center gap-3 p-3.5 rounded-xl border border-blue-100 dark:border-blue-900/50 bg-blue-50/40 hover:bg-blue-50 dark:bg-blue-950/30 dark:hover:bg-blue-950/60 transition group">
                     <div class="w-9 h-9 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
@@ -236,7 +253,9 @@
                         <span class="text-xs text-gray-500 dark:text-gray-400">Criar orçamento ou OS</span>
                     </div>
                 </a>
+                @endcan
 
+                @can('clientes.criar')
                 <a href="{{ route('clientes.create') }}"
                    class="flex items-center gap-3 p-3.5 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50/60 hover:bg-gray-100/60 dark:bg-gray-700/30 dark:hover:bg-gray-700/60 transition group">
                     <div class="w-9 h-9 rounded-lg bg-slate-800 text-white flex items-center justify-center shrink-0 shadow-xs">
@@ -247,7 +266,9 @@
                         <span class="text-xs text-gray-500 dark:text-gray-400">Novo cliente no sistema</span>
                     </div>
                 </a>
+                @endcan
 
+                @can('veiculos.criar')
                 <a href="{{ route('veiculos.create') }}"
                    class="flex items-center gap-3 p-3.5 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50/60 hover:bg-gray-100/60 dark:bg-gray-700/30 dark:hover:bg-gray-700/60 transition group">
                     <div class="w-9 h-9 rounded-lg bg-slate-800 text-white flex items-center justify-center shrink-0 shadow-xs">
@@ -258,7 +279,9 @@
                         <span class="text-xs text-gray-500 dark:text-gray-400">Vincular a um cliente</span>
                     </div>
                 </a>
+                @endcan
 
+                @can('servicos.criar')
                 <a href="{{ route('servicos.create') }}"
                    class="flex items-center gap-3 p-3.5 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50/60 hover:bg-gray-100/60 dark:bg-gray-700/30 dark:hover:bg-gray-700/60 transition group">
                     <div class="w-9 h-9 rounded-lg bg-slate-800 text-white flex items-center justify-center shrink-0 shadow-xs">
@@ -269,9 +292,11 @@
                         <span class="text-xs text-gray-500 dark:text-gray-400">Tabela de mão de obra</span>
                     </div>
                 </a>
+                @endcan
             </div>
         </div>
     </div>
+
 
     {{-- CHART.JS --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

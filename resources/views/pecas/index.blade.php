@@ -241,19 +241,23 @@
 
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1.5">
-                                        <a href="{{ route('pecas.show', $peca->id) }}"
-                                            class="btn-action inline-flex items-center justify-center w-8 h-8 text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
-                                            title="Visualizar">
-                                            <i class="bi bi-eye text-sm"></i>
-                                        </a>
+                                        @can('view', $peca)
+                                            <a href="{{ route('pecas.show', $peca->id) }}"
+                                                class="btn-action inline-flex items-center justify-center w-8 h-8 text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                                                title="Visualizar">
+                                                <i class="bi bi-eye text-sm"></i>
+                                            </a>
+                                        @endcan
 
-                                        <a href="{{ route('pecas.edit', $peca->id) }}"
-                                            class="btn-action inline-flex items-center justify-center w-8 h-8 text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                                            title="Editar">
-                                            <i class="bi bi-pencil-square text-sm"></i>
-                                        </a>
+                                        @can('update', $peca)
+                                            <a href="{{ route('pecas.edit', $peca->id) }}"
+                                                class="btn-action inline-flex items-center justify-center w-8 h-8 text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                                                title="Editar">
+                                                <i class="bi bi-pencil-square text-sm"></i>
+                                            </a>
+                                        @endcan
 
-                                        @if (auth()->user()->canDelete())
+                                        @can('delete', $peca)
                                             <form action="{{ route('pecas.destroy', $peca->id) }}" method="POST"
                                                 onsubmit="return confirm('Tem certeza que deseja excluir {{ addslashes($peca->nome) }}?')">
                                                 @csrf
@@ -264,7 +268,7 @@
                                                     <i class="bi bi-trash text-sm"></i>
                                                 </button>
                                             </form>
-                                        @endif
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

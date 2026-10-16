@@ -2,13 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\AutorizaRecurso;
 use App\Http\Requests\StoreServicoRequest;
 use App\Http\Requests\UpdateServicoRequest;
 use App\Models\Servico;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
 
-class ServicoController extends Controller
+class ServicoController extends Controller implements HasMiddleware
 {
+    use AutorizaRecurso;
+
+    public static function middleware(): array
+    {
+        return static::middlewareDoRecurso(Servico::class, 'servico');
+    }
+
     public function index(Request $request)
     {
         $query = Servico::query();
@@ -103,8 +112,6 @@ class ServicoController extends Controller
 
     public function destroy(Servico $servico)
     {
-        abort_if(! auth()->user()->canDelete(), 403);
-
         if ($servico->ordemServicoItens()->exists()) {
             return redirect()
                 ->route('servicos.index')

@@ -347,20 +347,24 @@
                                         </button>
 
                                         {{-- Visualizar OS --}}
-                                        <a href="{{ route('ordens.show', $ordem->id) }}"
-                                            class="btn-action inline-flex items-center justify-center w-8 h-8 text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
-                                            title="Visualizar OS">
-                                            <i class="bi bi-eye text-sm"></i>
-                                        </a>
+                                        @can('view', $ordem)
+                                            <a href="{{ route('ordens.show', $ordem->id) }}"
+                                                class="btn-action inline-flex items-center justify-center w-8 h-8 text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                                                title="Visualizar OS">
+                                                <i class="bi bi-eye text-sm"></i>
+                                            </a>
+                                        @endcan
 
                                         {{-- Editar OS --}}
-                                        <a href="{{ route('ordens.edit', $ordem->id) }}"
-                                            class="btn-action inline-flex items-center justify-center w-8 h-8 text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                                            title="Editar OS">
-                                            <i class="bi bi-pencil-square text-sm"></i>
-                                        </a>
+                                        @can('update', $ordem)
+                                            <a href="{{ route('ordens.edit', $ordem->id) }}"
+                                                class="btn-action inline-flex items-center justify-center w-8 h-8 text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                                                title="Editar OS">
+                                                <i class="bi bi-pencil-square text-sm"></i>
+                                            </a>
+                                        @endcan
 
-                                        @if (auth()->user()->canDelete())
+                                        @can('delete', $ordem)
                                             <form action="{{ route('ordens.destroy', $ordem->id) }}" method="POST"
                                                 onsubmit="return confirm('Tem certeza que deseja excluir a OS #{{ $ordem->numero_os }}?')">
                                                 @csrf
@@ -371,7 +375,7 @@
                                                     <i class="bi bi-trash text-sm"></i>
                                                 </button>
                                             </form>
-                                        @endif
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

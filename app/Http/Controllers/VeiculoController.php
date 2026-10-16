@@ -4,13 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use App\Models\Veiculo;
+use App\Http\Controllers\Concerns\AutorizaRecurso;
 use App\Http\Requests\StoreVeiculoRequest;
 use App\Http\Requests\UpdateVeiculoRequest;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Validation\Rule;
 
-class VeiculoController extends Controller
+class VeiculoController extends Controller implements HasMiddleware
 {
+    use AutorizaRecurso;
+
+    public static function middleware(): array
+    {
+        return static::middlewareDoRecurso(Veiculo::class, 'veiculo');
+    }
+
     public function index(Request $request)
     {
         $query = Veiculo::with('cliente');
@@ -138,8 +147,6 @@ class VeiculoController extends Controller
 
     public function destroy(Veiculo $veiculo)
     {
-        abort_if(! auth()->user()->canDelete(), 403);
-
         if ($veiculo->ordensServico()->exists()) {
             return redirect()
                 ->route('veiculos.index')

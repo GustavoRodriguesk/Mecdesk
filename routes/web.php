@@ -9,6 +9,7 @@ use App\Http\Controllers\OrdemServicoController;
 use App\Http\Controllers\OrdemServicoItemController;
 use App\Http\Controllers\ServicoController;
 use App\Http\Controllers\EmpresaController;
+use App\Http\Controllers\PerfilAcessoController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AprovacaoController;
 use App\Http\Controllers\WebhookController;
@@ -117,8 +118,14 @@ Route::middleware(['auth', 'empresa.ativa'])->group(function () {
 
     Route::get('/usuarios/create', [UsuarioController::class, 'create'])->name('usuarios.create');
     Route::post('/usuarios', [UsuarioController::class, 'store'])->name('usuarios.store');
+    Route::get('/usuarios/{usuario}/edit', [UsuarioController::class, 'edit'])->name('usuarios.edit');
+    Route::put('/usuarios/{usuario}', [UsuarioController::class, 'update'])->name('usuarios.update');
     Route::patch('/usuarios/{usuario}/toggle', [UsuarioController::class, 'toggleStatus'])->name('usuarios.toggle');
     Route::delete('/usuarios/{usuario}', [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
+
+    Route::resource('perfis', PerfilAcessoController::class)->parameters([
+        'perfis' => 'perfil'
+    ]);
 
     Route::resource('clientes', ClienteController::class);
     Route::resource('pecas', PecaController::class);
@@ -142,7 +149,7 @@ Route::middleware(['auth', 'empresa.ativa'])->group(function () {
 
     Route::get('/clientes/{cliente}/veiculos', function (\App\Models\Cliente $cliente) {
         return $cliente->veiculos;
-    });
+    })->middleware('can:view,cliente')->name('clientes.veiculos');
 });
 
 require __DIR__.'/auth.php';

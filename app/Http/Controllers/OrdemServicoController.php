@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\AutorizaRecurso;
 use App\Http\Requests\StoreOrdemServicoRequest;
 use App\Http\Requests\UpdateOrdemServicoRequest;
 use App\Http\Requests\UploadFotoOrdemServicoRequest;
@@ -15,15 +16,29 @@ use App\Models\Veiculo;
 use App\Services\OrdemServicoItemService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-class OrdemServicoController extends Controller
+class OrdemServicoController extends Controller implements HasMiddleware
 {
+    use AutorizaRecurso;
+
     public function __construct(
         protected OrdemServicoItemService $itemService
     ) {}
+
+    public static function middleware(): array
+    {
+        return [
+            ...static::middlewareDoRecurso(OrdemServico::class, 'ordem'),
+            new Middleware('can:update,ordem', only: ['atualizarDesconto', 'uploadFoto']),
+            new Middleware('can:enviarAprovacao,ordem', only: ['solicitarAprovacao']),
+            new Middleware('can:gerarDocumentos,ordem', only: ['pdf', 'pdfVistoria']),
+        ];
+    }
 
     public function index(Request $request)
     {
@@ -266,6 +281,11 @@ class OrdemServicoController extends Controller
     {
         $statusAnterior = $ordem->status;
 
+        // Editar a OS não autoriza alterar seu status: exige a permissão específica.
+        if ($request->status !== $statusAnterior) {
+            $this->authorize('alterarStatus', $ordem);
+        }
+
         $ordem->update($request->only([
             'cliente_id',
             'veiculo_id',
@@ -348,6 +368,8 @@ class OrdemServicoController extends Controller
         );
 
         $ordem = $foto->ordemServico;
+        abort_if(! $ordem, 404);
+        $this->authorize('update', $ordem);
         if ($ordem && ! $ordem->podeEditar()) {
             if (request()->wantsJson()) {
                 return response()->json([

@@ -651,80 +651,96 @@
         </div>
 
         <nav class="sidebar-nav">
-            <div class="sidebar-label">Principal</div>
+            @if (auth()->check() && (auth()->user()->temPermissao('dashboard.operacional.visualizar') || auth()->user()->temPermissao('dashboard.financeiro.visualizar')))
+                <div class="sidebar-label">Principal</div>
 
-            <a href="{{ route('dashboard') }}"
-                class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-                Dashboard
-            </a>
+                <a href="{{ route('dashboard') }}"
+                    class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    Dashboard
+                </a>
+            @endif
 
-            <div class="sidebar-label" style="margin-top:16px">Cadastros</div>
+            @if (Gate::check('clientes.visualizar') || Gate::check('veiculos.visualizar'))
+                <div class="sidebar-label" style="margin-top:16px">Cadastros</div>
 
-            <a href="{{ route('clientes.index') }}"
-                class="sidebar-link {{ request()->routeIs('clientes.*') ? 'active' : '' }}">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                Clientes
-            </a>
+                @can('clientes.visualizar')
+                    <a href="{{ route('clientes.index') }}"
+                        class="sidebar-link {{ request()->routeIs('clientes.*') ? 'active' : '' }}">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Clientes
+                    </a>
+                @endcan
 
-            <a href="{{ route('veiculos.index') }}"
-                class="sidebar-link {{ request()->routeIs('veiculos.*') ? 'active' : '' }}">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
-                </svg>
-                Veículos
-            </a>
+                @can('veiculos.visualizar')
+                    <a href="{{ route('veiculos.index') }}"
+                        class="sidebar-link {{ request()->routeIs('veiculos.*') ? 'active' : '' }}">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                        </svg>
+                        Veículos
+                    </a>
+                @endcan
+            @endif
 
-            <div class="sidebar-label" style="margin-top:16px">Operações</div>
+            @if (Gate::check('ordens.visualizar') || Gate::check('servicos.visualizar') || Gate::check('pecas.visualizar'))
+                <div class="sidebar-label" style="margin-top:16px">Operações</div>
 
-            <a href="{{ route('ordens.index') }}"
-                class="sidebar-link {{ request()->routeIs('ordens.*') ? 'active' : '' }}">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z" />
-                </svg>
-                Ordens de Serviço
-            </a>
+                @can('ordens.visualizar')
+                    <a href="{{ route('ordens.index') }}"
+                        class="sidebar-link {{ request()->routeIs('ordens.*') ? 'active' : '' }}">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z" />
+                        </svg>
+                        Ordens de Serviço
+                    </a>
+                @endcan
 
-            <a href="{{ route('servicos.index') }}"
-                class="sidebar-link {{ request()->routeIs('servicos.*') ? 'active' : '' }}">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75" />
-                </svg>
-                Serviços
-            </a>
+                @can('servicos.visualizar')
+                    <a href="{{ route('servicos.index') }}"
+                        class="sidebar-link {{ request()->routeIs('servicos.*') ? 'active' : '' }}">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75" />
+                        </svg>
+                        Serviços
+                    </a>
+                @endcan
 
-            <a href="{{ route('pecas.index') }}"
-                class="sidebar-link {{ request()->routeIs('pecas.*') ? 'active' : '' }}">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-                </svg>
-                Peças
-            </a>
+                @can('pecas.visualizar')
+                    <a href="{{ route('pecas.index') }}"
+                        class="sidebar-link {{ request()->routeIs('pecas.*') ? 'active' : '' }}">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                        </svg>
+                        Peças
+                    </a>
+                @endcan
+            @endif
 
-            @if (auth()->check() && auth()->user()->canManageCompany())
+            @can('empresa.visualizar')
                 <div class="sidebar-label" style="margin-top:16px">Configurações</div>
 
                 <a href="{{ route('empresa.edit') }}"
-                    class="sidebar-link {{ request()->routeIs('empresa.*') || request()->routeIs('usuarios.*') ? 'active' : '' }}">
+                    class="sidebar-link {{ request()->routeIs('empresa.*') || request()->routeIs('usuarios.*') || request()->routeIs('perfis.*') ? 'active' : '' }}">
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                     Minha Empresa
                 </a>
-            @endif
+            @endcan
 
-            @if (auth()->check() && auth()->user()->canManageSubscription())
+            @can('assinatura.visualizar')
                 <div class="sidebar-label" style="margin-top:16px">Assinatura</div>
                 <a href="{{ route('assinatura.minha') }}"
                     class="sidebar-link {{ request()->routeIs('assinatura.minha') ? 'active' : '' }}">
@@ -734,7 +750,7 @@
                     </svg>
                     Minha Assinatura
                 </a>
-            @endif
+            @endcan
         </nav>
 
 
@@ -786,42 +802,48 @@
 
             @if (request()->routeIs('clientes.index'))
                 <div class="topbar-actions">
-                    <a href="{{ route('clientes.create') }}"
-                        class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                        <i class="bi bi-person-fill-add"></i> Novo Cliente
-                    </a>
+                    @can('clientes.criar')
+                        <a href="{{ route('clientes.create') }}"
+                            class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            <i class="bi bi-person-fill-add"></i> Novo Cliente
+                        </a>
+                    @endcan
                 </div>
             @elseIf (request()->routeIs('servicos.index'))
                 <div class="topbar-actions">
-                    @if (auth()->user()->isAdmin())
+                    @can('servicos.criar')
                         <a href="{{ route('servicos.create') }}"
                             class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                             <i class="bi bi-tools"></i> Novo Serviço
                         </a>
-                    @endif
+                    @endcan
                 </div>
             @elseIf (request()->routeIs('pecas.index'))
                 <div class="topbar-actions">
-                    @if (auth()->user()->isAdmin())
+                    @can('pecas.criar')
                         <a href="{{ route('pecas.create') }}"
                             class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                             <i class="bi bi-tools"></i> Nova Peça
                         </a>
-                    @endif
+                    @endcan
                 </div>
             @elseIf (request()->routeIs('veiculos.index'))
                 <div class="topbar-actions">
-                    <a href="{{ route('veiculos.create') }}"
-                        class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                        <i class="bi bi-car-front"> </i> Novo Veículo
-                    </a>
+                    @can('veiculos.criar')
+                        <a href="{{ route('veiculos.create') }}"
+                            class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            <i class="bi bi-car-front"> </i> Novo Veículo
+                        </a>
+                    @endcan
                 </div>
             @elseIf (request()->routeIs('ordens.index'))
                 <div class="topbar-actions">
-                    <a href="{{ route('ordens.create') }}"
-                        class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                        <i class="bi bi-file-earmark-plus"></i> Nova Ordem
-                    </a>
+                    @can('ordens.criar')
+                        <a href="{{ route('ordens.create') }}"
+                            class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            <i class="bi bi-file-earmark-plus"></i> Nova Ordem
+                        </a>
+                    @endcan
                 </div>
             @endIf
         </header>

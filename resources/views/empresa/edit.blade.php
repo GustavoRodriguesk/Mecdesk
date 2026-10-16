@@ -411,7 +411,7 @@
             <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
                 <div>
                     <h2 class="text-base font-semibold text-gray-900">Equipe</h2>
-                    <p class="text-sm text-gray-500 mt-0.5">Gerencie o acesso dos funcionários</p>
+                    <p class="text-sm text-gray-500 mt-0.5">Gerencie os funcionários e atribua perfis de acesso</p>
                 </div>
                 <a href="{{ route('usuarios.create') }}"
                     class="inline-flex items-center gap-1.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2">
@@ -426,23 +426,17 @@
                 <table class="w-full text-sm">
                     <thead class="bg-gray-50 border-b border-gray-100">
                         <tr>
-                            <th
-                                class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
+                            <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
                                 Funcionário</th>
-                            <th
-                                class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
+                            <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
                                 E-mail</th>
-                            <th
-                                class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
-                                Cargo</th>
-                            <th
-                                class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
+                            <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
+                                Perfil de Acesso</th>
+                            <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
                                 Cadastrado em</th>
-                            <th
-                                class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
+                            <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
                                 Status</th>
-                            <th
-                                class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
+                            <th class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
                                 Ações</th>
                         </tr>
                     </thead>
@@ -463,17 +457,17 @@
                                     @if ($funcionario->isAdmin())
                                         <span
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
-                                            Admin
+                                            Administrador
                                         </span>
-                                    @elseif ($funcionario->isGerente())
+                                    @elseif ($funcionario->perfilAcesso)
                                         <span
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                                            Gerente
+                                            {{ $funcionario->perfilAcesso->nome }}
                                         </span>
                                     @else
                                         <span
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
-                                            Funcionário
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200" title="Sem perfil vinculado: acesso operacional bloqueado">
+                                            Sem perfil
                                         </span>
                                     @endif
                                 </td>
@@ -494,6 +488,14 @@
                                 <td class="px-6 py-4 text-right">
                                     @if ($funcionario->id !== auth()->id())
                                         <div class="flex items-center justify-end gap-2">
+                                            @if(! $funcionario->isAdmin())
+                                                <a href="{{ route('usuarios.edit', $funcionario->id) }}"
+                                                    class="text-xs px-2.5 py-1 rounded border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+                                                    title="Editar dados e perfil de acesso">
+                                                    Editar
+                                                </a>
+                                            @endif
+
                                             <form method="POST" action="{{ route('usuarios.toggle', $funcionario->id) }}">
                                                 @csrf
                                                 @method('PATCH')
@@ -531,6 +533,96 @@
                                             Cadastrar o primeiro funcionário
                                         </a>
                                     </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- ── 6. Perfis de Acesso e Permissões ── --}}
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                    <h2 class="text-base font-semibold text-gray-900 flex items-center gap-2">
+                        <i class="bi bi-shield-lock text-blue-600"></i> Perfis de Acesso
+                    </h2>
+                    <p class="text-sm text-gray-500 mt-0.5">Defina conjuntos de permissões operacionais e vincule aos funcionários</p>
+                </div>
+                <a href="{{ route('perfis.create') }}"
+                    class="inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Novo perfil
+                </a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b border-gray-100">
+                        <tr>
+                            <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
+                                Perfil</th>
+                            <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
+                                Descrição</th>
+                            <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
+                                Permissões</th>
+                            <th class="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
+                                Funcionários</th>
+                            <th class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3.5">
+                                Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse($perfis as $perfil)
+                            <tr class="data-row">
+                                <td class="px-6 py-4">
+                                    <div class="font-semibold text-gray-900">{{ $perfil->nome }}</div>
+                                </td>
+                                <td class="px-6 py-4 text-gray-500 text-xs">
+                                    {{ $perfil->descricao ?? '—' }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                        {{ $perfil->permissoes->count() }} concedidas
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $perfil->users_count > 0 ? 'bg-gray-100 text-gray-800' : 'bg-gray-50 text-gray-400' }}">
+                                        {{ $perfil->users_count }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ route('perfis.edit', $perfil->id) }}"
+                                            class="text-xs px-2.5 py-1 rounded border border-blue-200 text-blue-700 hover:bg-blue-50 transition-colors">
+                                            Editar
+                                        </a>
+
+                                        @if($perfil->users_count === 0)
+                                            <form method="POST" action="{{ route('perfis.destroy', $perfil->id) }}" onsubmit="return confirm('Deseja realmente excluir o perfil {{ $perfil->nome }}?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-xs px-2.5 py-1 rounded border border-red-200 text-red-600 hover:bg-red-50 transition-colors">
+                                                    Excluir
+                                                </button>
+                                            </form>
+                                        @else
+                                            <button type="button" disabled
+                                                title="Não é possível excluir um perfil associado a funcionários"
+                                                class="text-xs px-2.5 py-1 rounded border border-gray-200 text-gray-300 cursor-not-allowed">
+                                                Excluir
+                                            </button>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                                    Nenhum perfil cadastrado.
                                 </td>
                             </tr>
                         @endforelse

@@ -14,17 +14,25 @@ class EmpresaController extends Controller
         abort_if(! auth()->user()->canManageCompany(), 403);
 
         $empresa = auth()->user()->empresa;
-        // Carrega os funcionários (usuários) dessa empresa
-        $funcionarios = $empresa->users()->get();
+
+        // Garante perfis padrão caso a empresa ainda não possua nenhum
+        if ($empresa && $empresa->perfis()->count() === 0) {
+            \App\Support\PerfisPadrao::criarParaEmpresa($empresa->id);
+        }
+
+        // Carrega os funcionários (usuários) dessa empresa com perfil
+        $funcionarios = $empresa ? $empresa->users()->with('perfilAcesso')->get() : collect();
+        $perfis = $empresa ? $empresa->perfis()->withCount('users')->with('permissoes')->get() : collect();
 
         // Contadores para o dashboard da empresa
-        $totalClientes = $empresa->clientes()->count();
-        $totalOrdens = $empresa->ordens()->count();
+        $totalClientes = $empresa?->clientes()->count() ?? 0;
+        $totalOrdens = $empresa?->ordens()->count() ?? 0;
         $totalImportacoesIA = 0; // Se houver modelo de importação futuramente
 
         return view('empresa.edit', compact(
             'empresa',
             'funcionarios',
+            'perfis',
             'totalClientes',
             'totalOrdens',
             'totalImportacoesIA'

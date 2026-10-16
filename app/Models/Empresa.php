@@ -132,6 +132,11 @@ class Empresa extends Model
         return $this->hasMany(User::class);
     }
 
+    public function perfis()
+    {
+        return $this->hasMany(PerfilAcesso::class);
+    }
+
     public function clientes()
     {
         return $this->hasMany(Cliente::class);

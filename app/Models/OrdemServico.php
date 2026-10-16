@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use App\Models\Scopes\EmpresaScope;
+use App\Models\Concerns\HasPublicUuid;
 
 class OrdemServico extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasPublicUuid;
 
     protected $table = 'ordem_servicos';
 

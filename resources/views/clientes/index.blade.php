@@ -179,21 +179,25 @@
                                         @endif
 
                                         {{-- Consultar / Visualizar --}}
-                                        <a href="{{ route('clientes.show', $cliente->id) }}"
-                                            class="btn-action inline-flex items-center justify-center w-8 h-8 text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
-                                            title="Consultar Informações">
-                                            <i class="bi bi-eye text-sm"></i>
-                                        </a>
+                                        @can('view', $cliente)
+                                            <a href="{{ route('clientes.show', $cliente->id) }}"
+                                                class="btn-action inline-flex items-center justify-center w-8 h-8 text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                                                title="Consultar Informações">
+                                                <i class="bi bi-eye text-sm"></i>
+                                            </a>
+                                        @endcan
 
                                         {{-- Editar --}}
-                                        <a href="{{ route('clientes.edit', $cliente->id) }}"
-                                            class="btn-action inline-flex items-center justify-center w-8 h-8 text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                                            title="Editar">
-                                            <i class="bi bi-pencil-square text-sm"></i>
-                                        </a>
+                                        @can('update', $cliente)
+                                            <a href="{{ route('clientes.edit', $cliente->id) }}"
+                                                class="btn-action inline-flex items-center justify-center w-8 h-8 text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                                                title="Editar">
+                                                <i class="bi bi-pencil-square text-sm"></i>
+                                            </a>
+                                        @endcan
 
                                         {{-- Excluir --}}
-                                        @if (auth()->user()->canDelete())
+                                        @can('delete', $cliente)
                                             <form action="{{ route('clientes.destroy', $cliente->id) }}" method="POST"
                                                 onsubmit="return confirm('Tem certeza que deseja excluir {{ addslashes($cliente->nome) }}?')">
                                                 @csrf
@@ -204,7 +208,7 @@
                                                     <i class="bi bi-trash text-sm"></i>
                                                 </button>
                                             </form>
-                                        @endif
+                                        @endcan
                                     </div>
                                 </td>
 

@@ -2,13 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\AutorizaRecurso;
 use App\Http\Requests\StorePecaRequest;
 use App\Http\Requests\UpdatePecaRequest;
 use App\Models\Peca;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
 
-class PecaController extends Controller
+class PecaController extends Controller implements HasMiddleware
 {
+    use AutorizaRecurso;
+
+    public static function middleware(): array
+    {
+        return static::middlewareDoRecurso(Peca::class, 'peca');
+    }
+
     public function index(Request $request)
     {
         $query = Peca::query();
@@ -148,8 +157,6 @@ class PecaController extends Controller
 
     public function destroy(Peca $peca)
     {
-        abort_if(! auth()->user()->canDelete(), 403);
-
         if ($peca->ordemServicoItens()->exists()) {
             return redirect()
                 ->route('pecas.index')

@@ -20,6 +20,7 @@ class OrdemServicoItemController extends Controller
     public function store(Request $request, OrdemServico $ordem)
     {
         $this->autorizarOrdem($ordem);
+        $this->authorize('update', $ordem);
 
         if (! $ordem->podeEditar()) {
             if ($request->wantsJson()) {
@@ -68,6 +69,7 @@ class OrdemServicoItemController extends Controller
     public function storePeca(Request $request, OrdemServico $ordem)
     {
         $this->autorizarOrdem($ordem);
+        $this->authorize('update', $ordem);
 
         if (! $ordem->podeEditar()) {
             if ($request->wantsJson()) {
@@ -116,6 +118,7 @@ class OrdemServicoItemController extends Controller
     public function update(Request $request, OrdemServicoItem $item)
     {
         $this->autorizarItem($item);
+        $this->authorize('update', $item->ordem);
 
         if (! $item->ordem->podeEditar()) {
             if ($request->wantsJson()) {
@@ -164,6 +167,7 @@ class OrdemServicoItemController extends Controller
     {
         abort_if(! auth()->user()->canDelete(), 403, 'Apenas administradores e gerentes podem remover itens.');
         $this->autorizarItem($item);
+        $this->authorize('update', $item->ordem);
 
         if (! $item->ordem->podeEditar()) {
             if ($request->wantsJson()) {

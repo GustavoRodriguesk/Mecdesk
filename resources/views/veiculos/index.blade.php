@@ -246,17 +246,21 @@
 
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1.5">
-                                        <a href="{{ route('veiculos.show', $veiculo->id) }}"
-                                            class="btn-action inline-flex items-center justify-center w-8 h-8 text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
-                                            title="Ver Detalhes e Histórico">
-                                            <i class="bi bi-eye text-sm"></i>
-                                        </a>
-                                        <a href="{{ route('veiculos.edit', $veiculo->id) }}"
-                                            class="btn-action inline-flex items-center justify-center w-8 h-8 text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                                            title="Editar">
-                                            <i class="bi bi-pencil-square text-sm"></i>
-                                        </a>
-                                        @if (auth()->user()->canDelete())
+                                        @can('view', $veiculo)
+                                            <a href="{{ route('veiculos.show', $veiculo->id) }}"
+                                                class="btn-action inline-flex items-center justify-center w-8 h-8 text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                                                title="Ver Detalhes e Histórico">
+                                                <i class="bi bi-eye text-sm"></i>
+                                            </a>
+                                        @endcan
+                                        @can('update', $veiculo)
+                                            <a href="{{ route('veiculos.edit', $veiculo->id) }}"
+                                                class="btn-action inline-flex items-center justify-center w-8 h-8 text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                                                title="Editar">
+                                                <i class="bi bi-pencil-square text-sm"></i>
+                                            </a>
+                                        @endcan
+                                        @can('delete', $veiculo)
                                             <form action="{{ route('veiculos.destroy', $veiculo->id) }}" method="POST"
                                                 onsubmit="return confirm('Tem certeza que deseja excluir {{ addslashes($veiculo->placa) }}?')">
                                                 @csrf
@@ -267,7 +271,7 @@
                                                     <i class="bi bi-trash text-sm"></i>
                                                 </button>
                                             </form>
-                                        @endif
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

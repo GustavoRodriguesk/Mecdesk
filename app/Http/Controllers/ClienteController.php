@@ -3,12 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
+use App\Http\Controllers\Concerns\AutorizaRecurso;
 use App\Http\Requests\StoreClienteRequest;
 use App\Http\Requests\UpdateClienteRequest;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
 
-class ClienteController extends Controller
+class ClienteController extends Controller implements HasMiddleware
 {
+    use AutorizaRecurso;
+
+    public static function middleware(): array
+    {
+        return static::middlewareDoRecurso(Cliente::class, 'cliente');
+    }
+
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -77,8 +86,6 @@ class ClienteController extends Controller
 
     public function destroy(Cliente $cliente)
     {
-        abort_if(! auth()->user()->canDelete(), 403);
-
         if ($cliente->ordensServico()->exists()) {
             return redirect()
                 ->route('clientes.index')
