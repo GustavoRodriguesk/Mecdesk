@@ -59,13 +59,15 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <h1 class="text-xl font-bold text-gray-900 tracking-tight">{{ $empresa->nome_fantasia }}</h1>
+                        @if($empresa->plano)
                         <span
                             class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold tracking-wide uppercase bg-blue-600 text-white">
-                            {{ $empresa->plano->nome ?? 'Free' }}
+                            {{ $empresa->plano->nome }}
                         </span>
+                        @endif
                     </div>
                     <p class="text-sm text-gray-500 mt-0.5">
-                        Plano {{ $empresa->plano->nome ?? 'Free' }} &middot; {{ $empresa->ativo ? 'Ativo' : 'Inativo' }}
+                        {{ $empresa->plano ? 'Plano ' . $empresa->plano->nome . ' · ' : '' }}{{ $empresa->ativo ? 'Ativo' : 'Inativo' }}
                     </p>
                 </div>
             </div>
@@ -365,7 +367,7 @@
             <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
                 <div>
                     <h2 class="text-base font-semibold text-gray-900">Plano atual</h2>
-                    <p class="text-sm text-gray-500 mt-0.5">{{ $empresa->plano->nome ?? 'Free' }}</p>
+                    <p class="text-sm text-gray-500 mt-0.5">{{ $empresa->plano->nome ?? '—' }}</p>
                 </div>
                 <span
                     class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">

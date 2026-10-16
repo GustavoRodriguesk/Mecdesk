@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(PlanoSeeder::class);
+        $this->call(PerfisPadraoSeeder::class);
 
         $planoUltra = Plano::where('slug', 'ultra')->first() ?? Plano::first();
         $planoPro = Plano::where('slug', 'pro')->first() ?? Plano::first();
