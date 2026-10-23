@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Bloqueia arquivos/pastas ocultos (.git, .env, .agents...), exceto .well-known (SSL)
+    RewriteRule (^|/)\.(?!well-known(/|$)) - [F,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
