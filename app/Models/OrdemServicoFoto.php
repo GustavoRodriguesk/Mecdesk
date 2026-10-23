@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Scopes\EmpresaScope;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 class OrdemServicoFoto extends Model
 {
@@ -47,6 +47,13 @@ class OrdemServicoFoto extends Model
             return $this->caminho_foto;
         }
 
-        return Storage::disk('public')->url($this->caminho_foto);
+        // URL assinada e relativa: não depende do symlink public/storage nem do APP_URL.
+        // A expiração é arredondada para a hora cheia para a URL ficar estável (cache do navegador).
+        return URL::temporarySignedRoute(
+            'arquivos.foto',
+            now()->startOfHour()->addHours(24),
+            ['foto' => $this->id],
+            false
+        );
     }
 }

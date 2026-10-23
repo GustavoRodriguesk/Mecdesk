@@ -59,9 +59,10 @@ class Empresa extends Model
             return $this->logo;
         }
 
-        $cleanPath = ltrim(str_replace('storage/', '', $this->logo), '/');
-
-        return asset('storage/' . $cleanPath);
+        return route('arquivos.logo', [
+            'empresa' => $this->id,
+            'v' => $this->updated_at?->timestamp,
+        ]);
     }
 
     /**
